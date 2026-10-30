@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: subly
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/subly}
+    username: ${DB_USERNAME:subly}
+    password: ${DB_PASSWORD:subly}
