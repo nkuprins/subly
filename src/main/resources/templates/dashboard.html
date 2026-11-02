@@ -1,0 +1,35 @@
+<!Doctype html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Subly - Dashboard</title>
+    <link rel="stylesheet"  th:href="@{/css/style.css}"/>
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+<main class="container page">
+    <h1>Dashboard</h1>
+    <p class="muted">Your subscriptions at a glance</p>
+    <section class="cards">
+        <div class="card">
+            <span class="card-label">Monthly</span>
+            <span class="card-value">€0.00</span>
+        </div>
+        <div class="card">
+            <span class="card-label">Yearly</span>
+            <span class="card-value">€0.00</span>
+        </div>
+        <div class="card">
+            <span class="card-label">Active subscription</span>
+            <span class="card-value">0</span>
+        </div>
+    </section>
+    <section class="panel">
+        <h2>Upcoming payments</h2>
+        <p class="muted">No upcoming payments yet</p>
+    </section>
+</main>
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>
