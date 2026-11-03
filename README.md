@@ -35,7 +35,11 @@ CREATE USER 'subly'@'localhost' IDENTIFIED BY 'subly';
 GRANT ALL PRIVILEGES ON subly.* TO 'subly'@'localhost';
 ```
 
-Then run the app with `./mvnw spring-boot:run`.
+Then run the app. The default URL uses port 3307 (the Docker port), so point it to your server's port, usually 3306:
+
+```bash
+DB_URL=jdbc:mysql://localhost:3306/subly ./mvnw spring-boot:run
+```
 
 ## Configuration
 
@@ -43,7 +47,7 @@ The database connection is set with environment variables:
 
 | Variable      | Default                              |
 |---------------|--------------------------------------|
-| `DB_URL`      | `jdbc:mysql://localhost:3306/subly`  |
+| `DB_URL`      | `jdbc:mysql://localhost:3307/subly`  |
 | `DB_USERNAME` | `subly`                              |
 | `DB_PASSWORD` | `subly`                              |
 
