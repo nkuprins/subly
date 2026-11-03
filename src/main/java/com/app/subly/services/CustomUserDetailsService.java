@@ -9,11 +9,11 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
-public class UserService implements UserDetailsService {
+public class CustomUserDetailsService implements UserDetailsService {
 
     private final UserRepository repository;
 
-    public UserService(UserRepository repository){
+    public CustomUserDetailsService(UserRepository repository){
         this.repository = repository;
     }
 
@@ -27,10 +27,4 @@ public class UserService implements UserDetailsService {
                 .roles(user.getRole().name())
                 .build();
     }
-
-    // TODO: 1. Implement pushing a new user in the db
-    // TODO: 2. Implement getting a user by one id
-    // TODO: 3. Implement getting a list of users by their ids
-    // TODO: 4. Implement deleting a user by corresponding id
-    // TODO: 5. Implement updating a user by its id
 }
