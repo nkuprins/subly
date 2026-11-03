@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, dev]
   pull_request:
 
 jobs:
@@ -18,7 +18,7 @@ jobs:
           MYSQL_PASSWORD: subly
           MYSQL_ROOT_PASSWORD: root
         ports:
-          - 3306:3306
+          - 3307:3306
         # Wait until MySQL accepts connections before the tests start
         options: >-
           --health-cmd="mysqladmin ping -usubly -psubly"
@@ -27,9 +27,9 @@ jobs:
           --health-retries=20
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-java@v5
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: 21
