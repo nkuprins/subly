@@ -13,4 +13,8 @@ public class PageController {
     public String subscriptions() {
         return "subscriptions";
     }
+    @GetMapping("/subscriptions/new")
+    public String newSubscriptions() {
+        return "subscription-form";
+    }
 }
