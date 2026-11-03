@@ -2,6 +2,18 @@ spring:
   application:
     name: subly
   datasource:
-    url: ${DB_URL:jdbc:mysql://localhost:3306/subly}
+    url: ${DB_URL:jdbc:mysql://localhost:3307/subly}
     username: ${DB_USERNAME:subly}
     password: ${DB_PASSWORD:subly}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+server:
+  servlet:
+    session:
+      timeout: 30m
