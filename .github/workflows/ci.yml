@@ -18,7 +18,7 @@ jobs:
           MYSQL_PASSWORD: subly
           MYSQL_ROOT_PASSWORD: root
         ports:
-          - 3306:3306
+          - 3307:3306
         # Wait until MySQL accepts connections before the tests start
         options: >-
           --health-cmd="mysqladmin ping -usubly -psubly"
