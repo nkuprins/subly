@@ -1,0 +1,76 @@
+<!Doctype html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Subscriptions</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+
+<main class="container page">
+    <div class="page-head">
+        <h1>Subscriptions</h1>
+        <span class="spacer"></span>
+        <a th:href="@{/subscriptions/new}" class="btn btn-primary">+ Add Subscription</a>
+    </div>
+    <div class="table-wrap">
+        <table>
+            <thead>
+            <tr>
+                <th>Service</th>
+                <th>Price</th>
+                <th>Currency</th>
+                <th>Cycle</th>
+                <th>Next payment</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>Netflix</td>
+                <td>7.99</td>
+                <td>EUR</td>
+                <td><span class="pill">Monthly</span></td>
+                <td>12 Nov 2026</td>
+                <td>
+                    <div class="actions">
+                        <a th:href="@{/subscriptions/1/edit}" class="link">Edit</a>
+                        <a href="#" class="link link-danger">Delete</a>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td>Spotify</td>
+                <td>11.99</td>
+                <td>EUR</td>
+                <td><span class="pill">Monthly</span></td>
+                <td>15 Nov 2026</td>
+                <td>
+                    <div class="actions">
+                        <a th:href="@{/subscriptions/2/edit}" class="link">Edit</a>
+                        <a href="#" class="link link-danger">Delete</a>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td>Adobe CC</td>
+                <td>599.99</td>
+                <td>EUR</td>
+                <td><span class="pill pill-year">Yearly</span></td>
+                <td>20 Jan 2027</td>
+                <td>
+                    <div class="actions">
+                        <a th:href="@{/subscriptions/3/edit}" class="link">Edit</a>
+                        <a href="#" class="link link-danger">Delete</a>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>
