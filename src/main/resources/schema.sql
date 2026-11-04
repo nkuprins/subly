@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS subscriptions (
     max_participants INT NOT NULL DEFAULT 1,
     PRIMARY KEY (id),
     INDEX idx_subscriptions_service_id (service_id),
-    CONSTRAINT chk_subscriptions_price CHECK (price >= 0),
+    CONSTRAINT chk_subscriptions_price CHECK (price > 0),
     CONSTRAINT chk_subscriptions_max_participants CHECK (max_participants >= 1),
     CONSTRAINT chk_subscriptions_cancelled_at CHECK ((status = 'CANCELLED') = (cancelled_at IS NOT NULL)),
     CONSTRAINT chk_subscriptions_sharable CHECK (is_sharable OR max_participants = 1),
