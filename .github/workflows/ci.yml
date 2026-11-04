@@ -13,7 +13,7 @@ jobs:
       mysql:
         image: mysql:8.4
         env:
-          MYSQL_DATABASE: subly
+          MYSQL_DATABASE: subly_test
           MYSQL_USER: subly
           MYSQL_PASSWORD: subly
           MYSQL_ROOT_PASSWORD: root

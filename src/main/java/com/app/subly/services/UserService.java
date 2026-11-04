@@ -26,12 +26,13 @@ public class UserService {
         this.encoder = encoder;
     }
 
-    public void addNewUser(String username, String password, String email) {
+    public void addNewUser(String username, String name, String password, String email) {
         // Adds a new user into db from raw data. Throws UserAlreadyExistsException if
-        // user exists with this username or email.
+        // user exists with this username or email. It is supposed that the length of the name is validated
+        // before calling this method.
 
         try {
-            this.repository.save(this.createUserFromRawData(username, password, email));
+            this.repository.save(this.createUserFromRawData(username, name, password, email));
         } catch (DataIntegrityViolationException exception) {
             throw new UserAlreadyExistsException("A user with the username or the email already exists");
         }
@@ -86,8 +87,6 @@ public class UserService {
 
         try {
             this.repository.deleteByUsername(username);
-        } catch (OptimisticLockingFailureException ex) {
-            throw new UserDoesNotExistException("No found user with the provided username");
         } catch (DataIntegrityViolationException exception) {
             throw new UserIsConnectedError("Cannot delete the user because it is connected with some table's field");
         }
@@ -112,17 +111,24 @@ public class UserService {
 
         try{
             if(newUserInfo.isEmailProvided()){
-                if(this.isNotValidateForUpdating(user.getEmail(), newUserInfo.getNewEmail())){
+                if(this.isNotValidForUpdating(user.getEmail(), newUserInfo.getNewEmail())){
                     throw new UserInfoUpdateException("You must provide a non-empty email that differs from your current");
                 }
                 user.setEmail(newUserInfo.getNewEmail());
             }
 
             if(newUserInfo.isUsernameProvided()){
-                if(this.isNotValidateForUpdating(user.getUsername(), newUserInfo.getNewUsername())){
+                if(this.isNotValidForUpdating(user.getUsername(), newUserInfo.getNewUsername())){
                     throw new UserInfoUpdateException("You must provide a non-empty username that differs from your current");
                 }
                 user.setUsername(newUserInfo.getNewUsername());
+            }
+
+            if(newUserInfo.isNameProvided()){
+                if(this.isNotValidForUpdating(user.getName(), newUserInfo.getNewName())){
+                    throw new UserInfoUpdateException("You must provide a non-empty name that differs from your current");
+                }
+                user.setName(newUserInfo.getNewName());
             }
 
             this.repository.flush();
@@ -138,17 +144,18 @@ public class UserService {
         ));
     }
 
-    private User createUserFromRawData(String username, String password, String email) {
+    private User createUserFromRawData(String username, String name, String password, String email) {
         User user = new User();
         user.setUsername(username);
+        user.setName(name);
         user.setPasswordHash(encoder.encode(password));
         user.setEmail(email);
         user.setRole(UserRole.USER);
         return user;
     }
 
-    private boolean isNotValidateForUpdating(String originalCredential, String providedCredential){
-        // Specially designed for update operations for email and username.
+    private boolean isNotValidForUpdating(String originalCredential, String providedCredential){
+        // Specially designed for update operations for email, username and name ONLY
         // 'originalCredential' - stored credential in the database
         // 'providedCredential' - credential provided in the request to update.
         // Checks whether 'originalCredential' can be updated by 'providedCredential'.

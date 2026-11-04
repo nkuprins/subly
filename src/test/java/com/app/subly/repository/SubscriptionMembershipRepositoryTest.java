@@ -16,12 +16,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@ActiveProfiles("test")
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class SubscriptionMembershipRepositoryTest {
@@ -80,6 +82,7 @@ class SubscriptionMembershipRepositoryTest {
     private User persistUser(String username) {
         User user = new User();
         user.setUsername(username);
+        user.setName(username);
         user.setEmail(username + "@test.local");
         user.setPasswordHash("not-a-real-hash");
         user.setRole(UserRole.USER);
