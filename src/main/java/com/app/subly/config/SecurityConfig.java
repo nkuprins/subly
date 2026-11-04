@@ -19,7 +19,10 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable). // csrf is disabled for testing time.
                 authorizeHttpRequests((authorize) -> {
-                    authorize.anyRequest().permitAll();
+                    authorize.requestMatchers("/users/delete/me").authenticated()
+                            .requestMatchers("/users/update/password/me").authenticated()
+                            .requestMatchers("/users/update/info/me").authenticated()
+                            .anyRequest().permitAll();
                 }).httpBasic(Customizer.withDefaults())
                 .formLogin(Customizer.withDefaults());
 
