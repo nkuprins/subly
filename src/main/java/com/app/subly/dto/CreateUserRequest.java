@@ -11,12 +11,16 @@ import lombok.Getter;
 public class CreateUserRequest {
 
     @NotBlank
-    String username;
+    private String username;
+
+    @NotBlank
+    @Size(max=100)
+    private String name;
 
     @Size(min = 15, max = 64)
-    String password;
+    private String password;
 
     @Email
     @NotBlank
-    String email;
+    private String email;
 }
