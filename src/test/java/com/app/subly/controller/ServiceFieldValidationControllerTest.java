@@ -13,7 +13,7 @@ class ServiceFieldValidationControllerTest extends AbstractSubscriptionControlle
 
     @ParameterizedTest(name = "{0}: {1}")
     @MethodSource("invalidServiceFields")
-    void rejectsInvalidServiceFields(Endpoint endpoint, String description, String body) throws Exception {
+    void rejectsInvalidServiceFields(BodyEndpoint endpoint, String description, String body) throws Exception {
         send(endpoint, body)
                 .andExpect(validationError());
 
@@ -22,8 +22,8 @@ class ServiceFieldValidationControllerTest extends AbstractSubscriptionControlle
 
     static Stream<Arguments> invalidServiceFields() {
         Stream<Arguments> catalog = Stream.of(
-                arguments(Endpoint.CREATE, "missing service id", Endpoint.CREATE.bodyWithout("serviceId")));
-        Stream<Arguments> custom = Stream.of(Endpoint.CREATE_CUSTOM, Endpoint.UPDATE_CUSTOM)
+                arguments(BodyEndpoint.CREATE, "missing service id", BodyEndpoint.CREATE.bodyWithout("serviceId")));
+        Stream<Arguments> custom = Stream.of(BodyEndpoint.CREATE_CUSTOM, BodyEndpoint.UPDATE_CUSTOM)
                 .flatMap(endpoint -> Stream.of(
                         arguments(endpoint, "blank name", endpoint.bodyWith("name", "   ")),
                         arguments(endpoint, "name longer than 200 characters",
