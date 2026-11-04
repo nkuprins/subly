@@ -12,17 +12,24 @@ import com.app.subly.models.subscription.Subscription;
 import com.app.subly.models.subscription.SubscriptionMembership;
 import com.app.subly.models.subscription.SubscriptionStatus;
 import com.app.subly.repository.SubscriptionMembershipRepository;
+import com.app.subly.repository.UserRepository;
 import com.app.subly.services.DashboardService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyCollection;
@@ -36,10 +43,19 @@ class DashboardServiceTest {
     @Mock
     private SubscriptionMembershipRepository repository;
 
-    @InjectMocks
+    @Mock
+    private UserRepository userRepository;
+
     private DashboardService dashboardService;
 
     private static final String USERNAME = "alice";
+    private static final Clock CLOCK = Clock.fixed(Instant.parse("2026-11-04T16:00:00Z"), ZoneOffset.UTC);
+    private static final LocalDate TODAY = LocalDate.of(2026, 11, 4);
+
+    @BeforeEach
+    void setUp() {
+        dashboardService = new DashboardService(repository, userRepository, CLOCK);
+    }
 
     @Test
     void returnsZeroWhenUserHasNoSubscriptions() {
@@ -57,11 +73,11 @@ class DashboardServiceTest {
     @Test
     void calculatesMonthlyAndYearlyTotalsWithCurrencyConversion() {
         Subscription netflix = subscription(1L, "Netflix", "12.00", BillingCycle.MONTHLY,
-                Currency.EUR, LocalDate.now().plusDays(5), false);
+                Currency.EUR, TODAY.plusDays(5), false);
         Subscription youtube = subscription(2L, "YouTube", "10.00", BillingCycle.MONTHLY,
-                Currency.USD, LocalDate.now().plusDays(6), false);
+                Currency.USD, TODAY.plusDays(6), false);
         Subscription gym = subscription(3L, "Gym", "100.00", BillingCycle.YEARLY,
-                Currency.GBP, LocalDate.now().plusDays(7), false);
+                Currency.GBP, TODAY.plusDays(7), false);
 
         SubscriptionMembership first = membership("alice", netflix, MembershipRole.OWNER);
         SubscriptionMembership second = membership("alice", youtube, MembershipRole.OWNER);
@@ -78,7 +94,7 @@ class DashboardServiceTest {
     @Test
     void includesFreeTrialAtItsFuturePrice() {
         Subscription trial = subscription(4L, "Trial", "20.00", BillingCycle.MONTHLY,
-                Currency.EUR, LocalDate.now().plusDays(10), true);
+                Currency.EUR, TODAY.plusDays(10), true);
         SubscriptionMembership owner = membership("alice", trial, MembershipRole.OWNER);
         stubMemberships(List.of(owner), List.of(owner));
 
@@ -91,7 +107,7 @@ class DashboardServiceTest {
     @Test
     void roundsOnlyFinalMonthlyAverageForYearlySubscription() {
         Subscription yearly = subscription(5L, "Yearly", "100.00", BillingCycle.YEARLY,
-                Currency.EUR, LocalDate.now().plusDays(10), false);
+                Currency.EUR, TODAY.plusDays(10), false);
         SubscriptionMembership owner = membership("alice", yearly, MembershipRole.OWNER);
         stubMemberships(List.of(owner), List.of(owner));
 
@@ -104,7 +120,7 @@ class DashboardServiceTest {
     @Test
     void ownerGetsRemainderCentWhenPriceIsShared() {
         Subscription shared = subscription(6L, "Shared", "10.00", BillingCycle.MONTHLY,
-                Currency.EUR, LocalDate.now().plusDays(7), false);
+                Currency.EUR, TODAY.plusDays(7), false);
         SubscriptionMembership owner = membership("alice", shared, MembershipRole.OWNER);
         SubscriptionMembership bob = membership("bob", shared, MembershipRole.MEMBER);
         SubscriptionMembership carol = membership("carol", shared, MembershipRole.MEMBER);
@@ -119,7 +135,7 @@ class DashboardServiceTest {
     @Test
     void regularMemberDoesNotGetRemainderCent() {
         Subscription shared = subscription(7L, "Shared", "10.00", BillingCycle.MONTHLY,
-                Currency.EUR, LocalDate.now().plusDays(7), false);
+                Currency.EUR, TODAY.plusDays(7), false);
         SubscriptionMembership owner = membership("bob", shared, MembershipRole.OWNER);
         SubscriptionMembership member = membership("alice", shared, MembershipRole.MEMBER);
         SubscriptionMembership third = membership("carol", shared, MembershipRole.MEMBER);
@@ -144,15 +160,14 @@ class DashboardServiceTest {
 
     @Test
     void upcomingPaymentsIncludeTodayAndDayThirtyButNotPastOrDayThirtyOne() {
-        LocalDate today = LocalDate.now();
         Subscription past = subscription(8L, "Past", "5.00", BillingCycle.MONTHLY,
-                Currency.EUR, today.minusDays(1), false);
+                Currency.EUR, TODAY.minusDays(1), false);
         Subscription todaySub = subscription(9L, "Today", "6.00", BillingCycle.MONTHLY,
-                Currency.EUR, today, false);
+                Currency.EUR, TODAY, false);
         Subscription inThirty = subscription(10L, "Thirty", "7.00", BillingCycle.MONTHLY,
-                Currency.EUR, today.plusDays(30), false);
+                Currency.EUR, TODAY.plusDays(30), false);
         Subscription afterWindow = subscription(11L, "Later", "8.00", BillingCycle.MONTHLY,
-                Currency.EUR, today.plusDays(31), false);
+                Currency.EUR, TODAY.plusDays(31), false);
         List<SubscriptionMembership> mine = List.of(
                 membership("alice", inThirty, MembershipRole.OWNER),
                 membership("alice", afterWindow, MembershipRole.OWNER),
@@ -160,23 +175,25 @@ class DashboardServiceTest {
                 membership("alice", todaySub, MembershipRole.OWNER)
         );
         stubMemberships(mine, mine);
+        givenUserIn(User.DEFAULT_TIME_ZONE);
 
         List<UpcomingPaymentDto> result = dashboardService.getUpcomingPayments(USERNAME);
 
         assertEquals(2, result.size());
         assertEquals("Today", result.get(0).serviceName());
-        assertEquals(today, result.get(0).nextPaymentDate());
+        assertEquals(TODAY, result.get(0).nextPaymentDate());
         assertEquals("Thirty", result.get(1).serviceName());
-        assertEquals(today.plusDays(30), result.get(1).nextPaymentDate());
+        assertEquals(TODAY.plusDays(30), result.get(1).nextPaymentDate());
     }
 
     @Test
     void upcomingPaymentKeepsOriginalCurrencyAndUsersShare() {
         Subscription shared = subscription(12L, "British TV", "10.00", BillingCycle.MONTHLY,
-                Currency.GBP, LocalDate.now().plusDays(2), false);
+                Currency.GBP, TODAY.plusDays(2), false);
         SubscriptionMembership owner = membership("bob", shared, MembershipRole.OWNER);
         SubscriptionMembership member = membership("alice", shared, MembershipRole.MEMBER);
         stubMemberships(List.of(member), List.of(owner, member));
+        givenUserIn(User.DEFAULT_TIME_ZONE);
 
         List<UpcomingPaymentDto> result = dashboardService.getUpcomingPayments(USERNAME);
 
@@ -189,11 +206,44 @@ class DashboardServiceTest {
     @Test
     void rejectsInconsistentMembershipCount() {
         Subscription sub = subscription(13L, "Invalid", "10.00", BillingCycle.MONTHLY,
-                Currency.EUR, LocalDate.now().plusDays(5), false);
+                Currency.EUR, TODAY.plusDays(5), false);
         SubscriptionMembership owner = membership("alice", sub, MembershipRole.OWNER);
         stubMemberships(List.of(owner), List.of());
 
         assertThrows(IllegalStateException.class, () -> dashboardService.getSummary(USERNAME));
+    }
+
+    @Test
+    void upcomingPaymentsStartFromUsersToday() {
+        // CLOCK is 16:00 UTC on 4 Nov: still 4 Nov in Riga (TODAY), but already 5 Nov in Tokyo.
+        // For a Tokyo user the 4 Nov payment is in the past, so only the 5 Nov payment is shown.
+        LocalDate tokyoToday = TODAY.plusDays(1);
+        givenUserIn(ZoneId.of("Asia/Tokyo"));
+        givenMySubscriptionsDueOn(TODAY, tokyoToday);
+
+        List<LocalDate> shown = dashboardService.getUpcomingPayments(USERNAME).stream()
+                .map(UpcomingPaymentDto::nextPaymentDate)
+                .toList();
+
+        assertEquals(List.of(tokyoToday), shown);
+    }
+
+    private void givenMySubscriptionsDueOn(LocalDate... dates) {
+        List<SubscriptionMembership> mine = new ArrayList<>();
+        long id = 1;
+        for (LocalDate date : dates) {
+            Subscription subscription = subscription(id++, "Service " + date, "5.00", BillingCycle.MONTHLY,
+                    Currency.EUR, date, false);
+            mine.add(membership(USERNAME, subscription, MembershipRole.OWNER));
+        }
+        stubMemberships(mine, mine);
+    }
+
+    private void givenUserIn(ZoneId zone) {
+        User user = new User();
+        user.setUsername(USERNAME);
+        user.setTimeZone(zone);
+        when(userRepository.findByUsername(USERNAME)).thenReturn(Optional.of(user));
     }
 
     private void stubMemberships(
@@ -219,7 +269,6 @@ class DashboardServiceTest {
         ServiceProvider service = ServiceProvider.catalog(name, new Category("Entertainment"));
         Subscription subscription = new Subscription(
                 service,
-                LocalDate.now().minusMonths(1),
                 new BigDecimal(price),
                 cycle,
                 nextPayment,

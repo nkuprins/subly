@@ -9,6 +9,7 @@ import com.app.subly.dto.subscription.SubscriptionResponse;
 import com.app.subly.exceptions.subscription.CatalogServiceReadOnlyException;
 import com.app.subly.exceptions.subscription.CategoryNotFoundException;
 import com.app.subly.exceptions.subscription.CatalogServiceNotFoundException;
+import com.app.subly.exceptions.subscription.PaymentDateInPastException;
 import com.app.subly.exceptions.subscription.SubscriptionAccessDeniedException;
 import com.app.subly.exceptions.subscription.SubscriptionNotFoundException;
 import com.app.subly.models.subscription.Category;
@@ -28,7 +29,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
+import java.time.Clock;
 import java.util.List;
 
 @Service
@@ -40,10 +41,12 @@ public class SubscriptionService {
     private final ServiceProviderRepository serviceProviderRepository;
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
+    private final Clock clock;
 
     @Transactional
     public SubscriptionResponse create(String username, CreateSubscriptionRequest request) {
         User owner = findUser(username);
+        requireNotInPast(owner, request);
         ServiceProvider service = findCatalogService(request.serviceId());
         return subscribe(owner, service, request);
     }
@@ -51,6 +54,7 @@ public class SubscriptionService {
     @Transactional
     public SubscriptionResponse createCustom(String username, CreateCustomSubscriptionRequest request) {
         User owner = findUser(username);
+        requireNotInPast(owner, request);
         Category category = findCategory(request.categoryId());
         ServiceProvider service = serviceProviderRepository.save(
                 ServiceProvider.custom(request.name().strip(), category, owner));
@@ -69,6 +73,7 @@ public class SubscriptionService {
     @Transactional
     public SubscriptionResponse update(String username, long subscriptionId, UpdateSubscriptionRequest request) {
         Subscription subscription = findOwnedSubscription(username, subscriptionId);
+        requireNotInPast(findUser(username), request);
         applyPaymentDetails(subscription, request);
         return SubscriptionResponse.from(subscription);
     }
@@ -81,6 +86,7 @@ public class SubscriptionService {
         if (service.getServiceType() != ServiceType.CUSTOM) {
             throw new CatalogServiceReadOnlyException(service.getName());
         }
+        requireNotInPast(findUser(username), request);
         Category category = findCategory(request.categoryId());
         service.setName(request.name().strip());
         service.setCategory(category);
@@ -101,11 +107,8 @@ public class SubscriptionService {
     }
 
     private SubscriptionResponse subscribe(User owner, ServiceProvider service, PaymentDetails request) {
-        // Placeholder: the form has no start date yet, so the subscription starts on the day it is added.
-        LocalDate startedAt = LocalDate.now();
         Subscription subscription = new Subscription(
                 service,
-                startedAt,
                 request.price(),
                 request.billingCycle(),
                 request.nextPaymentDate(),
@@ -142,10 +145,16 @@ public class SubscriptionService {
                 .orElseThrow(() -> new CategoryNotFoundException(categoryId));
     }
 
+    private void requireNotInPast(User user, PaymentDetails request) {
+        if (request.nextPaymentDate().isBefore(user.today(clock))) {
+            throw new PaymentDateInPastException(request.nextPaymentDate());
+        }
+    }
+
     private static void applyPaymentDetails(Subscription subscription, PaymentDetails request) {
         subscription.setPrice(request.price());
         subscription.setBillingCycle(request.billingCycle());
-        subscription.setNextPaymentDate(request.nextPaymentDate());
+        subscription.reschedule(request.nextPaymentDate());
         subscription.setFreeTrial(request.freeTrial());
     }
 }
