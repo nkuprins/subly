@@ -67,7 +67,7 @@ class DashboardControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].subscriptionId").value(5))
-                .andExpect(jsonPath("$[0].serviceName").value("Netflix"))
+                .andExpect(jsonPath("$[0].providerName").value("Netflix"))
                 .andExpect(jsonPath("$[0].amount").value(9.99))
                 .andExpect(jsonPath("$[0].currency").value("USD"))
                 .andExpect(jsonPath("$[0].nextPaymentDate").value(date.toString()));

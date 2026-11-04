@@ -8,6 +8,6 @@ import java.util.Optional;
 
 public interface SubscriptionRepository extends JpaRepository<Subscription, Long> {
 
-    @EntityGraph(attributePaths = {"service", "service.category"})
-    Optional<Subscription> findWithServiceById(Long id);
+    @EntityGraph(attributePaths = {"provider", "provider.category"})
+    Optional<Subscription> findWithProviderById(Long id);
 }

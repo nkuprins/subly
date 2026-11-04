@@ -13,11 +13,11 @@ public interface SubscriptionMembershipRepository extends JpaRepository<Subscrip
 
     boolean existsBySubscriptionIdAndUserUsernameAndRole(Long subscriptionId, String username, MembershipRole role);
 
-    @EntityGraph(attributePaths = "subscription.service.category")
+    @EntityGraph(attributePaths = "subscription.provider.category")
     List<SubscriptionMembership> findByUserUsernameAndRoleOrderBySubscriptionNextPaymentDate(
             String username, MembershipRole role);
 
-    @EntityGraph(attributePaths = {"subscription", "subscription.service"})
+    @EntityGraph(attributePaths = {"subscription", "subscription.provider"})
     List<SubscriptionMembership> findByUser_UsernameAndSubscription_StatusOrderBySubscription_NextPaymentDateAsc(
             String username,
             SubscriptionStatus status);

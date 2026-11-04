@@ -91,7 +91,7 @@ public class DashboardService {
 
                     return new UpcomingPaymentDto(
                             subscription.getId(),
-                            subscription.getService().getName(),
+                            subscription.getProvider().getName(),
                             share.amount(),
                             subscription.getCurrency(),
                             subscription.getNextPaymentDate());}).toList();

@@ -7,7 +7,7 @@ import com.app.subly.models.subscription.BillingCycle;
 import com.app.subly.models.subscription.Category;
 import com.app.subly.models.subscription.Currency;
 import com.app.subly.models.subscription.MembershipRole;
-import com.app.subly.models.subscription.ServiceProvider;
+import com.app.subly.models.subscription.SubscriptionProvider;
 import com.app.subly.models.subscription.Subscription;
 import com.app.subly.models.subscription.SubscriptionMembership;
 import com.app.subly.models.subscription.SubscriptionStatus;
@@ -164,9 +164,9 @@ class DashboardServiceTest {
         List<UpcomingPaymentDto> result = dashboardService.getUpcomingPayments(USERNAME);
 
         assertEquals(2, result.size());
-        assertEquals("Today", result.get(0).serviceName());
+        assertEquals("Today", result.get(0).providerName());
         assertEquals(today, result.get(0).nextPaymentDate());
-        assertEquals("Thirty", result.get(1).serviceName());
+        assertEquals("Thirty", result.get(1).providerName());
         assertEquals(today.plusDays(30), result.get(1).nextPaymentDate());
     }
 
@@ -216,7 +216,7 @@ class DashboardServiceTest {
             LocalDate nextPayment,
             boolean trial
     ) {
-        ServiceProvider service = ServiceProvider.catalog(name, new Category("Entertainment"));
+        SubscriptionProvider service = SubscriptionProvider.catalog(name, new Category("Entertainment"));
         Subscription subscription = new Subscription(
                 service,
                 LocalDate.now().minusMonths(1),

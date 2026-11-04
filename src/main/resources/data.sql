@@ -16,7 +16,7 @@ INSERT IGNORE INTO users (id, username, password_hash, email, role) VALUES
     (5, 'dave',  '$2a$10$G31NTfu5/gcQEbSRD0r6GucCJa6lccHZ7iDOfJQLeE2O96mBZpIiu', 'dave@example.com',  'USER'),
     (6, 'erin',  '$2a$10$G31NTfu5/gcQEbSRD0r6GucCJa6lccHZ7iDOfJQLeE2O96mBZpIiu', 'erin@example.com',  'USER');
 
-INSERT IGNORE INTO subscription_services (id, name, category_id, created_by, service_type) VALUES
+INSERT IGNORE INTO subscription_providers (id, name, category_id, created_by, provider_type) VALUES
     (1,  'Netflix',              1, NULL, 'CATALOG'),
     (2,  'Disney+',              1, NULL, 'CATALOG'),
     (3,  'HBO Max',              1, NULL, 'CATALOG'),
@@ -33,7 +33,7 @@ INSERT IGNORE INTO subscription_services (id, name, category_id, created_by, ser
 
 -- Dates are relative to today, so the dashboard looks the same on any day.
 INSERT IGNORE INTO subscriptions
-    (id, service_id, price, billing_cycle, next_payment_date, subscription_started_at,
+    (id, provider_id, price, billing_cycle, next_payment_date, subscription_started_at,
      free_trial, status, cancelled_at, currency, is_sharable, max_participants) VALUES
     (1,  1,  17.99,  'MONTHLY', CURDATE() + INTERVAL 3 DAY,  CURDATE() + INTERVAL 3 DAY - INTERVAL 8 MONTH,   FALSE, 'ACTIVE',    NULL,                       'EUR', TRUE,  4),
     (2,  5,  19.99,  'MONTHLY', CURDATE() + INTERVAL 12 DAY, CURDATE() + INTERVAL 12 DAY - INTERVAL 5 MONTH,  FALSE, 'ACTIVE',    NULL,                       'EUR', TRUE,  6),

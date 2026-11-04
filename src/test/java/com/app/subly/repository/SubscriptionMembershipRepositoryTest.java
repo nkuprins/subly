@@ -5,7 +5,7 @@ import com.app.subly.models.UserRole;
 import com.app.subly.models.subscription.BillingCycle;
 import com.app.subly.models.subscription.Category;
 import com.app.subly.models.subscription.MembershipRole;
-import com.app.subly.models.subscription.ServiceProvider;
+import com.app.subly.models.subscription.SubscriptionProvider;
 import com.app.subly.models.subscription.Subscription;
 import com.app.subly.models.subscription.SubscriptionMembership;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,9 +46,9 @@ class SubscriptionMembershipRepositoryTest {
         User member = persistUser(MEMBER);
         persistUser(STRANGER);
         Category gym = entityManager.persist(new Category("Test gym"));
-        ServiceProvider service = entityManager.persist(ServiceProvider.custom("My gym", gym, owner));
+        SubscriptionProvider provider = entityManager.persist(SubscriptionProvider.custom("My gym", gym, owner));
         LocalDate today = LocalDate.now();
-        subscription = entityManager.persist(new Subscription(service, today, new BigDecimal("35.00"),
+        subscription = entityManager.persist(new Subscription(provider, today, new BigDecimal("35.00"),
                 BillingCycle.MONTHLY, today.plusDays(10), false));
         ownerRow = entityManager.persist(new SubscriptionMembership(owner, subscription, MembershipRole.OWNER));
         memberRow = entityManager.persist(new SubscriptionMembership(member, subscription, MembershipRole.MEMBER));

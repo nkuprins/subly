@@ -21,7 +21,7 @@ class ListSubscriptionControllerTest extends AbstractSubscriptionControllerTest 
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].id").value(SUBSCRIPTION_ID))
-                .andExpect(jsonPath("$[0].serviceName").value(CUSTOM_NAME))
+                .andExpect(jsonPath("$[0].providerName").value(CUSTOM_NAME))
                 .andExpect(jsonPath("$[0].categoryName").value("Gym"))
                 .andExpect(jsonPath("$[0].price").value(35.00))
                 .andExpect(jsonPath("$[0].billingCycle").value("MONTHLY"))

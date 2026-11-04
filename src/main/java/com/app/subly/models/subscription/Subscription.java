@@ -24,8 +24,8 @@ public class Subscription {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "service_id", nullable = false)
-    private ServiceProvider service;
+    @JoinColumn(name = "provider_id", nullable = false)
+    private SubscriptionProvider provider;
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
@@ -66,9 +66,9 @@ public class Subscription {
     @Column(nullable = false)
     private int maxParticipants = 1;
 
-    public Subscription(ServiceProvider service, LocalDate subscriptionStartedAt, BigDecimal price,
+    public Subscription(SubscriptionProvider provider, LocalDate subscriptionStartedAt, BigDecimal price,
                         BillingCycle billingCycle, LocalDate nextPaymentDate, boolean freeTrial) {
-        this.service = service;
+        this.provider = provider;
         this.subscriptionStartedAt = subscriptionStartedAt;
         this.price = price;
         this.billingCycle = billingCycle;

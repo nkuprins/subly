@@ -16,23 +16,23 @@ import static org.mockito.Mockito.never;
 class DeleteSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
 
     @Test
-    void deletesSubscriptionAndItsCustomService() {
+    void deletesSubscriptionAndItsCustomProvider() {
         Subscription subscription = givenOwnedCustomSubscription();
 
         subscriptionService.delete(OWNER, SUBSCRIPTION_ID);
 
         then(subscriptionRepository).should().delete(subscription);
-        then(serviceProviderRepository).should().delete(subscription.getService());
+        then(providerRepository).should().delete(subscription.getProvider());
     }
 
     @Test
-    void deletesSubscriptionButKeepsCatalogService() {
+    void deletesSubscriptionButKeepsCatalogProvider() {
         Subscription subscription = givenOwnedCatalogSubscription();
 
         subscriptionService.delete(OWNER, SUBSCRIPTION_ID);
 
         then(subscriptionRepository).should().delete(subscription);
-        then(serviceProviderRepository).shouldHaveNoInteractions();
+        then(providerRepository).shouldHaveNoInteractions();
     }
 
     @Test
@@ -42,16 +42,16 @@ class DeleteSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
         assertThatThrownBy(() -> subscriptionService.delete(STRANGER, SUBSCRIPTION_ID))
                 .isInstanceOf(SubscriptionAccessDeniedException.class);
         then(subscriptionRepository).should(never()).delete(any());
-        then(serviceProviderRepository).shouldHaveNoInteractions();
+        then(providerRepository).shouldHaveNoInteractions();
     }
 
     @Test
     void rejectsUnknownSubscription() {
-        given(subscriptionRepository.findWithServiceById(SUBSCRIPTION_ID)).willReturn(Optional.empty());
+        given(subscriptionRepository.findWithProviderById(SUBSCRIPTION_ID)).willReturn(Optional.empty());
 
         assertThatThrownBy(() -> subscriptionService.delete(OWNER, SUBSCRIPTION_ID))
                 .isInstanceOf(SubscriptionNotFoundException.class);
         then(subscriptionRepository).should(never()).delete(any());
-        then(serviceProviderRepository).shouldHaveNoInteractions();
+        then(providerRepository).shouldHaveNoInteractions();
     }
 }

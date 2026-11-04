@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.BDDMockito.then;
 
-class ServiceFieldValidationControllerTest extends AbstractSubscriptionControllerTest {
+class ProviderFieldValidationControllerTest extends AbstractSubscriptionControllerTest {
 
     @ParameterizedTest(name = "{0}: {1}")
     @MethodSource("invalidServiceFields")
@@ -22,7 +22,7 @@ class ServiceFieldValidationControllerTest extends AbstractSubscriptionControlle
 
     static Stream<Arguments> invalidServiceFields() {
         Stream<Arguments> catalog = Stream.of(
-                arguments(BodyEndpoint.CREATE, "missing service id", BodyEndpoint.CREATE.bodyWithout("serviceId")));
+                arguments(BodyEndpoint.CREATE, "missing provider id", BodyEndpoint.CREATE.bodyWithout("providerId")));
         Stream<Arguments> custom = Stream.of(BodyEndpoint.CREATE_CUSTOM, BodyEndpoint.UPDATE_CUSTOM)
                 .flatMap(endpoint -> Stream.of(
                         arguments(endpoint, "blank name", endpoint.bodyWith("name", "   ")),

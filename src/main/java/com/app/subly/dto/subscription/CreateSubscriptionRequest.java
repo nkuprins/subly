@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public record CreateSubscriptionRequest(
-        @NotNull Long serviceId,
+        @NotNull Long providerId,
         @NotNull @Positive @Digits(integer = 8, fraction = 2) BigDecimal price,
         @NotNull BillingCycle billingCycle,
         @NotNull @FutureOrPresent LocalDate nextPaymentDate,

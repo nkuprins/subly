@@ -5,10 +5,10 @@ import com.app.subly.models.User;
 import com.app.subly.models.subscription.BillingCycle;
 import com.app.subly.models.subscription.Category;
 import com.app.subly.models.subscription.MembershipRole;
-import com.app.subly.models.subscription.ServiceProvider;
+import com.app.subly.models.subscription.SubscriptionProvider;
 import com.app.subly.models.subscription.Subscription;
 import com.app.subly.repository.CategoryRepository;
-import com.app.subly.repository.ServiceProviderRepository;
+import com.app.subly.repository.SubscriptionProviderRepository;
 import com.app.subly.repository.SubscriptionMembershipRepository;
 import com.app.subly.repository.SubscriptionRepository;
 import com.app.subly.repository.UserRepository;
@@ -29,7 +29,7 @@ import static org.mockito.BDDMockito.given;
 abstract class AbstractSubscriptionServiceTest {
 
     static final long SUBSCRIPTION_ID = 7L;
-    static final long SERVICE_ID = 1L;
+    static final long PROVIDER_ID = 1L;
     static final long GYM_ID = 4L;
     static final String CUSTOM_NAME = "My gym";
     static final String CATALOG_NAME = "Test catalog";
@@ -39,7 +39,8 @@ abstract class AbstractSubscriptionServiceTest {
 
     @Mock SubscriptionRepository subscriptionRepository;
     @Mock SubscriptionMembershipRepository membershipRepository;
-    @Mock ServiceProviderRepository serviceProviderRepository;
+    @Mock
+    SubscriptionProviderRepository providerRepository;
     @Mock CategoryRepository categoryRepository;
     @Mock UserRepository userRepository;
 
@@ -58,16 +59,16 @@ abstract class AbstractSubscriptionServiceTest {
     }
 
     Subscription givenOwnedCustomSubscription() {
-        return givenOwnedSubscription(customService());
+        return givenOwnedSubscription(customProvider());
     }
 
     Subscription givenOwnedCatalogSubscription() {
-        return givenOwnedSubscription(catalogService());
+        return givenOwnedSubscription(catalogProvider());
     }
 
     Subscription givenSubscriptionOwnedBySomeoneElse() {
-        Subscription subscription = subscription(customService());
-        given(subscriptionRepository.findWithServiceById(SUBSCRIPTION_ID)).willReturn(Optional.of(subscription));
+        Subscription subscription = subscription(customProvider());
+        given(subscriptionRepository.findWithProviderById(SUBSCRIPTION_ID)).willReturn(Optional.of(subscription));
         given(membershipRepository.existsBySubscriptionIdAndUserUsernameAndRole(
                 SUBSCRIPTION_ID, STRANGER, MembershipRole.OWNER)).willReturn(false);
         return subscription;
@@ -80,22 +81,22 @@ abstract class AbstractSubscriptionServiceTest {
         assertThat(subscription.isFreeTrial()).isEqualTo(request.freeTrial());
     }
 
-    ServiceProvider catalogService() {
-        return ServiceProvider.catalog(CATALOG_NAME, gym);
+    SubscriptionProvider catalogProvider() {
+        return SubscriptionProvider.catalog(CATALOG_NAME, gym);
     }
 
-    ServiceProvider customService() {
-        return ServiceProvider.custom(CUSTOM_NAME, gym, owner);
+    SubscriptionProvider customProvider() {
+        return SubscriptionProvider.custom(CUSTOM_NAME, gym, owner);
     }
 
-    Subscription subscription(ServiceProvider serviceProvider) {
-        return new Subscription(serviceProvider, today, ORIGINAL_PRICE, BillingCycle.MONTHLY,
+    Subscription subscription(SubscriptionProvider provider) {
+        return new Subscription(provider, today, ORIGINAL_PRICE, BillingCycle.MONTHLY,
                 today.plusDays(10), false);
     }
 
-    private Subscription givenOwnedSubscription(ServiceProvider serviceProvider) {
-        Subscription subscription = subscription(serviceProvider);
-        given(subscriptionRepository.findWithServiceById(SUBSCRIPTION_ID)).willReturn(Optional.of(subscription));
+    private Subscription givenOwnedSubscription(SubscriptionProvider provider) {
+        Subscription subscription = subscription(provider);
+        given(subscriptionRepository.findWithProviderById(SUBSCRIPTION_ID)).willReturn(Optional.of(subscription));
         given(membershipRepository.existsBySubscriptionIdAndUserUsernameAndRole(
                 SUBSCRIPTION_ID, OWNER, MembershipRole.OWNER)).willReturn(true);
         return subscription;

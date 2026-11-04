@@ -15,7 +15,7 @@ class ListSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
 
     @Test
     void returnsResponseForEachOwnedSubscription() {
-        Subscription subscription = subscription(customService());
+        Subscription subscription = subscription(customProvider());
         given(membershipRepository.findByUserUsernameAndRoleOrderBySubscriptionNextPaymentDate(
                 OWNER, MembershipRole.OWNER)).willReturn(List.of(SubscriptionMembership.owner(owner, subscription)));
 

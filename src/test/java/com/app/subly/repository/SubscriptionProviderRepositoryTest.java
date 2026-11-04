@@ -3,8 +3,8 @@ package com.app.subly.repository;
 import com.app.subly.models.User;
 import com.app.subly.models.UserRole;
 import com.app.subly.models.subscription.Category;
-import com.app.subly.models.subscription.ServiceProvider;
-import com.app.subly.models.subscription.ServiceType;
+import com.app.subly.models.subscription.SubscriptionProvider;
+import com.app.subly.models.subscription.ProviderType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,9 +18,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ActiveProfiles("test")
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-class ServiceProviderRepositoryTest {
+class SubscriptionProviderRepositoryTest {
 
-    @Autowired ServiceProviderRepository serviceProviderRepository;
+    @Autowired
+    SubscriptionProviderRepository providerRepository;
     @Autowired TestEntityManager entityManager;
 
     Category gym;
@@ -31,16 +32,16 @@ class ServiceProviderRepositoryTest {
     }
 
     @Test
-    void findByIdAndServiceTypeReturnsCatalogService() {
-        ServiceProvider catalog = entityManager.persistFlushFind(ServiceProvider.catalog("Test catalog", gym));
+    void findByIdAndProviderTypeReturnsCatalogProvider() {
+        SubscriptionProvider catalog = entityManager.persistFlushFind(SubscriptionProvider.catalog("Test catalog", gym));
 
-        assertThat(serviceProviderRepository.findByIdAndServiceType(catalog.getId(), ServiceType.CATALOG))
-                .map(ServiceProvider::getName)
+        assertThat(providerRepository.findByIdAndProviderType(catalog.getId(), ProviderType.CATALOG))
+                .map(SubscriptionProvider::getName)
                 .contains("Test catalog");
     }
 
     @Test
-    void findByIdAndServiceTypeSkipsCustomServiceWhenAskedForCatalog() {
+    void findByIdAndProviderTypeSkipsCustomProviderWhenAskedForCatalog() {
         User creator = new User();
         creator.setUsername("test-owner");
         creator.setName("Test Owner");
@@ -48,9 +49,9 @@ class ServiceProviderRepositoryTest {
         creator.setPasswordHash("not-a-real-hash");
         creator.setRole(UserRole.USER);
         entityManager.persist(creator);
-        ServiceProvider custom = entityManager.persistFlushFind(ServiceProvider.custom("My gym", gym, creator));
+        SubscriptionProvider custom = entityManager.persistFlushFind(SubscriptionProvider.custom("My gym", gym, creator));
 
-        assertThat(serviceProviderRepository.findByIdAndServiceType(custom.getId(), ServiceType.CATALOG))
+        assertThat(providerRepository.findByIdAndProviderType(custom.getId(), ProviderType.CATALOG))
                 .isEmpty();
     }
 }
