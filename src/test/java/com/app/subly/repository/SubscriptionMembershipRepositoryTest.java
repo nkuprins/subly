@@ -80,6 +80,7 @@ class SubscriptionMembershipRepositoryTest {
     private User persistUser(String username) {
         User user = new User();
         user.setUsername(username);
+        user.setName(username);
         user.setEmail(username + "@test.local");
         user.setPasswordHash("not-a-real-hash");
         user.setRole(UserRole.USER);

@@ -41,6 +41,7 @@ class ServiceProviderRepositoryTest {
     void findByIdAndServiceTypeSkipsCustomServiceWhenAskedForCatalog() {
         User creator = new User();
         creator.setUsername("test-owner");
+        creator.setName("Test Owner");
         creator.setEmail("test-owner@test.local");
         creator.setPasswordHash("not-a-real-hash");
         creator.setRole(UserRole.USER);
