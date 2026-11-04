@@ -22,7 +22,12 @@ public class SecurityConfig {
                     authorize.requestMatchers("/users/delete/me").authenticated()
                             .requestMatchers("/users/update/password/me").authenticated()
                             .requestMatchers("/users/update/info/me").authenticated()
-                            .anyRequest().permitAll();
+                            .requestMatchers("/api/subscriptions/**",
+                            "/api/dashboard/**",
+                            "/dashboard",
+                            "/")
+                            .authenticated();
+                    authorize.anyRequest().permitAll();
                 }).httpBasic(Customizer.withDefaults())
                 .formLogin(Customizer.withDefaults());
 
