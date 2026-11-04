@@ -24,12 +24,17 @@ public class PageController {
     }
     @PostMapping("/register")
     public String createAccount(@RequestParam String username,
+                                @RequestParam String name,
                                 @RequestParam String email,
                                 @RequestParam String password,
                                 @RequestParam String confirmPassword,
                                 Model model) {
-        if (username.isBlank() || email.isBlank() || password.isBlank()) {
+        if (username.isBlank() || name.isBlank() || email.isBlank() || password.isBlank()) {
             model.addAttribute("registrationError", "All fields are required");
+            return "register";
+        }
+        if (name.length() > 100) {
+            model.addAttribute("registrationError", "Name must be 100 characters or fewer");
             return "register";
         }
         if (password.length() < 15 || password.length() > 64) {
@@ -41,7 +46,7 @@ public class PageController {
             return "register";
         }
         try {
-            userService.addNewUser(username, password, email);
+            userService.addNewUser(username, name, password, email);
             return "redirect:/login?registered";
         } catch (UserAlreadyExistsException exception) {
             model.addAttribute("registrationError", exception.getMessage());
