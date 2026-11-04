@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.startsWith;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -30,7 +31,7 @@ class UpdateSubscriptionControllerTest extends AbstractSubscriptionControllerTes
                     new BigDecimal("35.00"), BillingCycle.MONTHLY, NEXT_PAYMENT, false);
             given(service.update(USERNAME, SUBSCRIPTION_ID, request)).willReturn(gymResponse());
 
-            send(Endpoint.UPDATE, Endpoint.UPDATE.validBody())
+            send(BodyEndpoint.UPDATE, BodyEndpoint.UPDATE.validBody())
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.id").value(SUBSCRIPTION_ID));
         }
@@ -40,8 +41,9 @@ class UpdateSubscriptionControllerTest extends AbstractSubscriptionControllerTes
             given(service.update(anyString(), anyLong(), any()))
                     .willThrow(new SubscriptionNotFoundException(SUBSCRIPTION_ID));
 
-            send(Endpoint.UPDATE, Endpoint.UPDATE.validBody())
-                    .andExpect(status().isNotFound());
+            send(BodyEndpoint.UPDATE, BodyEndpoint.UPDATE.validBody())
+                    .andExpect(status().isNotFound())
+                    .andExpect(jsonPath("$.detail").value(containsString("does not exist")));
         }
 
         @Test
@@ -49,7 +51,7 @@ class UpdateSubscriptionControllerTest extends AbstractSubscriptionControllerTes
             given(service.update(anyString(), anyLong(), any()))
                     .willThrow(new SubscriptionAccessDeniedException(SUBSCRIPTION_ID));
 
-            send(Endpoint.UPDATE, Endpoint.UPDATE.validBody())
+            send(BodyEndpoint.UPDATE, BodyEndpoint.UPDATE.validBody())
                     .andExpect(status().isForbidden())
                     .andExpect(jsonPath("$.detail").value(startsWith("Access denied")));
         }
@@ -64,7 +66,7 @@ class UpdateSubscriptionControllerTest extends AbstractSubscriptionControllerTes
                     CUSTOM_NAME, CATEGORY_ID, new BigDecimal("35.00"), BillingCycle.MONTHLY, NEXT_PAYMENT, false);
             given(service.updateCustom(USERNAME, SUBSCRIPTION_ID, request)).willReturn(gymResponse());
 
-            send(Endpoint.UPDATE_CUSTOM, Endpoint.UPDATE_CUSTOM.validBody())
+            send(BodyEndpoint.UPDATE_CUSTOM, BodyEndpoint.UPDATE_CUSTOM.validBody())
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.id").value(SUBSCRIPTION_ID));
         }
@@ -74,7 +76,7 @@ class UpdateSubscriptionControllerTest extends AbstractSubscriptionControllerTes
             given(service.updateCustom(anyString(), anyLong(), any()))
                     .willThrow(new CatalogServiceReadOnlyException("Netflix"));
 
-            send(Endpoint.UPDATE_CUSTOM, Endpoint.UPDATE_CUSTOM.validBody())
+            send(BodyEndpoint.UPDATE_CUSTOM, BodyEndpoint.UPDATE_CUSTOM.validBody())
                     .andExpect(status().isBadRequest());
         }
     }

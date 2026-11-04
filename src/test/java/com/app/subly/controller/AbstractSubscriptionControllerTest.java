@@ -50,7 +50,7 @@ abstract class AbstractSubscriptionControllerTest {
     @MockitoBean
     SubscriptionService service;
 
-    ResultActions send(Endpoint endpoint, String body) throws Exception {
+    ResultActions send(BodyEndpoint endpoint, String body) throws Exception {
         return mockMvc.perform(endpoint.request().contentType(APPLICATION_JSON).content(body));
     }
 
@@ -66,7 +66,7 @@ abstract class AbstractSubscriptionControllerTest {
                 new BigDecimal("35.00"), Currency.EUR, BillingCycle.MONTHLY, NEXT_PAYMENT, false);
     }
 
-    enum Endpoint {
+    enum BodyEndpoint {
         CREATE(HttpMethod.POST, URL),
         CREATE_CUSTOM(HttpMethod.POST, URL + "/custom"),
         UPDATE(HttpMethod.PUT, URL + "/" + SUBSCRIPTION_ID),
@@ -75,7 +75,7 @@ abstract class AbstractSubscriptionControllerTest {
         private final HttpMethod method;
         private final String path;
 
-        Endpoint(HttpMethod method, String path) {
+        BodyEndpoint(HttpMethod method, String path) {
             this.method = method;
             this.path = path;
         }

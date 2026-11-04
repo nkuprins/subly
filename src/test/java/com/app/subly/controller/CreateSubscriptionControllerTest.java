@@ -27,7 +27,7 @@ class CreateSubscriptionControllerTest extends AbstractSubscriptionControllerTes
                     SERVICE_ID, new BigDecimal("35.00"), BillingCycle.MONTHLY, NEXT_PAYMENT, false);
             given(service.create(USERNAME, request)).willReturn(gymResponse());
 
-            send(Endpoint.CREATE, Endpoint.CREATE.validBody())
+            send(BodyEndpoint.CREATE, BodyEndpoint.CREATE.validBody())
                     .andExpect(status().isCreated())
                     .andExpect(jsonPath("$.id").value(SUBSCRIPTION_ID));
         }
@@ -36,7 +36,7 @@ class CreateSubscriptionControllerTest extends AbstractSubscriptionControllerTes
         void returns400ForUnknownService() throws Exception {
             given(service.create(anyString(), any())).willThrow(new CatalogServiceNotFoundException(99L));
 
-            send(Endpoint.CREATE, Endpoint.CREATE.validBody())
+            send(BodyEndpoint.CREATE, BodyEndpoint.CREATE.validBody())
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.detail").value("Catalog service 99 does not exist"));
         }
@@ -51,7 +51,7 @@ class CreateSubscriptionControllerTest extends AbstractSubscriptionControllerTes
                     CUSTOM_NAME, CATEGORY_ID, new BigDecimal("35.00"), BillingCycle.MONTHLY, NEXT_PAYMENT, false);
             given(service.createCustom(USERNAME, request)).willReturn(gymResponse());
 
-            send(Endpoint.CREATE_CUSTOM, Endpoint.CREATE_CUSTOM.validBody())
+            send(BodyEndpoint.CREATE_CUSTOM, BodyEndpoint.CREATE_CUSTOM.validBody())
                     .andExpect(status().isCreated())
                     .andExpect(jsonPath("$.id").value(SUBSCRIPTION_ID))
                     .andExpect(jsonPath("$.serviceName").value(CUSTOM_NAME))
@@ -63,7 +63,7 @@ class CreateSubscriptionControllerTest extends AbstractSubscriptionControllerTes
         void returns400ForUnknownCategory() throws Exception {
             given(service.createCustom(anyString(), any())).willThrow(new CategoryNotFoundException(99L));
 
-            send(Endpoint.CREATE_CUSTOM, Endpoint.CREATE_CUSTOM.validBody())
+            send(BodyEndpoint.CREATE_CUSTOM, BodyEndpoint.CREATE_CUSTOM.validBody())
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.detail").value("Category 99 does not exist"));
         }
