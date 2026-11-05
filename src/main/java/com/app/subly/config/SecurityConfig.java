@@ -16,16 +16,25 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/login", "/register", "/users/register", "/css/**", "/favicon.ico")
-                        .permitAll()
-                        .anyRequest().authenticated())
-                .httpBasic(Customizer.withDefaults())
-                .formLogin(form -> form
-                        .loginPage("/login")
-                        .permitAll());
+        http.csrf((csrf)
+                        -> csrf.ignoringRequestMatchers(
+                                "/api/**", "/users/delete/me", "/", "/users/logout/me" )).
+                authorizeHttpRequests((authorize) -> {
+                    authorize.requestMatchers("/users/register").permitAll()
+                            .requestMatchers("/users/**").authenticated()
+                            .requestMatchers("/api/category/listAll").authenticated()
+                            .requestMatchers("/api/category/**").hasRole("ADMIN")
+                            .requestMatchers("/api/subscriptions",
+                                    "/api/subscriptions/**",
+                                    "/api/dashboard/**",
+                                    "/dashboard",
+                                    "/",
+                                    "/api/invitations",
+                                    "/api/invitations/**")
+                            .authenticated();
+                    authorize.anyRequest().permitAll();
+                }).httpBasic(Customizer.withDefaults())
+                .formLogin((form) -> form.loginPage("/login").permitAll());
 
         return http.build();
     }

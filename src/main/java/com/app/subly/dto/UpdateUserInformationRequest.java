@@ -5,6 +5,8 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 
+import java.time.ZoneId;
+
 @Getter
 public class UpdateUserInformationRequest {
 
@@ -19,6 +21,8 @@ public class UpdateUserInformationRequest {
     private String newName;
     private boolean nameProvided = false;
 
+    private ZoneId newTimeZone;
+    private boolean timeZoneProvided = false;
 
     @JsonSetter("newUsername")
     public void setNewUsername(String username){
@@ -36,6 +40,12 @@ public class UpdateUserInformationRequest {
     public void setNewName(String name){
         this.newName = name;
         this.nameProvided = true;
+    }
+
+    @JsonSetter("newTimeZone")
+    public void setNewTimeZone(ZoneId timeZone){
+        this.newTimeZone = timeZone;
+        this.timeZoneProvided = true;
     }
 
 }

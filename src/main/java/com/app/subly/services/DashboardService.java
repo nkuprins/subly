@@ -9,14 +9,18 @@ import com.app.subly.models.subscription.Subscription;
 import com.app.subly.models.subscription.SubscriptionMembership;
 import com.app.subly.models.subscription.SubscriptionStatus;
 import com.app.subly.repository.SubscriptionMembershipRepository;
+import com.app.subly.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Clock;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +36,8 @@ public class DashboardService {
     private static final int UPCOMING_DAYS = 30;
 
     private final SubscriptionMembershipRepository membershipRepository;
+    private final UserRepository userRepository;
+    private final Clock clock;
 
     @Transactional(readOnly = true)
     public DashboardSummaryDto getSummary(String username) {
@@ -73,7 +79,9 @@ public class DashboardService {
     @Transactional(readOnly = true)
     public List<UpcomingPaymentDto> getUpcomingPayments(String username) {
 
-        LocalDate today = LocalDate.now();
+        LocalDate today = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User " + username + " does not exist"))
+                .today(clock);
         LocalDate endDate = today.plusDays(UPCOMING_DAYS);
 
         return loadSubscriptionShares(username)
@@ -94,7 +102,8 @@ public class DashboardService {
                             subscription.getService().getName(),
                             share.amount(),
                             subscription.getCurrency(),
-                            subscription.getNextPaymentDate());}).toList();
+                            subscription.getNextPaymentDate(),
+                            ChronoUnit.DAYS.between(today, subscription.getNextPaymentDate()));}).toList();
     }
 
     private List<SubscriptionShare> loadSubscriptionShares(String username){

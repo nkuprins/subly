@@ -6,12 +6,23 @@ import com.app.subly.models.subscription.SubscriptionStatus;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 public interface SubscriptionMembershipRepository extends JpaRepository<SubscriptionMembership, Long> {
 
-    boolean existsBySubscriptionIdAndUserUsernameAndRole(Long subscriptionId, String username, MembershipRole role);
+    boolean existsBySubscriptionIdAndUserId(Long subscriptionId, Long userId);
+
+    @EntityGraph(attributePaths = {"user", "subscription.service.category"})
+    Optional<SubscriptionMembership> findBySubscriptionIdAndRole(Long subscriptionId, MembershipRole role);
+
+    @EntityGraph(attributePaths = "user")
+    List<SubscriptionMembership> findBySubscriptionIdInAndRole(Collection<Long> subscriptionIds, MembershipRole role);
+
+    List<SubscriptionMembership> findBySubscription_IdIn(Collection<Long> subscriptionIds);
 
     @EntityGraph(attributePaths = "subscription.service.category")
     List<SubscriptionMembership> findByUserUsernameAndRoleOrderBySubscriptionNextPaymentDate(
@@ -19,9 +30,11 @@ public interface SubscriptionMembershipRepository extends JpaRepository<Subscrip
 
     @EntityGraph(attributePaths = {"subscription", "subscription.service"})
     List<SubscriptionMembership> findByUser_UsernameAndSubscription_StatusOrderBySubscription_NextPaymentDateAsc(
-            String username,
-            SubscriptionStatus status);
+            String username, SubscriptionStatus status);
 
-    List<SubscriptionMembership> findBySubscription_IdIn(
-            Collection<Long> subscriptionIds);
+    @EntityGraph(attributePaths = "subscription")
+    List<SubscriptionMembership> findByRoleAndSubscriptionStatusAndUserTimeZoneAndSubscriptionNextPaymentDateBefore(
+            MembershipRole role, SubscriptionStatus status, ZoneId timeZone, LocalDate date);
+
+    long countBySubscriptionId(Long subscriptionId);
 }

@@ -1,5 +1,6 @@
 package com.app.subly.services;
 
+import com.app.subly.models.subscription.MembershipRole;
 import com.app.subly.dto.subscription.SubscriptionResponse;
 import com.app.subly.dto.subscription.UpdateCustomSubscriptionRequest;
 import com.app.subly.dto.subscription.UpdateSubscriptionRequest;
@@ -33,6 +34,7 @@ class UpdateSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
         @Test
         void changesPaymentDetailsAndKeepsTheService() {
             Subscription subscription = givenOwnedCatalogSubscription();
+            givenOwnerExists();
             UpdateSubscriptionRequest request = updateRequest();
 
             SubscriptionResponse response = subscriptionService.update(OWNER, SUBSCRIPTION_ID, request);
@@ -54,7 +56,8 @@ class UpdateSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
 
         @Test
         void rejectsUnknownSubscription() {
-            given(subscriptionRepository.findWithServiceById(SUBSCRIPTION_ID)).willReturn(Optional.empty());
+            given(membershipRepository.findBySubscriptionIdAndRole(SUBSCRIPTION_ID, MembershipRole.OWNER))
+                    .willReturn(Optional.empty());
             UpdateSubscriptionRequest request = updateRequest();
 
             assertThatThrownBy(() -> subscriptionService.update(OWNER, SUBSCRIPTION_ID, request))
@@ -73,6 +76,7 @@ class UpdateSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
         @Test
         void changesStrippedNameCategoryAndPaymentDetails() {
             Subscription subscription = givenOwnedCustomSubscription();
+            givenOwnerExists();
             given(categoryRepository.findById(MUSIC_ID)).willReturn(Optional.of(music));
             UpdateCustomSubscriptionRequest request = updateCustomRequest();
 
@@ -98,6 +102,7 @@ class UpdateSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
         @Test
         void rejectsUnknownCategory() {
             Subscription subscription = givenOwnedCustomSubscription();
+            givenOwnerExists();
             given(categoryRepository.findById(MUSIC_ID)).willReturn(Optional.empty());
             UpdateCustomSubscriptionRequest request = updateCustomRequest();
 
@@ -119,7 +124,8 @@ class UpdateSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
 
         @Test
         void rejectsUnknownSubscription() {
-            given(subscriptionRepository.findWithServiceById(SUBSCRIPTION_ID)).willReturn(Optional.empty());
+            given(membershipRepository.findBySubscriptionIdAndRole(SUBSCRIPTION_ID, MembershipRole.OWNER))
+                    .willReturn(Optional.empty());
             UpdateCustomSubscriptionRequest request = updateCustomRequest();
 
             assertThatThrownBy(() -> subscriptionService.updateCustom(OWNER, SUBSCRIPTION_ID, request))

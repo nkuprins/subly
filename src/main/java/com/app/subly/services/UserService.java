@@ -12,6 +12,7 @@ import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.ZoneId;
 import java.util.List;
 
 
@@ -26,13 +27,13 @@ public class UserService {
         this.encoder = encoder;
     }
 
-    public void addNewUser(String username, String name, String password, String email) {
+    public void addNewUser(String username, String name, String password, String email, ZoneId timeZone) {
         // Adds a new user into db from raw data. Throws UserAlreadyExistsException if
         // user exists with this username or email. It is supposed that the length of the name is validated
         // before calling this method.
 
         try {
-            this.repository.save(this.createUserFromRawData(username, name, password, email));
+            this.repository.save(this.createUserFromRawData(username, name, password, email, timeZone));
         } catch (DataIntegrityViolationException exception) {
             throw new UserAlreadyExistsException("A user with the username or the email already exists");
         }
@@ -131,6 +132,13 @@ public class UserService {
                 user.setName(newUserInfo.getNewName());
             }
 
+            if(newUserInfo.isTimeZoneProvided()){
+                if(newUserInfo.getNewTimeZone() == null){
+                    throw new UserInfoUpdateException("You must provide a time zone");
+                }
+                user.setTimeZone(newUserInfo.getNewTimeZone());
+            }
+
             this.repository.flush();
         } catch(DataIntegrityViolationException ex) {
             throw new UserAlreadyExistsException("The user with provided email or username already exists");
@@ -144,13 +152,17 @@ public class UserService {
         ));
     }
 
-    private User createUserFromRawData(String username, String name, String password, String email) {
+    private User createUserFromRawData(String username, String name, String password, String email,
+                                       ZoneId timeZone) {
         User user = new User();
         user.setUsername(username);
         user.setName(name);
         user.setPasswordHash(encoder.encode(password));
         user.setEmail(email);
         user.setRole(UserRole.USER);
+        if (timeZone != null) {
+            user.setTimeZone(timeZone);
+        }
         return user;
     }
 

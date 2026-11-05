@@ -10,4 +10,5 @@ public record UpcomingPaymentDto(
         String serviceName,
         BigDecimal amount,
         Currency currency,
-        LocalDate nextPaymentDate) {}
+        LocalDate nextPaymentDate,
+        long daysLeft) {}

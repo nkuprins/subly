@@ -1,5 +1,6 @@
 package com.app.subly.services;
 
+import com.app.subly.models.subscription.SubscriptionMembership;
 import com.app.subly.dto.PaymentDetails;
 import com.app.subly.models.User;
 import com.app.subly.models.subscription.BillingCycle;
@@ -14,12 +15,14 @@ import com.app.subly.repository.SubscriptionRepository;
 import com.app.subly.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -43,7 +46,8 @@ abstract class AbstractSubscriptionServiceTest {
     @Mock CategoryRepository categoryRepository;
     @Mock UserRepository userRepository;
 
-    @InjectMocks SubscriptionService subscriptionService;
+    final Clock clock = Clock.fixed(Instant.parse("2026-11-04T16:00:00Z"), ZoneOffset.UTC);
+    SubscriptionService subscriptionService;
 
     LocalDate today;
     User owner;
@@ -51,10 +55,17 @@ abstract class AbstractSubscriptionServiceTest {
 
     @BeforeEach
     void setUp() {
-        today = LocalDate.now();
+        subscriptionService = new SubscriptionService(subscriptionRepository,
+                new SubscriptionAccess(membershipRepository), membershipRepository,
+                serviceProviderRepository, categoryRepository, userRepository, clock);
+        today = LocalDate.of(2026, 11, 4);
         owner = new User();
         owner.setUsername(OWNER);
         gym = new Category("Test gym");
+    }
+
+    void givenOwnerExists() {
+        given(userRepository.findByUsername(OWNER)).willReturn(Optional.of(owner));
     }
 
     Subscription givenOwnedCustomSubscription() {
@@ -67,9 +78,8 @@ abstract class AbstractSubscriptionServiceTest {
 
     Subscription givenSubscriptionOwnedBySomeoneElse() {
         Subscription subscription = subscription(customService());
-        given(subscriptionRepository.findWithServiceById(SUBSCRIPTION_ID)).willReturn(Optional.of(subscription));
-        given(membershipRepository.existsBySubscriptionIdAndUserUsernameAndRole(
-                SUBSCRIPTION_ID, STRANGER, MembershipRole.OWNER)).willReturn(false);
+        given(membershipRepository.findBySubscriptionIdAndRole(SUBSCRIPTION_ID, MembershipRole.OWNER))
+                .willReturn(Optional.of(SubscriptionMembership.owner(owner, subscription)));
         return subscription;
     }
 
@@ -77,6 +87,7 @@ abstract class AbstractSubscriptionServiceTest {
         assertThat(subscription.getPrice()).isEqualByComparingTo(request.price());
         assertThat(subscription.getBillingCycle()).isEqualTo(request.billingCycle());
         assertThat(subscription.getNextPaymentDate()).isEqualTo(request.nextPaymentDate());
+        assertThat(subscription.getBillingAnchorDate()).isEqualTo(request.nextPaymentDate());
         assertThat(subscription.isFreeTrial()).isEqualTo(request.freeTrial());
     }
 
@@ -89,15 +100,14 @@ abstract class AbstractSubscriptionServiceTest {
     }
 
     Subscription subscription(ServiceProvider serviceProvider) {
-        return new Subscription(serviceProvider, today, ORIGINAL_PRICE, BillingCycle.MONTHLY,
+        return new Subscription(serviceProvider, ORIGINAL_PRICE, BillingCycle.MONTHLY,
                 today.plusDays(10), false);
     }
 
     private Subscription givenOwnedSubscription(ServiceProvider serviceProvider) {
         Subscription subscription = subscription(serviceProvider);
-        given(subscriptionRepository.findWithServiceById(SUBSCRIPTION_ID)).willReturn(Optional.of(subscription));
-        given(membershipRepository.existsBySubscriptionIdAndUserUsernameAndRole(
-                SUBSCRIPTION_ID, OWNER, MembershipRole.OWNER)).willReturn(true);
+        given(membershipRepository.findBySubscriptionIdAndRole(SUBSCRIPTION_ID, MembershipRole.OWNER))
+                .willReturn(Optional.of(SubscriptionMembership.owner(owner, subscription)));
         return subscription;
     }
 }

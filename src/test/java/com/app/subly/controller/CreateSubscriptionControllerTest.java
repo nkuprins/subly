@@ -4,6 +4,7 @@ import com.app.subly.dto.subscription.CreateCustomSubscriptionRequest;
 import com.app.subly.dto.subscription.CreateSubscriptionRequest;
 import com.app.subly.exceptions.subscription.CatalogServiceNotFoundException;
 import com.app.subly.exceptions.subscription.CategoryNotFoundException;
+import com.app.subly.exceptions.subscription.PaymentDateInPastException;
 import com.app.subly.models.subscription.BillingCycle;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -39,6 +40,15 @@ class CreateSubscriptionControllerTest extends AbstractSubscriptionControllerTes
             send(BodyEndpoint.CREATE, BodyEndpoint.CREATE.validBody())
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.detail").value("Catalog service 99 does not exist"));
+        }
+
+        @Test
+        void returns400ForPaymentDateInPast() throws Exception {
+            given(service.create(anyString(), any())).willThrow(new PaymentDateInPastException(TODAY.minusDays(1)));
+
+            send(BodyEndpoint.CREATE, BodyEndpoint.CREATE.validBody())
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.detail").value("Next payment date " + TODAY.minusDays(1) + " is in the past"));
         }
     }
 

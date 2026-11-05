@@ -6,15 +6,13 @@ INSERT IGNORE INTO categories (id, name) VALUES
     (5, 'News'),
     (6, 'Other');
 
--- Admin login: admin / subly-admin-change-me. Change the password before a real deployment.
 -- Demo logins: alice, bob, carol, dave, erin / subly-demo-password.
-INSERT IGNORE INTO users (id, username, password_hash, email, role) VALUES
-    (1, 'admin', '$2a$10$A1gB4ga6ODvbvG4hp1AcmO1Lf5cLZqXdYD9l.VPd0Ydsbzgg79leK', 'admin@subly.local', 'ADMIN'),
-    (2, 'alice', '$2a$10$G31NTfu5/gcQEbSRD0r6GucCJa6lccHZ7iDOfJQLeE2O96mBZpIiu', 'alice@example.com', 'USER'),
-    (3, 'bob',   '$2a$10$G31NTfu5/gcQEbSRD0r6GucCJa6lccHZ7iDOfJQLeE2O96mBZpIiu', 'bob@example.com',   'USER'),
-    (4, 'carol', '$2a$10$G31NTfu5/gcQEbSRD0r6GucCJa6lccHZ7iDOfJQLeE2O96mBZpIiu', 'carol@example.com', 'USER'),
-    (5, 'dave',  '$2a$10$G31NTfu5/gcQEbSRD0r6GucCJa6lccHZ7iDOfJQLeE2O96mBZpIiu', 'dave@example.com',  'USER'),
-    (6, 'erin',  '$2a$10$G31NTfu5/gcQEbSRD0r6GucCJa6lccHZ7iDOfJQLeE2O96mBZpIiu', 'erin@example.com',  'USER');
+INSERT IGNORE INTO users (id, username, name, password_hash, email, role, time_zone) VALUES
+    (2, 'alice', 'Alice', '$2a$10$G31NTfu5/gcQEbSRD0r6GucCJa6lccHZ7iDOfJQLeE2O96mBZpIiu', 'alice@example.com', 'USER',  'Europe/Riga'),
+    (3, 'bob',   'Bob',   '$2a$10$G31NTfu5/gcQEbSRD0r6GucCJa6lccHZ7iDOfJQLeE2O96mBZpIiu', 'bob@example.com',   'USER',  'Europe/Riga'),
+    (4, 'carol', 'Carol', '$2a$10$G31NTfu5/gcQEbSRD0r6GucCJa6lccHZ7iDOfJQLeE2O96mBZpIiu', 'carol@example.com', 'USER',  'Europe/Riga'),
+    (5, 'dave',  'Dave',  '$2a$10$G31NTfu5/gcQEbSRD0r6GucCJa6lccHZ7iDOfJQLeE2O96mBZpIiu', 'dave@example.com',  'USER',  'Europe/Riga'),
+    (6, 'erin',  'Erin',  '$2a$10$G31NTfu5/gcQEbSRD0r6GucCJa6lccHZ7iDOfJQLeE2O96mBZpIiu', 'erin@example.com',  'USER',  'Europe/Riga');
 
 INSERT IGNORE INTO subscription_services (id, name, category_id, created_by, service_type) VALUES
     (1,  'Netflix',              1, NULL, 'CATALOG'),
@@ -31,15 +29,14 @@ INSERT IGNORE INTO subscription_services (id, name, category_id, created_by, ser
     (12, 'My gym',               4, 3,    'CUSTOM'),
     (13, 'Local newspaper',      5, 4,    'CUSTOM');
 
--- Dates are relative to today, so the dashboard looks the same on any day.
 INSERT IGNORE INTO subscriptions
-    (id, service_id, price, billing_cycle, next_payment_date, subscription_started_at,
+    (id, service_id, price, billing_cycle, next_payment_date, billing_anchor_date,
      free_trial, status, cancelled_at, currency, is_sharable, max_participants) VALUES
     (1,  1,  17.99,  'MONTHLY', CURDATE() + INTERVAL 3 DAY,  CURDATE() + INTERVAL 3 DAY - INTERVAL 8 MONTH,   FALSE, 'ACTIVE',    NULL,                       'EUR', TRUE,  4),
     (2,  5,  19.99,  'MONTHLY', CURDATE() + INTERVAL 12 DAY, CURDATE() + INTERVAL 12 DAY - INTERVAL 5 MONTH,  FALSE, 'ACTIVE',    NULL,                       'EUR', TRUE,  6),
     (3,  7,  99.00,  'YEARLY',  CURDATE() + INTERVAL 45 DAY, CURDATE() + INTERVAL 45 DAY - INTERVAL 1 YEAR,   FALSE, 'ACTIVE',    NULL,                       'EUR', FALSE, 1),
     (4,  11, 35.00,  'MONTHLY', CURDATE() + INTERVAL 20 DAY, CURDATE() + INTERVAL 20 DAY - INTERVAL 14 MONTH, FALSE, 'ACTIVE',    NULL,                       'EUR', FALSE, 1),
-    (5,  2,  9.99,   'MONTHLY', CURDATE() + INTERVAL 5 DAY,  CURDATE() - INTERVAL 25 DAY,                     TRUE,  'ACTIVE',    NULL,                       'EUR', FALSE, 1),
+    (5,  2,  9.99,   'MONTHLY', CURDATE() + INTERVAL 5 DAY,  CURDATE() + INTERVAL 5 DAY,                      TRUE,  'ACTIVE',    NULL,                       'EUR', FALSE, 1),
     (6,  3,  10.99,  'MONTHLY', CURDATE() + INTERVAL 8 DAY,  CURDATE() + INTERVAL 8 DAY - INTERVAL 6 MONTH,   FALSE, 'CANCELLED', NOW() - INTERVAL 10 DAY,    'EUR', FALSE, 1),
     (7,  4,  12.99,  'MONTHLY', CURDATE() - INTERVAL 40 DAY, CURDATE() - INTERVAL 40 DAY - INTERVAL 6 MONTH,  FALSE, 'CANCELLED', NOW() - INTERVAL 55 DAY,    'EUR', FALSE, 1),
     (8,  12, 29.00,  'MONTHLY', CURDATE() + INTERVAL 1 DAY,  CURDATE() + INTERVAL 1 DAY - INTERVAL 3 MONTH,   FALSE, 'ACTIVE',    NULL,                       'EUR', FALSE, 1),
@@ -71,7 +68,6 @@ INSERT IGNORE INTO subscription_pending (id, user_id, subscription_id, invited_a
     (2, 6, 2,  NOW() - INTERVAL 1 DAY),
     (3, 6, 10, NOW() - INTERVAL 6 HOUR);
 
--- In a shared plan each person pays their share; the owner pays the leftover cent.
 INSERT IGNORE INTO subscription_payments (id, membership_id, amount, paid_on) VALUES
     (1,  1,  6.01,  CURDATE() + INTERVAL 3 DAY - INTERVAL 3 MONTH),
     (2,  2,  5.99,  CURDATE() + INTERVAL 3 DAY - INTERVAL 3 MONTH),

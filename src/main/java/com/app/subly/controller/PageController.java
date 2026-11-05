@@ -15,14 +15,17 @@ public class PageController {
     public PageController(UserService userService) {
         this.userService = userService;
     }
+
     @GetMapping("/login")
     public String login() {
         return "login";
     }
+
     @GetMapping("/register")
     public String register() {
         return "register";
     }
+
     @PostMapping("/register")
     public String createAccount(@RequestParam String username,
                                 @RequestParam String name,
@@ -47,7 +50,7 @@ public class PageController {
             return "register";
         }
         try {
-            userService.addNewUser(username, name, password, email);
+            userService.addNewUser(username, name, password, email, null);
             return "redirect:/login?registered";
         } catch (UserAlreadyExistsException exception) {
             model.addAttribute("registrationError", exception.getMessage());

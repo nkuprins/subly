@@ -1,23 +1,11 @@
 package com.app.subly.controller;
 
-import com.app.subly.dto.subscription.UpdateCustomSubscriptionRequest;
-import com.app.subly.dto.subscription.UpdateSubscriptionRequest;
-import com.app.subly.dto.subscription.CreateCustomSubscriptionRequest;
-import com.app.subly.dto.subscription.CreateSubscriptionRequest;
-import com.app.subly.dto.subscription.SubscriptionResponse;
+import com.app.subly.dto.subscription.*;
 import com.app.subly.services.SubscriptionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
@@ -43,8 +31,8 @@ public class SubscriptionController {
     }
 
     @GetMapping
-    public List<SubscriptionResponse> listMine(Principal principal) {
-        return service.findOwnedBy(principal.getName());
+    public List<VisibleSubscriptionResponse> listMine(Principal principal) {
+        return service.findVisibleTo(principal.getName());
     }
 
     @PutMapping("/{id}")
@@ -57,6 +45,18 @@ public class SubscriptionController {
     public SubscriptionResponse updateCustom(Principal principal, @PathVariable long id,
                                              @Valid @RequestBody UpdateCustomSubscriptionRequest request) {
         return service.updateCustom(principal.getName(), id, request);
+    }
+
+    @PatchMapping("/{id}/cancel")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void cancel(Principal principal, @PathVariable long id) {
+        service.cancel(principal.getName(), id);
+    }
+
+    @PatchMapping("/{id}/reactivate")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void reactivate(Principal principal, @PathVariable long id) {
+        service.reactivate(principal.getName(), id);
     }
 
     @DeleteMapping("/{id}")
