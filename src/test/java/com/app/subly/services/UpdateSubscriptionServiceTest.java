@@ -33,6 +33,7 @@ class UpdateSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
         @Test
         void changesPaymentDetailsAndKeepsTheService() {
             Subscription subscription = givenOwnedCatalogSubscription();
+            givenOwnerExists();
             UpdateSubscriptionRequest request = updateRequest();
 
             SubscriptionResponse response = subscriptionService.update(OWNER, SUBSCRIPTION_ID, request);
@@ -73,6 +74,7 @@ class UpdateSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
         @Test
         void changesStrippedNameCategoryAndPaymentDetails() {
             Subscription subscription = givenOwnedCustomSubscription();
+            givenOwnerExists();
             given(categoryRepository.findById(MUSIC_ID)).willReturn(Optional.of(music));
             UpdateCustomSubscriptionRequest request = updateCustomRequest();
 
@@ -98,6 +100,7 @@ class UpdateSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
         @Test
         void rejectsUnknownCategory() {
             Subscription subscription = givenOwnedCustomSubscription();
+            givenOwnerExists();
             given(categoryRepository.findById(MUSIC_ID)).willReturn(Optional.empty());
             UpdateCustomSubscriptionRequest request = updateCustomRequest();
 

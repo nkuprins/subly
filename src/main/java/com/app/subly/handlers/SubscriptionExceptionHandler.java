@@ -3,6 +3,7 @@ package com.app.subly.handlers;
 import com.app.subly.exceptions.subscription.CatalogServiceReadOnlyException;
 import com.app.subly.exceptions.subscription.CategoryNotFoundException;
 import com.app.subly.exceptions.subscription.CatalogServiceNotFoundException;
+import com.app.subly.exceptions.subscription.PaymentDateInPastException;
 import com.app.subly.exceptions.subscription.SubscriptionAccessDeniedException;
 import com.app.subly.exceptions.subscription.SubscriptionNotFoundException;
 import org.springframework.http.HttpStatus;
@@ -24,7 +25,7 @@ public class SubscriptionExceptionHandler {
     }
 
     @ExceptionHandler({CategoryNotFoundException.class, CatalogServiceNotFoundException.class,
-            CatalogServiceReadOnlyException.class})
+            CatalogServiceReadOnlyException.class, PaymentDateInPastException.class})
     public ProblemDetail handleBadRequest(RuntimeException ex) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
