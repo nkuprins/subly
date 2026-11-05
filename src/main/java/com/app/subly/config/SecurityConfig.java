@@ -20,7 +20,7 @@ public class SecurityConfig {
         http.csrf(AbstractHttpConfigurer::disable). // csrf is disabled for testing time.
                 authorizeHttpRequests((authorize) -> {
                     authorize.requestMatchers("/users/register").permitAll()
-                            .requestMatchers("/users/*").authenticated()
+                            .requestMatchers("/users/**").authenticated()
                             .requestMatchers("/api/category/listAll").authenticated()
                             .requestMatchers("/api/category/**").hasRole("ADMIN")
                             .requestMatchers("/api/subscriptions/**",
