@@ -60,7 +60,7 @@ class DashboardControllerTest {
         LocalDate date = LocalDate.now().plusDays(10);
         given(dashboardService.getUpcomingPayments("alice")).willReturn(List.of(
                 new UpcomingPaymentDto(5L, "Netflix",
-                        new BigDecimal("9.99"), Currency.USD, date)
+                        new BigDecimal("9.99"), Currency.USD, date, 10L)
         ));
 
         mockMvc.perform(get("/api/dashboard/upcoming-payments"))
@@ -70,7 +70,8 @@ class DashboardControllerTest {
                 .andExpect(jsonPath("$[0].serviceName").value("Netflix"))
                 .andExpect(jsonPath("$[0].amount").value(9.99))
                 .andExpect(jsonPath("$[0].currency").value("USD"))
-                .andExpect(jsonPath("$[0].nextPaymentDate").value(date.toString()));
+                .andExpect(jsonPath("$[0].nextPaymentDate").value(date.toString()))
+                .andExpect(jsonPath("$[0].daysLeft").value(10));
     }
 
     @Test
