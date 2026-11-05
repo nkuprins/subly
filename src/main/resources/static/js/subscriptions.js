@@ -37,7 +37,7 @@ async function deleteSubscription(id) {
     if (!confirm('Delete this subscription?')) return;
     const res = await fetch(`/api/subscriptions/${id}`, { method: 'DELETE' });
     if (res.ok) {
-        loadSubscriptions();        // перерисовать
+        loadSubscriptions();
     } else {
         alert('Could not delete (status ' + res.status + ')');
     }

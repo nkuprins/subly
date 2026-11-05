@@ -20,7 +20,7 @@ async function prefill() {
 
 
 form.addEventListener('submit', async (e) => {
-    e.preventDefault();   // не даём форме делать обычный POST
+    e.preventDefault();
 
     if (!isEdit) {
         alert('Add is not connected yet — backend needs GET /api/categories first.');
@@ -29,7 +29,7 @@ form.addEventListener('submit', async (e) => {
 
     const payload = {
         price: byId('price').value,
-        billingCycle: byId('cycle').value.toUpperCase(),  // MONTHLY / YEARLY
+        billingCycle: byId('cycle').value.toUpperCase(),
         nextPaymentDate: byId('nextPayment').value,
         freeTrial: false
     };
@@ -41,7 +41,7 @@ form.addEventListener('submit', async (e) => {
     });
 
     if (res.ok) {
-        window.location.href = '/subscriptions';   // назад к списку
+        window.location.href = '/subscriptions';
     } else {
         alert('Save failed (status ' + res.status + ')');
     }

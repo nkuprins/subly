@@ -13,7 +13,7 @@
     --placeholder: #9ca3af;
     /* typography */
     --font-base: system-ui, "Segoe UI", Roboto, sans-serif;
-    --font-heading: system-ui, "Segoe UI", Roboto, sans-serif; /* swap when design is chosen */
+    --font-heading: system-ui, "Segoe UI", Roboto, sans-serif;
     /* shape */
     --radius: 12px;
     --radius-sm: 6px;
