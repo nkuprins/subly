@@ -60,7 +60,7 @@ class DashboardControllerTest {
         LocalDate date = LocalDate.now().plusDays(10);
         given(dashboardService.getUpcomingPayments("alice")).willReturn(List.of(
                 new UpcomingPaymentDto(5L, "Netflix",
-                        new BigDecimal("9.99"), Currency.USD, date)
+                        new BigDecimal("9.99"), Currency.USD, date, 10L)
         ));
 
         mockMvc.perform(get("/api/dashboard/upcoming-payments"))
