@@ -20,6 +20,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Clock;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -101,7 +102,8 @@ public class DashboardService {
                             subscription.getService().getName(),
                             share.amount(),
                             subscription.getCurrency(),
-                            subscription.getNextPaymentDate());}).toList();
+                            subscription.getNextPaymentDate(),
+                            ChronoUnit.DAYS.between(today, subscription.getNextPaymentDate()));}).toList();
     }
 
     private List<SubscriptionShare> loadSubscriptionShares(String username){
