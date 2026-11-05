@@ -25,6 +25,13 @@ The app runs at http://localhost:8080.
 
 Stop MySQL with `docker compose down`. The data is kept in a Docker volume.
 
+### Deploying with Docker on Render
+
+Create a Render Web Service from this repository and choose **Docker** as the runtime.
+Render will build the included `Dockerfile` and provide the app's listening port through
+the `PORT` environment variable. Configure `DB_URL`, `DB_USERNAME`, and `DB_PASSWORD`
+as Render environment variables using a managed MySQL-compatible database.
+
 ### With your own MySQL
 
 Create a database and user:
