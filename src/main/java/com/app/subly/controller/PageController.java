@@ -5,6 +5,7 @@ import com.app.subly.services.UserService;
 import org.springframework.ui.Model;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -66,6 +67,12 @@ public class PageController {
 
     @GetMapping("/subscriptions/new")
     public String newSubscriptions() {
+        return "subscription-form";
+    }
+
+    @GetMapping("/subscriptions/{id}/edit")
+    public String editSubscriptions(@PathVariable Long id, Model model) {
+        model.addAttribute("editId", id);
         return "subscription-form";
     }
 }
