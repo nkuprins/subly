@@ -2,7 +2,6 @@ package com.app.subly.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -17,7 +16,9 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(AbstractHttpConfigurer::disable). // csrf is disabled for testing time.
+        http.csrf((csrf)
+                        -> csrf.ignoringRequestMatchers(
+                                "/api/**", "/users/delete/me", "/", "/users/logout/me" )).
                 authorizeHttpRequests((authorize) -> {
                     authorize.requestMatchers("/users/register").permitAll()
                             .requestMatchers("/users/**").authenticated()
@@ -30,7 +31,7 @@ public class SecurityConfig {
                             .authenticated();
                     authorize.anyRequest().permitAll();
                 }).httpBasic(Customizer.withDefaults())
-                .formLogin(Customizer.withDefaults());
+                .formLogin((form) -> form.loginPage("/login").permitAll());
 
         return http.build();
     }

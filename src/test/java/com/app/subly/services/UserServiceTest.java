@@ -1,10 +1,9 @@
-package com.app.subly.service;
+package com.app.subly.services;
 
 import com.app.subly.dto.UpdateUserInformationRequest;
 import com.app.subly.exceptions.*;
 import com.app.subly.models.User;
 import com.app.subly.repository.UserRepository;
-import com.app.subly.services.UserService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
