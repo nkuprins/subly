@@ -18,6 +18,7 @@ import com.app.subly.models.subscription.ServiceProvider;
 import com.app.subly.models.subscription.ServiceType;
 import com.app.subly.models.subscription.Subscription;
 import com.app.subly.models.subscription.SubscriptionMembership;
+import com.app.subly.models.subscription.SubscriptionStatus;
 import com.app.subly.models.User;
 import com.app.subly.repository.CategoryRepository;
 import com.app.subly.repository.ServiceProviderRepository;
@@ -30,6 +31,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 
 @Service
@@ -92,6 +95,14 @@ public class SubscriptionService {
         service.setCategory(category);
         applyPaymentDetails(subscription, request);
         return SubscriptionResponse.from(subscription);
+    }
+
+    @Transactional
+    public void advancePaymentDates(ZoneId zone, LocalDate today) {
+        membershipRepository
+                .findByRoleAndSubscriptionStatusAndUserTimeZoneAndSubscriptionNextPaymentDateBefore(
+                        MembershipRole.OWNER, SubscriptionStatus.ACTIVE, zone, today)
+                .forEach(owner -> owner.getSubscription().advancePaymentDate(today));
     }
 
     @Transactional
