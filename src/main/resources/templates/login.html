@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Log in · Subly</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body class="auth-page">
+<main class="auth-layout">
+    <section class="auth-card" aria-labelledby="login-title">
+        <a class="auth-brand" th:href="@{/login}" aria-label="Subly home">
+            <span class="auth-brand-mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" focusable="false">
+                    <rect x="3.5" y="5.5" width="17" height="13" rx="2" stroke="currentColor" stroke-width="1.8"/>
+                    <path d="M4 9.5h16" stroke="currentColor" stroke-width="1.8"/>
+                </svg>
+            </span>
+            <span>Subly</span>
+        </a>
+        <h1 id="login-title" class="auth-title">Welcome back</h1>
+        <p class="auth-subtitle">Log in to keep your subscriptions in check</p>
+
+        <div class="auth-message auth-message-error" role="alert" th:if="${param.error}">
+            The username or password you entered is incorrect. Please try again.
+        </div>
+        <div class="auth-message auth-message-success" role="status" th:if="${param.logout}">
+            You have been logged out successfully.
+        </div>
+        <div class="auth-message auth-message-success" role="status" th:if="${param.registered}">
+            Your account has been created. You can now log in.
+        </div>
+
+        <form class="auth-form" th:action="@{/login}" method="post">
+            <div class="form-field">
+                <label for="username">Username</label>
+                <input id="username" name="username" type="text" autocomplete="username"
+                       placeholder="Your username" required autofocus/>
+            </div>
+            <div class="form-field">
+                <label for="password">Password</label>
+                <input id="password" name="password" type="password" autocomplete="current-password"
+                       placeholder="Enter your password" required/>
+            </div>
+            <button class="auth-submit" type="submit">Log in</button>
+        </form>
+        <p class="auth-footnote">No account? <a th:href="@{/register}">Register</a></p>
+    </section>
+</main>
+</body>
+</html>

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Create account · Subly</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body class="auth-page">
+<main class="auth-layout">
+    <section class="auth-card" aria-labelledby="register-title">
+        <a class="auth-brand" th:href="@{/login}" aria-label="Subly home">
+            <span class="auth-brand-mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" focusable="false">
+                    <rect x="3.5" y="5.5" width="17" height="13" rx="2" stroke="currentColor" stroke-width="1.8"/>
+                    <path d="M4 9.5h16" stroke="currentColor" stroke-width="1.8"/>
+                </svg>
+            </span>
+            <span>Subly</span>
+        </a>
+        <h1 id="register-title" class="auth-title">Create your account</h1>
+        <p class="auth-subtitle">Create your account to track subscriptions</p>
+
+        <p class="auth-message auth-message-error" role="alert" th:if="${registrationError}" th:text="${registrationError}"></p>
+
+        <form class="auth-form" th:action="@{/register}" method="post">
+            <div class="form-field">
+                <label for="name">Name</label>
+                <input id="name" name="name" type="text" autocomplete="name"
+                       placeholder="Your name" required maxlength="100" autofocus/>
+            </div>
+            <div class="form-field">
+                <label for="username">Username</label>
+                <input id="username" name="username" type="text" autocomplete="username"
+                       placeholder="Choose a username" required/>
+            </div>
+            <div class="form-field">
+                <label for="email">Email</label>
+                <input id="email" name="email" type="email" autocomplete="email"
+                       placeholder="you@example.com" required/>
+            </div>
+            <div class="form-field">
+                <label for="password">Password</label>
+                <input id="password" name="password" type="password" autocomplete="new-password"
+                       placeholder="Create a password" required minlength="15" maxlength="64"/>
+            </div>
+            <div class="form-field">
+                <label for="confirmPassword">Confirm Password</label>
+                <input id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password"
+                       placeholder="Confirm password" required/>
+            </div>
+            <button class="auth-submit" type="submit">Create account</button>
+        </form>
+        <p class="auth-footnote">Already have an account? <a th:href="@{/login}">Log in</a></p>
+    </section>
+</main>
+</body>
+</html>

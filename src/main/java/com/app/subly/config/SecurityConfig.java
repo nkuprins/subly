@@ -19,8 +19,9 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable). // csrf is disabled for testing time.
                 authorizeHttpRequests((authorize) -> {
-                    authorize.requestMatchers("/users/register").permitAll()
-                            .requestMatchers("/users/**").authenticated()
+                    authorize.requestMatchers("/users/delete/me").authenticated()
+                            .requestMatchers("/users/update/password/me").authenticated()
+                            .requestMatchers("/users/update/info/me").authenticated()
                             .requestMatchers("/api/subscriptions/**",
                             "/api/dashboard/**",
                             "/dashboard",

@@ -18,11 +18,8 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
-// Before running any tests here, make sure you have created subly_test database
-
 @DataJpaTest
 @AutoConfigureTestDatabase(replace= AutoConfigureTestDatabase.Replace.NONE)
-@ActiveProfiles("test")
 public class UserRepositoryTest {
 
     @Autowired

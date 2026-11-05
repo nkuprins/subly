@@ -16,7 +16,7 @@ class PaymentValidationControllerTest extends AbstractSubscriptionControllerTest
 
     @ParameterizedTest(name = "{0}: {1}")
     @MethodSource("invalidPaymentDetails")
-    void rejectsInvalidPaymentDetails(Endpoint endpoint, String description, String body) throws Exception {
+    void rejectsInvalidPaymentDetails(BodyEndpoint endpoint, String description, String body) throws Exception {
         send(endpoint, body)
                 .andExpect(validationError());
 
@@ -25,13 +25,13 @@ class PaymentValidationControllerTest extends AbstractSubscriptionControllerTest
 
     @ParameterizedTest(name = "{0}: {1}")
     @MethodSource("validPaymentDetails")
-    void acceptsBoundaryPaymentDetails(Endpoint endpoint, String description, String body) throws Exception {
+    void acceptsBoundaryPaymentDetails(BodyEndpoint endpoint, String description, String body) throws Exception {
         send(endpoint, body)
                 .andExpect(status().is2xxSuccessful());
     }
 
     static Stream<Arguments> invalidPaymentDetails() {
-        return Arrays.stream(Endpoint.values()).flatMap(endpoint -> Stream.of(
+        return Arrays.stream(BodyEndpoint.values()).flatMap(endpoint -> Stream.of(
                 arguments(endpoint, "price 0", endpoint.bodyWith("price", 0)),
                 arguments(endpoint, "negative price", endpoint.bodyWith("price", -1)),
                 arguments(endpoint, "price with 3 decimals", endpoint.bodyWith("price", new BigDecimal("9.999"))),
@@ -45,7 +45,7 @@ class PaymentValidationControllerTest extends AbstractSubscriptionControllerTest
     }
 
     static Stream<Arguments> validPaymentDetails() {
-        return Arrays.stream(Endpoint.values()).flatMap(endpoint -> Stream.of(
+        return Arrays.stream(BodyEndpoint.values()).flatMap(endpoint -> Stream.of(
                 arguments(endpoint, "price 0.01", endpoint.bodyWith("price", new BigDecimal("0.01"))),
                 arguments(endpoint, "price 99999999.99", endpoint.bodyWith("price", new BigDecimal("99999999.99")))));
     }
