@@ -6,6 +6,8 @@ import com.app.subly.models.subscription.SubscriptionStatus;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Collection;
 import java.util.List;
 
@@ -24,4 +26,8 @@ public interface SubscriptionMembershipRepository extends JpaRepository<Subscrip
 
     List<SubscriptionMembership> findBySubscription_IdIn(
             Collection<Long> subscriptionIds);
+
+    @EntityGraph(attributePaths = "subscription")
+    List<SubscriptionMembership> findByRoleAndSubscriptionStatusAndUserTimeZoneAndSubscriptionNextPaymentDateBefore(
+            MembershipRole role, SubscriptionStatus status, ZoneId timeZone, LocalDate date);
 }

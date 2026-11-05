@@ -6,6 +6,8 @@ import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.time.ZoneId;
+
 @AllArgsConstructor
 @Getter
 public class CreateUserRequest {
@@ -23,4 +25,6 @@ public class CreateUserRequest {
     @Email
     @NotBlank
     private String email;
+
+    private ZoneId timeZone;
 }

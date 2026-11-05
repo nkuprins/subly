@@ -10,6 +10,7 @@ import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.time.ZoneId;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -145,5 +146,17 @@ public class UserRepositoryTest {
         user.setRole(UserRole.USER);
 
         return user;
+    }
+
+    @Test
+    public void findDistinctTimeZones_ShouldReturnEachZoneOnce(){
+        User tokyoUser = createUser("taro", "taro@gmail.com", "Taro");
+        tokyoUser.setTimeZone(ZoneId.of("Asia/Tokyo"));
+        repository.save(tokyoUser);
+        repository.save(createUser("andris123", "andris@gmail.com", "Andris"));
+        repository.save(createUser("janis123", "janis@gmail.com", "Janis"));
+
+        assertThat(repository.findDistinctTimeZones())
+                .containsExactlyInAnyOrder(ZoneId.of("Asia/Tokyo"), User.DEFAULT_TIME_ZONE);
     }
 }

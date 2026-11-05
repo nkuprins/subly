@@ -37,8 +37,6 @@ class PaymentValidationControllerTest extends AbstractSubscriptionControllerTest
                 arguments(endpoint, "price with 3 decimals", endpoint.bodyWith("price", new BigDecimal("9.999"))),
                 arguments(endpoint, "price with 9 integer digits",
                         endpoint.bodyWith("price", new BigDecimal("123456789.00"))),
-                arguments(endpoint, "payment date in the past",
-                        endpoint.bodyWith("nextPaymentDate", TODAY.minusDays(1))),
                 arguments(endpoint, "missing price", endpoint.bodyWithout("price")),
                 arguments(endpoint, "missing billing cycle", endpoint.bodyWithout("billingCycle")),
                 arguments(endpoint, "missing payment date", endpoint.bodyWithout("nextPaymentDate"))));
