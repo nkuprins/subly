@@ -1,11 +1,7 @@
 package com.app.subly.services;
 
-import com.app.subly.dto.subscription.CreateCustomSubscriptionRequest;
-import com.app.subly.dto.subscription.CreateSubscriptionRequest;
+import com.app.subly.dto.subscription.*;
 import com.app.subly.dto.PaymentDetails;
-import com.app.subly.dto.subscription.UpdateCustomSubscriptionRequest;
-import com.app.subly.dto.subscription.UpdateSubscriptionRequest;
-import com.app.subly.dto.subscription.SubscriptionResponse;
 import com.app.subly.exceptions.subscription.CatalogServiceReadOnlyException;
 import com.app.subly.exceptions.subscription.CategoryNotFoundException;
 import com.app.subly.exceptions.subscription.CatalogServiceNotFoundException;
@@ -30,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
 
@@ -69,6 +66,17 @@ public class SubscriptionService {
                 .findByUserUsernameAndRoleOrderBySubscriptionNextPaymentDate(username, MembershipRole.OWNER)
                 .stream()
                 .map(membership -> SubscriptionResponse.from(membership.getSubscription()))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<VisibleSubscriptionResponse> findVisibleTo(String username) {
+        return membershipRepository
+                .findByUser_UsernameAndSubscription_StatusOrderBySubscription_NextPaymentDateAsc(
+                        username,
+                        SubscriptionStatus.ACTIVE)
+                .stream()
+                .map(VisibleSubscriptionResponse::from)
                 .toList();
     }
 
@@ -114,6 +122,35 @@ public class SubscriptionService {
         if (service.getServiceType() == ServiceType.CUSTOM) {
             serviceProviderRepository.delete(service);
         }
+    }
+
+    @Transactional
+    public void cancel(String username, long subscriptionId) {
+        Subscription subscription =
+                subscriptionAccess.getOwnedSubscription(username, subscriptionId);
+
+        if (subscription.getStatus() == SubscriptionStatus.CANCELLED) {
+            return;
+        }
+
+        subscription.setStatus(SubscriptionStatus.CANCELLED);
+        subscription.setCancelledAt(LocalDateTime.now());
+    }
+
+    @Transactional
+    public void reactivate(String username, long subscriptionId) {
+        Subscription subscription =
+                subscriptionAccess.getOwnedSubscription(username, subscriptionId);
+
+        if (subscription.getStatus() == SubscriptionStatus.ACTIVE) {
+            return;
+        }
+
+        LocalDate today = findUser(username).today(clock);
+
+        subscription.advancePaymentDate(today);
+        subscription.setStatus(SubscriptionStatus.ACTIVE);
+        subscription.setCancelledAt(null);
     }
 
     private SubscriptionResponse subscribe(User owner, ServiceProvider service, PaymentDetails request) {

@@ -98,9 +98,9 @@ public class InvitationService {
         }
 
         Long subscriptionId = subscription.getId();
-        Long userId = invitation.getSubscription().getId();
+        Long userId = invitation.getUser().getId();
 
-        if (membershipRepository.existsBySubscriptionIdAndUserId(subscription.getId(), invitation.getUser().getId())) {
+        if (membershipRepository.existsBySubscriptionIdAndUserId(subscriptionId, userId)) {
             throw new AlreadyMemberException(username, subscriptionId);
         }
 
