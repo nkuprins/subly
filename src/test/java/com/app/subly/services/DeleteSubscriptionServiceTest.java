@@ -1,5 +1,6 @@
 package com.app.subly.services;
 
+import com.app.subly.models.subscription.MembershipRole;
 import com.app.subly.exceptions.subscription.SubscriptionAccessDeniedException;
 import com.app.subly.exceptions.subscription.SubscriptionNotFoundException;
 import com.app.subly.models.subscription.Subscription;
@@ -47,7 +48,8 @@ class DeleteSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
 
     @Test
     void rejectsUnknownSubscription() {
-        given(subscriptionRepository.findWithServiceById(SUBSCRIPTION_ID)).willReturn(Optional.empty());
+        given(membershipRepository.findBySubscriptionIdAndRole(SUBSCRIPTION_ID, MembershipRole.OWNER))
+                .willReturn(Optional.empty());
 
         assertThatThrownBy(() -> subscriptionService.delete(OWNER, SUBSCRIPTION_ID))
                 .isInstanceOf(SubscriptionNotFoundException.class);

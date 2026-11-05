@@ -1,5 +1,6 @@
 package com.app.subly.services;
 
+import com.app.subly.models.subscription.SubscriptionMembership;
 import com.app.subly.dto.PaymentDetails;
 import com.app.subly.models.User;
 import com.app.subly.models.subscription.BillingCycle;
@@ -54,7 +55,8 @@ abstract class AbstractSubscriptionServiceTest {
 
     @BeforeEach
     void setUp() {
-        subscriptionService = new SubscriptionService(subscriptionRepository, membershipRepository,
+        subscriptionService = new SubscriptionService(subscriptionRepository,
+                new SubscriptionAccess(membershipRepository), membershipRepository,
                 serviceProviderRepository, categoryRepository, userRepository, clock);
         today = LocalDate.of(2026, 11, 4);
         owner = new User();
@@ -76,9 +78,8 @@ abstract class AbstractSubscriptionServiceTest {
 
     Subscription givenSubscriptionOwnedBySomeoneElse() {
         Subscription subscription = subscription(customService());
-        given(subscriptionRepository.findWithServiceById(SUBSCRIPTION_ID)).willReturn(Optional.of(subscription));
-        given(membershipRepository.existsBySubscriptionIdAndUserUsernameAndRole(
-                SUBSCRIPTION_ID, STRANGER, MembershipRole.OWNER)).willReturn(false);
+        given(membershipRepository.findBySubscriptionIdAndRole(SUBSCRIPTION_ID, MembershipRole.OWNER))
+                .willReturn(Optional.of(SubscriptionMembership.owner(owner, subscription)));
         return subscription;
     }
 
@@ -105,9 +106,8 @@ abstract class AbstractSubscriptionServiceTest {
 
     private Subscription givenOwnedSubscription(ServiceProvider serviceProvider) {
         Subscription subscription = subscription(serviceProvider);
-        given(subscriptionRepository.findWithServiceById(SUBSCRIPTION_ID)).willReturn(Optional.of(subscription));
-        given(membershipRepository.existsBySubscriptionIdAndUserUsernameAndRole(
-                SUBSCRIPTION_ID, OWNER, MembershipRole.OWNER)).willReturn(true);
+        given(membershipRepository.findBySubscriptionIdAndRole(SUBSCRIPTION_ID, MembershipRole.OWNER))
+                .willReturn(Optional.of(SubscriptionMembership.owner(owner, subscription)));
         return subscription;
     }
 }

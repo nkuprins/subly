@@ -9,10 +9,9 @@ import com.app.subly.models.subscription.ServiceProvider;
 import com.app.subly.models.subscription.Subscription;
 import com.app.subly.models.subscription.SubscriptionMembership;
 import com.app.subly.models.subscription.SubscriptionStatus;
+import jakarta.persistence.PersistenceUnitUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
@@ -61,16 +60,21 @@ class SubscriptionMembershipRepositoryTest {
     }
 
     @Test
-    void existsByOwnerRoleFindsTheOwner() {
-        assertThat(membershipRepository.existsBySubscriptionIdAndUserUsernameAndRole(
-                subscription.getId(), OWNER, MembershipRole.OWNER)).isTrue();
+    void findsTheOwnerRowWithUserAndSubscriptionLoaded() {
+        SubscriptionMembership owner = membershipRepository
+                .findBySubscriptionIdAndRole(subscription.getId(), MembershipRole.OWNER).orElseThrow();
+
+        assertThat(owner.getId()).isEqualTo(ownerRow.getId());
+        PersistenceUnitUtil util = entityManager.getEntityManager().getEntityManagerFactory().getPersistenceUnitUtil();
+        assertThat(util.isLoaded(owner, "user")).isTrue();
+        assertThat(util.isLoaded(owner, "subscription")).isTrue();
+        assertThat(util.isLoaded(owner.getSubscription(), "service")).isTrue();
+        assertThat(owner.getUser().getUsername()).isEqualTo(OWNER);
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {MEMBER, STRANGER})
-    void existsByOwnerRoleIgnoresNonOwners(String username) {
-        assertThat(membershipRepository.existsBySubscriptionIdAndUserUsernameAndRole(
-                subscription.getId(), username, MembershipRole.OWNER)).isFalse();
+    @Test
+    void findsNoOwnerRowForUnknownSubscription() {
+        assertThat(membershipRepository.findBySubscriptionIdAndRole(-1L, MembershipRole.OWNER)).isEmpty();
     }
 
     @Test

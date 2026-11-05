@@ -10,8 +10,6 @@ import com.app.subly.exceptions.subscription.CatalogServiceReadOnlyException;
 import com.app.subly.exceptions.subscription.CategoryNotFoundException;
 import com.app.subly.exceptions.subscription.CatalogServiceNotFoundException;
 import com.app.subly.exceptions.subscription.PaymentDateInPastException;
-import com.app.subly.exceptions.subscription.SubscriptionAccessDeniedException;
-import com.app.subly.exceptions.subscription.SubscriptionNotFoundException;
 import com.app.subly.models.subscription.Category;
 import com.app.subly.models.subscription.MembershipRole;
 import com.app.subly.models.subscription.ServiceProvider;
@@ -40,6 +38,7 @@ import java.util.List;
 public class SubscriptionService {
 
     private final SubscriptionRepository subscriptionRepository;
+    private final SubscriptionAccess subscriptionAccess;
     private final SubscriptionMembershipRepository membershipRepository;
     private final ServiceProviderRepository serviceProviderRepository;
     private final CategoryRepository categoryRepository;
@@ -75,7 +74,7 @@ public class SubscriptionService {
 
     @Transactional
     public SubscriptionResponse update(String username, long subscriptionId, UpdateSubscriptionRequest request) {
-        Subscription subscription = findOwnedSubscription(username, subscriptionId);
+        Subscription subscription = subscriptionAccess.getOwnedSubscription(username, subscriptionId);
         requireNotInPast(findUser(username), request);
         applyPaymentDetails(subscription, request);
         return SubscriptionResponse.from(subscription);
@@ -84,7 +83,7 @@ public class SubscriptionService {
     @Transactional
     public SubscriptionResponse updateCustom(String username, long subscriptionId,
                                              UpdateCustomSubscriptionRequest request) {
-        Subscription subscription = findOwnedSubscription(username, subscriptionId);
+        Subscription subscription = subscriptionAccess.getOwnedSubscription(username, subscriptionId);
         ServiceProvider service = subscription.getService();
         if (service.getServiceType() != ServiceType.CUSTOM) {
             throw new CatalogServiceReadOnlyException(service.getName());
@@ -107,7 +106,7 @@ public class SubscriptionService {
 
     @Transactional
     public void delete(String username, long subscriptionId) {
-        Subscription subscription = findOwnedSubscription(username, subscriptionId);
+        Subscription subscription = subscriptionAccess.getOwnedSubscription(username, subscriptionId);
         ServiceProvider service = subscription.getService();
 
         //  Decide what happens to payments when they are implemented.
@@ -130,16 +129,6 @@ public class SubscriptionService {
         return SubscriptionResponse.from(subscription);
     }
 
-    private Subscription findOwnedSubscription(String username, long subscriptionId) {
-        Subscription subscription = subscriptionRepository.findWithServiceById(subscriptionId)
-                .orElseThrow(() -> new SubscriptionNotFoundException(subscriptionId));
-        boolean isOwner = membershipRepository.existsBySubscriptionIdAndUserUsernameAndRole(
-                subscriptionId, username, MembershipRole.OWNER);
-        if (!isOwner) {
-            throw new SubscriptionAccessDeniedException(subscriptionId);
-        }
-        return subscription;
-    }
 
     private User findUser(String username) {
         return userRepository.findByUsername(username)
