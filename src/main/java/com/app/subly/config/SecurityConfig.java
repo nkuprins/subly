@@ -2,6 +2,7 @@ package com.app.subly.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -16,16 +17,20 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/login", "/register", "/users/register", "/css/**", "/favicon.ico")
-                        .permitAll()
-                        .anyRequest().authenticated())
-                .httpBasic(Customizer.withDefaults())
-                .formLogin(form -> form
-                        .loginPage("/login")
-                        .permitAll());
+        http.csrf(AbstractHttpConfigurer::disable). // csrf is disabled for testing time.
+                authorizeHttpRequests((authorize) -> {
+                    authorize.requestMatchers("/users/register").permitAll()
+                            .requestMatchers("/users/**").authenticated()
+                            .requestMatchers("/api/category/listAll").authenticated()
+                            .requestMatchers("/api/category/**").hasRole("ADMIN")
+                            .requestMatchers("/api/subscriptions/**",
+                            "/api/dashboard/**",
+                            "/dashboard",
+                            "/")
+                            .authenticated();
+                    authorize.anyRequest().permitAll();
+                }).httpBasic(Customizer.withDefaults())
+                .formLogin(Customizer.withDefaults());
 
         return http.build();
     }
