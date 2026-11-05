@@ -22,6 +22,8 @@ public class SecurityConfig {
                     authorize.requestMatchers("/users/delete/me").authenticated()
                             .requestMatchers("/users/update/password/me").authenticated()
                             .requestMatchers("/users/update/info/me").authenticated()
+                            .requestMatchers("/api/category/listAll").authenticated()
+                            .requestMatchers("/api/category/**").hasRole("ADMIN")
                             .requestMatchers("/api/subscriptions/**",
                             "/api/dashboard/**",
                             "/dashboard",
