@@ -1,5 +1,6 @@
 package com.app.subly.services;
 
+import com.app.subly.config.AdminConfiguration;
 import com.app.subly.models.User;
 import com.app.subly.models.UserRole;
 import com.app.subly.repository.UserRepository;
@@ -17,10 +18,12 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     private final UserRepository repository;
     private final PasswordEncoder encoder;
+    private final AdminConfiguration adminConfiguration;
 
-    public CustomUserDetailsService(UserRepository repository, PasswordEncoder encoder){
+    public CustomUserDetailsService(UserRepository repository, PasswordEncoder encoder, AdminConfiguration adminConfiguration){
         this.repository = repository;
         this.encoder = encoder;
+        this.adminConfiguration = adminConfiguration;
         this.createDefaultAdminUser();
     }
 
@@ -36,15 +39,15 @@ public class CustomUserDetailsService implements UserDetailsService {
     }
 
     private void createDefaultAdminUser(){
-        if(this.repository.findByUsername("admin").isPresent()){
+        if(this.repository.findByUsername(this.adminConfiguration.getAdminUsername()).isPresent()){
             return;
         }
 
         User user = new User();
-        user.setUsername("admin");
-        user.setName("admin");
-        user.setPasswordHash(this.encoder.encode("test_admin_subly_12345"));
-        user.setEmail("admin@admin.com");
+        user.setUsername(this.adminConfiguration.getAdminUsername());
+        user.setName(this.adminConfiguration.getAdminName());
+        user.setPasswordHash(this.encoder.encode(this.adminConfiguration.getAdminPassword()));
+        user.setEmail(this.adminConfiguration.getAdminEmail());
         user.setRole(UserRole.ADMIN);
 
         this.repository.save(user);
