@@ -16,6 +16,12 @@ spring:
         order_updates: true
         jdbc:
           batch_size: 50
+app:
+  admin-settings:
+    admin-username: admin
+    admin-name: admin
+    admin-password: test_admin_subly_12345
+    admin-email: admin@admin.com
 server:
   servlet:
     session:
