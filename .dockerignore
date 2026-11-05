@@ -1,0 +1,9 @@
+.git
+.github
+.idea
+.mvn
+target
+docker
+*.iml
+README.md
+compose.yaml
