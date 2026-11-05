@@ -17,11 +17,12 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(AbstractHttpConfigurer::disable). // csrf is disabled for testing time.
+        http.csrf((csrf)
+                        -> csrf.ignoringRequestMatchers(
+                                "/api/**", "/users/delete/me", "/", "/users/logout/me" )).
                 authorizeHttpRequests((authorize) -> {
-                    authorize.requestMatchers("/users/delete/me").authenticated()
-                            .requestMatchers("/users/update/password/me").authenticated()
-                            .requestMatchers("/users/update/info/me").authenticated()
+                    authorize.requestMatchers("/users/register").permitAll()
+                            .requestMatchers("/users/**").authenticated()
                             .requestMatchers("/api/category/listAll").authenticated()
                             .requestMatchers("/api/category/**").hasRole("ADMIN")
                             .requestMatchers("/api/subscriptions/**",
@@ -31,7 +32,7 @@ public class SecurityConfig {
                             .authenticated();
                     authorize.anyRequest().permitAll();
                 }).httpBasic(Customizer.withDefaults())
-                .formLogin(Customizer.withDefaults());
+                .formLogin((form) -> form.loginPage("/login").permitAll());
 
         return http.build();
     }

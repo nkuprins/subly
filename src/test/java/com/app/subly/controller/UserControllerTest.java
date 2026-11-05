@@ -23,6 +23,7 @@ import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.any;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
 @WebMvcTest(UserController.class)
 @Import(SecurityConfig.class)
@@ -38,6 +39,7 @@ public class UserControllerTest {
     void register_ShouldReturnOkWhenUserIsCreated() throws Exception {
 
         mockMvc.perform(post("/users/register")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                         {
@@ -67,6 +69,7 @@ public class UserControllerTest {
                 .addNewUser(anyString(), anyString(), anyString(), anyString());
 
         mockMvc.perform(post("/users/register")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                         {
@@ -125,6 +128,7 @@ public class UserControllerTest {
     void updatePassword_ShouldReturnBadRequestWhenPasswordsAreEqual() throws Exception {
 
         mockMvc.perform(put("/users/update/password/me")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                         {
@@ -143,6 +147,7 @@ public class UserControllerTest {
     @WithMockUser(username = "andris123")
     void updatePassword_ShouldReturnOkWhenPasswordIsChanged() throws Exception {
         mockMvc.perform(put("/users/update/password/me")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                         {
@@ -164,6 +169,7 @@ public class UserControllerTest {
     @WithMockUser(username = "andris123")
     void updateInformation_ShouldReturnBadRequestWhenNoFieldsProvided() throws Exception {
         mockMvc.perform(patch("/users/update/info/me")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
                 .andExpect(status().isBadRequest())
@@ -178,6 +184,7 @@ public class UserControllerTest {
     void updateInformation_ShouldReturnOkWhenInformationIsUpdated() throws Exception {
 
         mockMvc.perform(patch("/users/update/info/me")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                         {
@@ -205,6 +212,7 @@ public class UserControllerTest {
                 );
 
         mockMvc.perform(patch("/users/update/info/me")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                         {
@@ -237,6 +245,7 @@ public class UserControllerTest {
     @Test
     void updateCurrentUserPassword_ShouldReturnUnauthorized() throws Exception{
         mockMvc.perform(put("/users/update/password/me")
+                        .with(csrf())
                         .content("""
                         {
                             "oldPassword": "somerealpassword123456",
@@ -249,6 +258,7 @@ public class UserControllerTest {
     @Test
     void updateUserInformation_ShouldReturnUnauthorized() throws Exception{
         mockMvc.perform(patch("/users/update/info/me")
+                        .with(csrf())
                         .content("""
                         {
                             "newUsername": "someusername",

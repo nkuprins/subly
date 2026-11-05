@@ -14,14 +14,17 @@ public class PageController {
     public PageController(UserService userService) {
         this.userService = userService;
     }
+
     @GetMapping("/login")
     public String login() {
         return "login";
     }
+
     @GetMapping("/register")
     public String register() {
         return "register";
     }
+
     @PostMapping("/register")
     public String createAccount(@RequestParam String username,
                                 @RequestParam String name,
