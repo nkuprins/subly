@@ -28,7 +28,8 @@ public class UserController {
     @PostMapping("/register")
     public ResponseEntity<OperationResponse> createNewUser(@Valid @RequestBody CreateUserRequest request) {
         try {
-            this.service.addNewUser(request.getUsername(), request.getName(), request.getPassword(), request.getEmail());
+            this.service.addNewUser(request.getUsername(), request.getName(), request.getPassword(), request.getEmail(),
+                    request.getTimeZone());
             return ResponseEntity.ok(new OperationResponse(false, "The user has been registered successfully"));
         } catch (UserAlreadyExistsException exception) {
             return ResponseEntity.badRequest().body(new OperationResponse(true, exception.getMessage()));
@@ -78,7 +79,8 @@ public class UserController {
                                                                    HttpServletRequest request,
                                                                    HttpServletResponse response) {
 
-        if (!updateRequest.isUsernameProvided() && !updateRequest.isEmailProvided() && !updateRequest.isNameProvided()) {
+        if (!updateRequest.isUsernameProvided() && !updateRequest.isEmailProvided() && !updateRequest.isNameProvided()
+                && !updateRequest.isTimeZoneProvided()) {
             return ResponseEntity.badRequest().body(
                     new OperationResponse(true, "You must provide at least one property to change."));
         }

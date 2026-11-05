@@ -10,6 +10,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 @Entity
 @Table(name = "subscriptions")
@@ -34,11 +35,13 @@ public class Subscription {
     @Column(nullable = false)
     private BillingCycle billingCycle;
 
+    @Setter(AccessLevel.NONE)
     @Column(nullable = false)
     private LocalDate nextPaymentDate;
 
+    @Setter(AccessLevel.NONE)
     @Column(nullable = false)
-    private LocalDate subscriptionStartedAt;
+    private LocalDate billingAnchorDate;
 
     @Column(nullable = false)
     private boolean freeTrial;
@@ -66,13 +69,28 @@ public class Subscription {
     @Column(nullable = false)
     private int maxParticipants = 1;
 
-    public Subscription(ServiceProvider service, LocalDate subscriptionStartedAt, BigDecimal price,
-                        BillingCycle billingCycle, LocalDate nextPaymentDate, boolean freeTrial) {
+    public Subscription(ServiceProvider service, BigDecimal price, BillingCycle billingCycle,
+                        LocalDate nextPaymentDate, boolean freeTrial) {
         this.service = service;
-        this.subscriptionStartedAt = subscriptionStartedAt;
         this.price = price;
         this.billingCycle = billingCycle;
+        this.billingAnchorDate = nextPaymentDate;
         this.nextPaymentDate = nextPaymentDate;
         this.freeTrial = freeTrial;
+    }
+
+    public void reschedule(LocalDate nextPaymentDate) {
+        this.billingAnchorDate = nextPaymentDate;
+        this.nextPaymentDate = nextPaymentDate;
+    }
+
+    public void advancePaymentDate(LocalDate today) {
+        ChronoUnit unit = switch (billingCycle) {
+            case MONTHLY -> ChronoUnit.MONTHS;
+            case YEARLY -> ChronoUnit.YEARS;
+        };
+        long cycles = Math.max(0, unit.between(billingAnchorDate, today));
+        LocalDate date = billingAnchorDate.plus(cycles, unit);
+        nextPaymentDate = date.isBefore(today) ? billingAnchorDate.plus(cycles + 1, unit) : date;
     }
 }

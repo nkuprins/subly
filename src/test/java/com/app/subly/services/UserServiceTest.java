@@ -47,7 +47,7 @@ public class UserServiceTest {
                 .when(this.repository).save(any(User.class));
 
         assertThrows(UserAlreadyExistsException.class,
-                () -> this.service.addNewUser("andris123", "Andris", "123", "andris@gmail.com"));
+                () -> this.service.addNewUser("andris123", "Andris", "123", "andris@gmail.com", null));
         verify(repository).save(any(User.class));
     }
 

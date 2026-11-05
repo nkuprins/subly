@@ -33,13 +33,13 @@ INSERT IGNORE INTO subscription_services (id, name, category_id, created_by, ser
 
 -- Dates are relative to today, so the dashboard looks the same on any day.
 INSERT IGNORE INTO subscriptions
-    (id, service_id, price, billing_cycle, next_payment_date, subscription_started_at,
+    (id, service_id, price, billing_cycle, next_payment_date, billing_anchor_date,
      free_trial, status, cancelled_at, currency, is_sharable, max_participants) VALUES
     (1,  1,  17.99,  'MONTHLY', CURDATE() + INTERVAL 3 DAY,  CURDATE() + INTERVAL 3 DAY - INTERVAL 8 MONTH,   FALSE, 'ACTIVE',    NULL,                       'EUR', TRUE,  4),
     (2,  5,  19.99,  'MONTHLY', CURDATE() + INTERVAL 12 DAY, CURDATE() + INTERVAL 12 DAY - INTERVAL 5 MONTH,  FALSE, 'ACTIVE',    NULL,                       'EUR', TRUE,  6),
     (3,  7,  99.00,  'YEARLY',  CURDATE() + INTERVAL 45 DAY, CURDATE() + INTERVAL 45 DAY - INTERVAL 1 YEAR,   FALSE, 'ACTIVE',    NULL,                       'EUR', FALSE, 1),
     (4,  11, 35.00,  'MONTHLY', CURDATE() + INTERVAL 20 DAY, CURDATE() + INTERVAL 20 DAY - INTERVAL 14 MONTH, FALSE, 'ACTIVE',    NULL,                       'EUR', FALSE, 1),
-    (5,  2,  9.99,   'MONTHLY', CURDATE() + INTERVAL 5 DAY,  CURDATE() - INTERVAL 25 DAY,                     TRUE,  'ACTIVE',    NULL,                       'EUR', FALSE, 1),
+    (5,  2,  9.99,   'MONTHLY', CURDATE() + INTERVAL 5 DAY,  CURDATE() + INTERVAL 5 DAY,                      TRUE,  'ACTIVE',    NULL,                       'EUR', FALSE, 1),
     (6,  3,  10.99,  'MONTHLY', CURDATE() + INTERVAL 8 DAY,  CURDATE() + INTERVAL 8 DAY - INTERVAL 6 MONTH,   FALSE, 'CANCELLED', NOW() - INTERVAL 10 DAY,    'EUR', FALSE, 1),
     (7,  4,  12.99,  'MONTHLY', CURDATE() - INTERVAL 40 DAY, CURDATE() - INTERVAL 40 DAY - INTERVAL 6 MONTH,  FALSE, 'CANCELLED', NOW() - INTERVAL 55 DAY,    'EUR', FALSE, 1),
     (8,  12, 29.00,  'MONTHLY', CURDATE() + INTERVAL 1 DAY,  CURDATE() + INTERVAL 1 DAY - INTERVAL 3 MONTH,   FALSE, 'ACTIVE',    NULL,                       'EUR', FALSE, 1),

@@ -6,8 +6,10 @@ CREATE TABLE IF NOT EXISTS users (
     password_hash VARCHAR(100) NOT NULL,
     email VARCHAR(255) NOT NULL,
     role ENUM('USER', 'ADMIN') NOT NULL DEFAULT 'USER',
+    time_zone VARCHAR(64) NOT NULL DEFAULT 'Europe/Riga',
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
+    INDEX idx_users_time_zone (time_zone),
     CONSTRAINT uq_users_username UNIQUE (username),
     CONSTRAINT uq_users_email UNIQUE (email)
 ) ENGINE = InnoDB;
@@ -51,7 +53,7 @@ CREATE TABLE IF NOT EXISTS subscriptions (
     price DECIMAL(10, 2) NOT NULL,
     billing_cycle ENUM('MONTHLY', 'YEARLY') NOT NULL,
     next_payment_date DATE NOT NULL,
-    subscription_started_at DATE NOT NULL,
+    billing_anchor_date DATE NOT NULL,
     free_trial BOOLEAN NOT NULL DEFAULT FALSE,
     status ENUM('ACTIVE', 'CANCELLED') NOT NULL DEFAULT 'ACTIVE',
     cancelled_at TIMESTAMP NULL,
@@ -61,11 +63,12 @@ CREATE TABLE IF NOT EXISTS subscriptions (
     max_participants INT NOT NULL DEFAULT 1,
     PRIMARY KEY (id),
     INDEX idx_subscriptions_service_id (service_id),
+    INDEX idx_subscriptions_status_next_payment_date (status, next_payment_date),
     CONSTRAINT chk_subscriptions_price CHECK (price > 0),
     CONSTRAINT chk_subscriptions_max_participants CHECK (max_participants >= 1),
     CONSTRAINT chk_subscriptions_cancelled_at CHECK ((status = 'CANCELLED') = (cancelled_at IS NOT NULL)),
     CONSTRAINT chk_subscriptions_sharable CHECK (is_sharable OR max_participants = 1),
-    CONSTRAINT chk_subscriptions_payment_date CHECK (next_payment_date >= subscription_started_at),
+    CONSTRAINT chk_subscriptions_payment_date CHECK (next_payment_date >= billing_anchor_date),
     CONSTRAINT fk_subscriptions_service_id
         FOREIGN KEY (service_id) REFERENCES subscription_services (id)
         ON DELETE RESTRICT ON UPDATE CASCADE

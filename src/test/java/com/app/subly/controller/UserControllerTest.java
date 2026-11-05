@@ -58,7 +58,8 @@ public class UserControllerTest {
                 "andris123",
                 "Andris",
                 "largepassword123456",
-                "andris@gmail.com"
+                "andris@gmail.com",
+                null
         );
     }
     @Test
@@ -66,7 +67,7 @@ public class UserControllerTest {
 
         doThrow(new UserAlreadyExistsException("User already exists"))
                 .when(service)
-                .addNewUser(anyString(), anyString(), anyString(), anyString());
+                .addNewUser(anyString(), anyString(), anyString(), anyString(), any());
 
         mockMvc.perform(post("/users/register")
                         .with(csrf())

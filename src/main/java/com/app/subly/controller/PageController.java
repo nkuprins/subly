@@ -49,7 +49,7 @@ public class PageController {
             return "register";
         }
         try {
-            userService.addNewUser(username, name, password, email);
+            userService.addNewUser(username, name, password, email, null);
             return "redirect:/login?registered";
         } catch (UserAlreadyExistsException exception) {
             model.addAttribute("registrationError", exception.getMessage());

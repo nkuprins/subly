@@ -14,12 +14,14 @@ import com.app.subly.repository.SubscriptionRepository;
 import com.app.subly.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -43,7 +45,8 @@ abstract class AbstractSubscriptionServiceTest {
     @Mock CategoryRepository categoryRepository;
     @Mock UserRepository userRepository;
 
-    @InjectMocks SubscriptionService subscriptionService;
+    final Clock clock = Clock.fixed(Instant.parse("2026-11-04T16:00:00Z"), ZoneOffset.UTC);
+    SubscriptionService subscriptionService;
 
     LocalDate today;
     User owner;
@@ -51,10 +54,16 @@ abstract class AbstractSubscriptionServiceTest {
 
     @BeforeEach
     void setUp() {
-        today = LocalDate.now();
+        subscriptionService = new SubscriptionService(subscriptionRepository, membershipRepository,
+                serviceProviderRepository, categoryRepository, userRepository, clock);
+        today = LocalDate.of(2026, 11, 4);
         owner = new User();
         owner.setUsername(OWNER);
         gym = new Category("Test gym");
+    }
+
+    void givenOwnerExists() {
+        given(userRepository.findByUsername(OWNER)).willReturn(Optional.of(owner));
     }
 
     Subscription givenOwnedCustomSubscription() {
@@ -77,6 +86,7 @@ abstract class AbstractSubscriptionServiceTest {
         assertThat(subscription.getPrice()).isEqualByComparingTo(request.price());
         assertThat(subscription.getBillingCycle()).isEqualTo(request.billingCycle());
         assertThat(subscription.getNextPaymentDate()).isEqualTo(request.nextPaymentDate());
+        assertThat(subscription.getBillingAnchorDate()).isEqualTo(request.nextPaymentDate());
         assertThat(subscription.isFreeTrial()).isEqualTo(request.freeTrial());
     }
 
@@ -89,7 +99,7 @@ abstract class AbstractSubscriptionServiceTest {
     }
 
     Subscription subscription(ServiceProvider serviceProvider) {
-        return new Subscription(serviceProvider, today, ORIGINAL_PRICE, BillingCycle.MONTHLY,
+        return new Subscription(serviceProvider, ORIGINAL_PRICE, BillingCycle.MONTHLY,
                 today.plusDays(10), false);
     }
 
