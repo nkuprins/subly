@@ -41,4 +41,16 @@ public class InvitationController {
     public List<ReceivedInvitationResponse> listReceived(Principal principal) {
         return service.findReceived(principal.getName());
     }
+
+    @PostMapping("/invitations/{id}/accept")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void accept(Principal principal, @PathVariable long id) {
+        service.accept(principal.getName(), id);
+    }
+
+    @PostMapping("/invitations/{id}/decline")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void decline(Principal principal, @PathVariable long id) {
+        service.decline(principal.getName(), id);
+    }
 }

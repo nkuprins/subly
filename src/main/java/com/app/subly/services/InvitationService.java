@@ -3,19 +3,16 @@ package com.app.subly.services;
 import com.app.subly.dto.invitation.InvitationResponse;
 import com.app.subly.dto.invitation.InviteRequest;
 import com.app.subly.dto.invitation.ReceivedInvitationResponse;
-import com.app.subly.exceptions.invitation.AlreadyInvitedException;
-import com.app.subly.exceptions.invitation.AlreadyMemberException;
-import com.app.subly.exceptions.invitation.InvitedUserNotFoundException;
-import com.app.subly.exceptions.invitation.SelfInvitationException;
+import com.app.subly.exceptions.invitation.*;
 import com.app.subly.models.User;
-import com.app.subly.models.subscription.MembershipRole;
-import com.app.subly.models.subscription.PendingInvitation;
-import com.app.subly.models.subscription.Subscription;
+import com.app.subly.models.subscription.*;
 import com.app.subly.repository.PendingInvitationRepository;
 import com.app.subly.repository.SubscriptionMembershipRepository;
+import com.app.subly.repository.SubscriptionRepository;
 import com.app.subly.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -30,6 +27,7 @@ public class InvitationService {
     private final SubscriptionMembershipRepository membershipRepository;
     private final PendingInvitationRepository invitationRepository;
     private final UserRepository userRepository;
+    private final SubscriptionRepository subscriptionRepository;
 
     @Transactional
     public InvitationResponse invite(String ownerUsername, long subscriptionId, InviteRequest request) {
@@ -79,6 +77,54 @@ public class InvitationService {
                 .map(invitation ->
                         ReceivedInvitationResponse.from(invitation, ownerBySubscriptionId.get(invitation.getSubscription().getId())))
                 .toList();
+    }
+
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public void accept(String username, long invtationId){
+        PendingInvitation invitation = invitationRepository
+                .findByIdAndUserUsername(invtationId, username)
+                .orElseThrow(() -> new InvitationNotFoundException(invtationId));
+
+        Subscription subscription = subscriptionRepository
+                .findLockedById(invitation.getSubscription().getId())
+                .orElseThrow(() -> new InvitationCannotBeAcceptedException("Subscription no longer exists"));
+
+        if (subscription.getStatus() != SubscriptionStatus.ACTIVE){
+            throw new InvitationCannotBeAcceptedException("Subscription is not active");
+        }
+
+        if (!subscription.isSharable()){
+            throw new InvitationCannotBeAcceptedException("Subscription is not sharable");
+        }
+
+        Long subscriptionId = subscription.getId();
+        Long userId = invitation.getUser().getId();
+
+        if (membershipRepository.existsBySubscriptionIdAndUserId(subscriptionId, userId)) {
+            throw new AlreadyMemberException(username, subscriptionId);
+        }
+
+        long memberCount = membershipRepository.countBySubscriptionId(subscriptionId);
+
+        if (memberCount >= subscription.getMaxParticipants()){
+            throw new InvitationCannotBeAcceptedException("Subscription has reached its participant limit");
+        }
+
+        SubscriptionMembership membership = new SubscriptionMembership(invitation.getUser(), subscription, MembershipRole.MEMBER);
+
+        membershipRepository.save(membership);
+
+        invitationRepository.delete(invitation);
+    }
+
+    @Transactional
+    public void decline(String username, long invitationId){
+
+        PendingInvitation invitation = invitationRepository
+                .findByIdAndUserUsername(invitationId, username)
+                .orElseThrow(() -> new InvitationNotFoundException(invitationId));
+
+        invitationRepository.delete(invitation);
     }
 
 }

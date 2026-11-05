@@ -35,4 +35,6 @@ public interface SubscriptionMembershipRepository extends JpaRepository<Subscrip
     @EntityGraph(attributePaths = "subscription")
     List<SubscriptionMembership> findByRoleAndSubscriptionStatusAndUserTimeZoneAndSubscriptionNextPaymentDateBefore(
             MembershipRole role, SubscriptionStatus status, ZoneId timeZone, LocalDate date);
+
+    long countBySubscriptionId(Long subscriptionId);
 }

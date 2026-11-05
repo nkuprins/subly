@@ -1,9 +1,6 @@
 package com.app.subly.handlers;
 
-import com.app.subly.exceptions.invitation.AlreadyInvitedException;
-import com.app.subly.exceptions.invitation.AlreadyMemberException;
-import com.app.subly.exceptions.invitation.InvitedUserNotFoundException;
-import com.app.subly.exceptions.invitation.SelfInvitationException;
+import com.app.subly.exceptions.invitation.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -17,8 +14,13 @@ public class InvitationExceptionHandler {
         return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
-    @ExceptionHandler({AlreadyMemberException.class, AlreadyInvitedException.class})
+    @ExceptionHandler({AlreadyMemberException.class, AlreadyInvitedException.class, InvitationCannotBeAcceptedException.class})
     public ProblemDetail handleConflict(RuntimeException ex) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
+    @ExceptionHandler({InvitationNotFoundException.class})
+    public ProblemDetail handleNotFound(RuntimeException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 }

@@ -24,10 +24,13 @@ public class SecurityConfig {
                             .requestMatchers("/users/**").authenticated()
                             .requestMatchers("/api/category/listAll").authenticated()
                             .requestMatchers("/api/category/**").hasRole("ADMIN")
-                            .requestMatchers("/api/subscriptions/**",
-                            "/api/dashboard/**",
-                            "/dashboard",
-                            "/")
+                            .requestMatchers("/api/subscriptions",
+                                    "/api/subscriptions/**",
+                                    "/api/dashboard/**",
+                                    "/dashboard",
+                                    "/",
+                                    "/api/invitations",
+                                    "/api/invitations/**")
                             .authenticated();
                     authorize.anyRequest().permitAll();
                 }).httpBasic(Customizer.withDefaults())
