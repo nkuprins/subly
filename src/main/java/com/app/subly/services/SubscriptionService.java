@@ -134,7 +134,7 @@ public class SubscriptionService {
         }
 
         subscription.setStatus(SubscriptionStatus.CANCELLED);
-        subscription.setCancelledAt(LocalDateTime.now());
+        subscription.setCancelledAt(LocalDateTime.now(clock));
     }
 
     @Transactional
