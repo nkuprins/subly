@@ -1,8 +1,8 @@
 package com.app.subly.controller;
 
 import com.app.subly.dto.*;
-import com.app.subly.exceptions.*;
-import com.app.subly.services.UserService;
+import com.app.subly.exception.*;
+import com.app.subly.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;

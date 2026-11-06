@@ -1,7 +1,7 @@
 package com.app.subly.controller;
 
 import com.app.subly.config.SecurityConfig;
-import com.app.subly.services.InvitationService;
+import com.app.subly.service.InvitationService;
 
 import org.junit.jupiter.api.Test;
 

@@ -1,8 +1,8 @@
 package com.app.subly.repository;
 
-import com.app.subly.models.subscription.MembershipRole;
-import com.app.subly.models.subscription.SubscriptionMembership;
-import com.app.subly.models.subscription.SubscriptionStatus;
+import com.app.subly.model.subscription.MembershipRole;
+import com.app.subly.model.subscription.SubscriptionMembership;
+import com.app.subly.model.subscription.SubscriptionStatus;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 

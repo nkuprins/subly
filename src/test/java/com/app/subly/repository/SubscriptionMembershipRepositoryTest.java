@@ -1,14 +1,14 @@
 package com.app.subly.repository;
 
-import com.app.subly.models.User;
-import com.app.subly.models.UserRole;
-import com.app.subly.models.subscription.BillingCycle;
-import com.app.subly.models.subscription.Category;
-import com.app.subly.models.subscription.MembershipRole;
-import com.app.subly.models.subscription.ServiceProvider;
-import com.app.subly.models.subscription.Subscription;
-import com.app.subly.models.subscription.SubscriptionMembership;
-import com.app.subly.models.subscription.SubscriptionStatus;
+import com.app.subly.model.User;
+import com.app.subly.model.UserRole;
+import com.app.subly.model.subscription.BillingCycle;
+import com.app.subly.model.subscription.Category;
+import com.app.subly.model.subscription.MembershipRole;
+import com.app.subly.model.subscription.ServiceProvider;
+import com.app.subly.model.subscription.Subscription;
+import com.app.subly.model.subscription.SubscriptionMembership;
+import com.app.subly.model.subscription.SubscriptionStatus;
 import jakarta.persistence.PersistenceUnitUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

@@ -1,6 +1,6 @@
 package com.app.subly.repository;
 
-import com.app.subly.models.subscription.Subscription;
+import com.app.subly.model.subscription.Subscription;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;

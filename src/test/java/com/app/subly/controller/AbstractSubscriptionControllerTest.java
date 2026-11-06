@@ -2,10 +2,10 @@ package com.app.subly.controller;
 
 import com.app.subly.config.SecurityConfig;
 import com.app.subly.dto.subscription.SubscriptionResponse;
-import com.app.subly.models.subscription.BillingCycle;
-import com.app.subly.models.subscription.Currency;
-import com.app.subly.models.subscription.ServiceType;
-import com.app.subly.services.SubscriptionService;
+import com.app.subly.model.subscription.BillingCycle;
+import com.app.subly.model.subscription.Currency;
+import com.app.subly.model.subscription.ServiceType;
+import com.app.subly.service.SubscriptionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;

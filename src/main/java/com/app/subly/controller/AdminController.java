@@ -1,9 +1,9 @@
 package com.app.subly.controller;
 
 import com.app.subly.dto.admin.CreateCatalogServiceForm;
-import com.app.subly.exceptions.subscription.CategoryNotFoundException;
-import com.app.subly.models.subscription.ServiceProvider;
-import com.app.subly.services.AdminCatalogService;
+import com.app.subly.exception.subscription.CategoryNotFoundException;
+import com.app.subly.model.subscription.ServiceProvider;
+import com.app.subly.service.AdminCatalogService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;

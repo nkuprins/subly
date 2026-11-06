@@ -1,6 +1,6 @@
 package com.app.subly.repository;
 
-import com.app.subly.models.User;
+import com.app.subly.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 

@@ -1,6 +1,6 @@
 package com.app.subly.dto.invitation;
 
-import com.app.subly.models.subscription.PendingInvitation;
+import com.app.subly.model.subscription.PendingInvitation;
 
 import java.time.LocalDateTime;
 

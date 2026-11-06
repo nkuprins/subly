@@ -1,7 +1,7 @@
 package com.app.subly.repository;
 
-import com.app.subly.models.User;
-import com.app.subly.models.UserRole;
+import com.app.subly.model.User;
+import com.app.subly.model.UserRole;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;

@@ -3,9 +3,9 @@ package com.app.subly.controller;
 
 import com.app.subly.config.SecurityConfig;
 import com.app.subly.dto.UpdateUserInformationRequest;
-import com.app.subly.exceptions.UserAlreadyExistsException;
-import com.app.subly.exceptions.WrongPasswordException;
-import com.app.subly.services.UserService;
+import com.app.subly.exception.UserAlreadyExistsException;
+import com.app.subly.exception.WrongPasswordException;
+import com.app.subly.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;

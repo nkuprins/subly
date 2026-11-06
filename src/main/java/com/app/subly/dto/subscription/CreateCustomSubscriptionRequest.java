@@ -1,7 +1,7 @@
 package com.app.subly.dto.subscription;
 
 import com.app.subly.dto.PaymentDetails;
-import com.app.subly.models.subscription.BillingCycle;
+import com.app.subly.model.subscription.BillingCycle;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
