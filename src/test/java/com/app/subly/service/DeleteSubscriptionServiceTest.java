@@ -16,23 +16,23 @@ import org.junit.jupiter.api.Test;
 class DeleteSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
 
     @Test
-    void deletesSubscriptionAndItsCustomService() {
+    void deletesSubscriptionAndItsCustomProvider() {
         Subscription subscription = givenOwnedCustomSubscription();
 
         subscriptionService.delete(OWNER, SUBSCRIPTION_ID);
 
         then(subscriptionRepository).should().delete(subscription);
-        then(serviceProviderRepository).should().delete(subscription.getService());
+        then(subscriptionProviderRepository).should().delete(subscription.getProvider());
     }
 
     @Test
-    void deletesSubscriptionButKeepsCatalogService() {
+    void deletesSubscriptionButKeepsCatalogProvider() {
         Subscription subscription = givenOwnedCatalogSubscription();
 
         subscriptionService.delete(OWNER, SUBSCRIPTION_ID);
 
         then(subscriptionRepository).should().delete(subscription);
-        then(serviceProviderRepository).shouldHaveNoInteractions();
+        then(subscriptionProviderRepository).shouldHaveNoInteractions();
     }
 
     @Test
@@ -42,7 +42,7 @@ class DeleteSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
         assertThatThrownBy(() -> subscriptionService.delete(STRANGER, SUBSCRIPTION_ID))
                 .isInstanceOf(SubscriptionAccessDeniedException.class);
         then(subscriptionRepository).should(never()).delete(any());
-        then(serviceProviderRepository).shouldHaveNoInteractions();
+        then(subscriptionProviderRepository).shouldHaveNoInteractions();
     }
 
     @Test
@@ -53,6 +53,6 @@ class DeleteSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
         assertThatThrownBy(() -> subscriptionService.delete(OWNER, SUBSCRIPTION_ID))
                 .isInstanceOf(SubscriptionNotFoundException.class);
         then(subscriptionRepository).should(never()).delete(any());
-        then(serviceProviderRepository).shouldHaveNoInteractions();
+        then(subscriptionProviderRepository).shouldHaveNoInteractions();
     }
 }

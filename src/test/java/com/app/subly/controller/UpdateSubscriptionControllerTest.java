@@ -11,7 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.app.subly.dto.subscription.UpdateCustomSubscriptionRequest;
 import com.app.subly.dto.subscription.UpdateSubscriptionRequest;
-import com.app.subly.exception.subscription.CatalogServiceReadOnlyException;
+import com.app.subly.exception.subscription.CatalogProviderReadOnlyException;
 import com.app.subly.exception.subscription.SubscriptionAccessDeniedException;
 import com.app.subly.exception.subscription.SubscriptionNotFoundException;
 import com.app.subly.model.subscription.BillingCycle;
@@ -73,7 +73,7 @@ class UpdateSubscriptionControllerTest extends AbstractSubscriptionControllerTes
         @Test
         void returns400ForCatalogSubscription() throws Exception {
             given(service.updateCustom(anyString(), anyLong(), any()))
-                    .willThrow(new CatalogServiceReadOnlyException("Netflix"));
+                    .willThrow(new CatalogProviderReadOnlyException("Netflix"));
 
             send(BodyEndpoint.UPDATE_CUSTOM, BodyEndpoint.UPDATE_CUSTOM.validBody())
                     .andExpect(status().isBadRequest());

@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 public record ReceivedInvitationResponse(
         Long id,
         Long subscriptionId,
-        String serviceName,
+        String providerName,
         String ownerUsername,
         BigDecimal price,
         Currency currency,
@@ -22,7 +22,7 @@ public record ReceivedInvitationResponse(
         return new ReceivedInvitationResponse(
                 invitation.getId(),
                 subscription.getId(),
-                subscription.getService().getName(),
+                subscription.getProvider().getName(),
                 ownerUsername,
                 subscription.getPrice(),
                 subscription.getCurrency(),

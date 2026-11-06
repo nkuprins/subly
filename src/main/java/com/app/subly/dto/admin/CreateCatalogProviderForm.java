@@ -8,7 +8,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class CreateCatalogServiceForm {
+public class CreateCatalogProviderForm {
 
     @NotBlank
     @Size(max = 200)

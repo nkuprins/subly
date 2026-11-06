@@ -8,19 +8,19 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-class ServiceFieldValidationControllerTest extends AbstractSubscriptionControllerTest {
+class ProviderFieldValidationControllerTest extends AbstractSubscriptionControllerTest {
 
     @ParameterizedTest(name = "{0}: {1}")
-    @MethodSource("invalidServiceFields")
-    void rejectsInvalidServiceFields(BodyEndpoint endpoint, String description, String body) throws Exception {
+    @MethodSource("invalidProviderFields")
+    void rejectsInvalidProviderFields(BodyEndpoint endpoint, String description, String body) throws Exception {
         send(endpoint, body).andExpect(validationError());
 
         then(service).shouldHaveNoInteractions();
     }
 
-    static Stream<Arguments> invalidServiceFields() {
+    static Stream<Arguments> invalidProviderFields() {
         Stream<Arguments> catalog = Stream.of(
-                arguments(BodyEndpoint.CREATE, "missing service id", BodyEndpoint.CREATE.bodyWithout("serviceId")));
+                arguments(BodyEndpoint.CREATE, "missing provider id", BodyEndpoint.CREATE.bodyWithout("providerId")));
         Stream<Arguments> custom = Stream.of(BodyEndpoint.CREATE_CUSTOM, BodyEndpoint.UPDATE_CUSTOM)
                 .flatMap(endpoint -> Stream.of(
                         arguments(endpoint, "blank name", endpoint.bodyWith("name", "   ")),

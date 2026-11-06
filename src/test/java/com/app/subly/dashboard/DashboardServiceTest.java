@@ -13,9 +13,9 @@ import com.app.subly.model.subscription.BillingCycle;
 import com.app.subly.model.subscription.Category;
 import com.app.subly.model.subscription.Currency;
 import com.app.subly.model.subscription.MembershipRole;
-import com.app.subly.model.subscription.ServiceProvider;
 import com.app.subly.model.subscription.Subscription;
 import com.app.subly.model.subscription.SubscriptionMembership;
+import com.app.subly.model.subscription.SubscriptionProvider;
 import com.app.subly.model.subscription.SubscriptionStatus;
 import com.app.subly.repository.SubscriptionMembershipRepository;
 import com.app.subly.repository.UserRepository;
@@ -180,9 +180,9 @@ class DashboardServiceTest {
         List<UpcomingPaymentDto> result = dashboardService.getUpcomingPayments(USERNAME);
 
         assertEquals(2, result.size());
-        assertEquals("Today", result.get(0).serviceName());
+        assertEquals("Today", result.get(0).providerName());
         assertEquals(TODAY, result.get(0).nextPaymentDate());
-        assertEquals("Thirty", result.get(1).serviceName());
+        assertEquals("Thirty", result.get(1).providerName());
         assertEquals(TODAY.plusDays(30), result.get(1).nextPaymentDate());
     }
 
@@ -233,7 +233,7 @@ class DashboardServiceTest {
         long id = 1;
         for (LocalDate date : dates) {
             Subscription subscription =
-                    subscription(id++, "Service " + date, "5.00", BillingCycle.MONTHLY, Currency.EUR, date, false);
+                    subscription(id++, "Provider " + date, "5.00", BillingCycle.MONTHLY, Currency.EUR, date, false);
             mine.add(membership(USERNAME, subscription, MembershipRole.OWNER));
         }
         stubMemberships(mine, mine);
@@ -263,8 +263,8 @@ class DashboardServiceTest {
             Currency currency,
             LocalDate nextPayment,
             boolean trial) {
-        ServiceProvider service = ServiceProvider.catalog(name, new Category("Entertainment"));
-        Subscription subscription = new Subscription(service, new BigDecimal(price), cycle, nextPayment, trial);
+        SubscriptionProvider provider = SubscriptionProvider.catalog(name, new Category("Entertainment"));
+        Subscription subscription = new Subscription(provider, new BigDecimal(price), cycle, nextPayment, trial);
         subscription.setCurrency(currency);
         ReflectionTestUtils.setField(subscription, "id", id);
         return subscription;

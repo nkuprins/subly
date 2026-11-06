@@ -6,7 +6,7 @@ import java.time.LocalDate;
 
 public record UpcomingPaymentDto(
         Long subscriptionId,
-        String serviceName,
+        String providerName,
         BigDecimal amount,
         Currency currency,
         LocalDate nextPaymentDate,

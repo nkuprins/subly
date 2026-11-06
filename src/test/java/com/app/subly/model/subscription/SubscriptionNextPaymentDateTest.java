@@ -76,7 +76,7 @@ class SubscriptionNextPaymentDateTest {
 
     private static Subscription subscription(BillingCycle cycle, LocalDate firstPayment) {
         return new Subscription(
-                ServiceProvider.catalog("Netflix", new Category("Streaming")),
+                SubscriptionProvider.catalog("Netflix", new Category("Streaming")),
                 new BigDecimal("9.99"),
                 cycle,
                 firstPayment,

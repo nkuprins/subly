@@ -8,7 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.app.subly.dto.subscription.CreateCustomSubscriptionRequest;
 import com.app.subly.dto.subscription.CreateSubscriptionRequest;
-import com.app.subly.exception.subscription.CatalogServiceNotFoundException;
+import com.app.subly.exception.subscription.CatalogProviderNotFoundException;
 import com.app.subly.exception.subscription.CategoryNotFoundException;
 import com.app.subly.exception.subscription.PaymentDateInPastException;
 import com.app.subly.model.subscription.BillingCycle;
@@ -24,7 +24,7 @@ class CreateSubscriptionControllerTest extends AbstractSubscriptionControllerTes
         @Test
         void returns201() throws Exception {
             CreateSubscriptionRequest request = new CreateSubscriptionRequest(
-                    SERVICE_ID, new BigDecimal("35.00"), BillingCycle.MONTHLY, NEXT_PAYMENT, false);
+                    PROVIDER_ID, new BigDecimal("35.00"), BillingCycle.MONTHLY, NEXT_PAYMENT, false);
             given(service.create(USERNAME, request)).willReturn(gymResponse());
 
             send(BodyEndpoint.CREATE, BodyEndpoint.CREATE.validBody())
@@ -33,12 +33,12 @@ class CreateSubscriptionControllerTest extends AbstractSubscriptionControllerTes
         }
 
         @Test
-        void returns400ForUnknownService() throws Exception {
-            given(service.create(anyString(), any())).willThrow(new CatalogServiceNotFoundException(99L));
+        void returns400ForUnknownProvider() throws Exception {
+            given(service.create(anyString(), any())).willThrow(new CatalogProviderNotFoundException(99L));
 
             send(BodyEndpoint.CREATE, BodyEndpoint.CREATE.validBody())
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.detail").value("Catalog service 99 does not exist"));
+                    .andExpect(jsonPath("$.detail").value("Catalog provider 99 does not exist"));
         }
 
         @Test
@@ -64,8 +64,8 @@ class CreateSubscriptionControllerTest extends AbstractSubscriptionControllerTes
             send(BodyEndpoint.CREATE_CUSTOM, BodyEndpoint.CREATE_CUSTOM.validBody())
                     .andExpect(status().isCreated())
                     .andExpect(jsonPath("$.id").value(SUBSCRIPTION_ID))
-                    .andExpect(jsonPath("$.serviceName").value(CUSTOM_NAME))
-                    .andExpect(jsonPath("$.serviceType").value("CUSTOM"))
+                    .andExpect(jsonPath("$.providerName").value(CUSTOM_NAME))
+                    .andExpect(jsonPath("$.providerType").value("CUSTOM"))
                     .andExpect(jsonPath("$.currency").value("EUR"));
         }
 

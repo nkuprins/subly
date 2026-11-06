@@ -22,27 +22,27 @@ CREATE TABLE IF NOT EXISTS categories (
     CONSTRAINT uq_categories_name UNIQUE (name)
 ) ENGINE = InnoDB;
 
-CREATE TABLE IF NOT EXISTS subscription_services (
+CREATE TABLE IF NOT EXISTS subscription_providers (
     id BIGINT NOT NULL AUTO_INCREMENT,
     name VARCHAR(200) NOT NULL,
     logo_path VARCHAR(500) NULL,
     created_by BIGINT NULL,
     category_id BIGINT NOT NULL,
-    service_type ENUM('CATALOG', 'CUSTOM') NOT NULL DEFAULT 'CATALOG',
+    provider_type ENUM('CATALOG', 'CUSTOM') NOT NULL DEFAULT 'CATALOG',
     PRIMARY KEY (id),
-    INDEX idx_subscription_services_created_by (created_by),
-    INDEX idx_subscription_services_category_id (category_id),
-    -- Catalog services are shared by all users, so they have no creator.
-    -- A custom service always has the user who created it.
-    CONSTRAINT chk_subscription_services_created_by CHECK (
-        (service_type = 'CATALOG' AND created_by IS NULL)
-        OR (service_type = 'CUSTOM' AND created_by IS NOT NULL)
+    INDEX idx_subscription_providers_created_by (created_by),
+    INDEX idx_subscription_providers_category_id (category_id),
+    -- Catalog providers are shared by all users, so they have no creator.
+    -- A custom provider always has the user who created it.
+    CONSTRAINT chk_subscription_providers_created_by CHECK (
+        (provider_type = 'CATALOG' AND created_by IS NULL)
+        OR (provider_type = 'CUSTOM' AND created_by IS NOT NULL)
     ),
     -- Must not cascade: MySQL does not allow the CHECK above on a cascading column.
-    CONSTRAINT fk_subscription_services_created_by
+    CONSTRAINT fk_subscription_providers_created_by
         FOREIGN KEY (created_by) REFERENCES users (id)
         ON DELETE RESTRICT ON UPDATE RESTRICT,
-    CONSTRAINT fk_subscription_services_category_id
+    CONSTRAINT fk_subscription_providers_category_id
         FOREIGN KEY (category_id) REFERENCES categories (id)
         ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE = InnoDB;
@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS subscription_services (
 -- The owner of a subscription is its OWNER row in subscription_membership.
 CREATE TABLE IF NOT EXISTS subscriptions (
     id BIGINT NOT NULL AUTO_INCREMENT,
-    service_id BIGINT NOT NULL,
+    provider_id BIGINT NOT NULL,
     price DECIMAL(10, 2) NOT NULL,
     billing_cycle ENUM('MONTHLY', 'YEARLY') NOT NULL,
     next_payment_date DATE NOT NULL,
@@ -63,15 +63,15 @@ CREATE TABLE IF NOT EXISTS subscriptions (
     is_sharable BOOLEAN NOT NULL DEFAULT FALSE,
     max_participants INT NOT NULL DEFAULT 1,
     PRIMARY KEY (id),
-    INDEX idx_subscriptions_service_id (service_id),
+    INDEX idx_subscriptions_provider_id (provider_id),
     INDEX idx_subscriptions_status_next_payment_date (status, next_payment_date),
     CONSTRAINT chk_subscriptions_price CHECK (price > 0),
     CONSTRAINT chk_subscriptions_max_participants CHECK (max_participants >= 1),
     CONSTRAINT chk_subscriptions_cancelled_at CHECK ((status = 'CANCELLED') = (cancelled_at IS NOT NULL)),
     CONSTRAINT chk_subscriptions_sharable CHECK (is_sharable OR max_participants = 1),
     CONSTRAINT chk_subscriptions_payment_date CHECK (next_payment_date >= billing_anchor_date),
-    CONSTRAINT fk_subscriptions_service_id
-        FOREIGN KEY (service_id) REFERENCES subscription_services (id)
+    CONSTRAINT fk_subscriptions_provider_id
+        FOREIGN KEY (provider_id) REFERENCES subscription_providers (id)
         ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE = InnoDB;
 

@@ -15,8 +15,8 @@ class ListSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
 
     @Test
     void returnsVisibleSubscriptionsWithMembershipRoles() {
-        Subscription owned = subscription(customService());
-        Subscription shared = subscription(catalogService());
+        Subscription owned = subscription(customProvider());
+        Subscription shared = subscription(catalogProvider());
 
         SubscriptionMembership ownerMembership = SubscriptionMembership.owner(owner, owned);
 

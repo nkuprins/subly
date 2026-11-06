@@ -15,7 +15,7 @@ public interface SubscriptionMembershipRepository extends JpaRepository<Subscrip
 
     boolean existsBySubscriptionIdAndUserId(Long subscriptionId, Long userId);
 
-    @EntityGraph(attributePaths = {"user", "subscription.service.category"})
+    @EntityGraph(attributePaths = {"user", "subscription.provider.category"})
     Optional<SubscriptionMembership> findBySubscriptionIdAndRole(Long subscriptionId, MembershipRole role);
 
     @EntityGraph(attributePaths = "user")
@@ -23,7 +23,7 @@ public interface SubscriptionMembershipRepository extends JpaRepository<Subscrip
 
     List<SubscriptionMembership> findBySubscription_IdIn(Collection<Long> subscriptionIds);
 
-    @EntityGraph(attributePaths = {"subscription", "subscription.service"})
+    @EntityGraph(attributePaths = {"subscription", "subscription.provider"})
     List<SubscriptionMembership> findByUser_UsernameAndSubscription_StatusOrderBySubscription_NextPaymentDateAsc(
             String username, SubscriptionStatus status);
 

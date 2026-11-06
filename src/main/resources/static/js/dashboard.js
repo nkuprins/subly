@@ -32,7 +32,7 @@ async function loadUpcoming() {
 
     box.innerHTML = payments.map(p => `
         <div class="upcoming-row">
-            <span class="upcoming-name">${p.serviceName}</span>
+            <span class="upcoming-name">${p.providerName}</span>
             <span class="upcoming-date">${p.nextPaymentDate} · in ${p.daysLeft} days</span>
             <span class="upcoming-amount">${symbol(p.currency)}${Number(p.amount).toFixed(2)}</span>
         </div>`).join('');

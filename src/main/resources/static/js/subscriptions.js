@@ -16,7 +16,7 @@ async function loadSubscriptions() {
 
     tbody.innerHTML = subs.map(s => `
         <tr>
-            <td>${s.subscription.serviceName}</td>
+            <td>${s.subscription.providerName}</td>
             <td>${s.subscription.price}</td>
             <td>${s.subscription.currency}</td>
             <td><span class="pill ${s.subscription.billingCycle === 'YEARLY' ? 'pill-year' : ''}">${s.subscription.billingCycle}</span></td>

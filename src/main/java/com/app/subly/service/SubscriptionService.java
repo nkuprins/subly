@@ -2,21 +2,21 @@ package com.app.subly.service;
 
 import com.app.subly.dto.PaymentDetails;
 import com.app.subly.dto.subscription.*;
-import com.app.subly.exception.subscription.CatalogServiceNotFoundException;
-import com.app.subly.exception.subscription.CatalogServiceReadOnlyException;
+import com.app.subly.exception.subscription.CatalogProviderNotFoundException;
+import com.app.subly.exception.subscription.CatalogProviderReadOnlyException;
 import com.app.subly.exception.subscription.CategoryNotFoundException;
 import com.app.subly.exception.subscription.PaymentDateInPastException;
 import com.app.subly.model.User;
 import com.app.subly.model.subscription.Category;
 import com.app.subly.model.subscription.MembershipRole;
-import com.app.subly.model.subscription.ServiceProvider;
-import com.app.subly.model.subscription.ServiceType;
+import com.app.subly.model.subscription.ProviderType;
 import com.app.subly.model.subscription.Subscription;
 import com.app.subly.model.subscription.SubscriptionMembership;
+import com.app.subly.model.subscription.SubscriptionProvider;
 import com.app.subly.model.subscription.SubscriptionStatus;
 import com.app.subly.repository.CategoryRepository;
-import com.app.subly.repository.ServiceProviderRepository;
 import com.app.subly.repository.SubscriptionMembershipRepository;
+import com.app.subly.repository.SubscriptionProviderRepository;
 import com.app.subly.repository.SubscriptionRepository;
 import com.app.subly.repository.UserRepository;
 import java.time.Clock;
@@ -36,7 +36,7 @@ public class SubscriptionService {
     private final SubscriptionRepository subscriptionRepository;
     private final SubscriptionAccess subscriptionAccess;
     private final SubscriptionMembershipRepository membershipRepository;
-    private final ServiceProviderRepository serviceProviderRepository;
+    private final SubscriptionProviderRepository subscriptionProviderRepository;
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
     private final Clock clock;
@@ -45,8 +45,8 @@ public class SubscriptionService {
     public SubscriptionResponse create(String username, CreateSubscriptionRequest request) {
         User owner = findUser(username);
         requireNotInPast(owner, request);
-        ServiceProvider service = findCatalogService(request.serviceId());
-        return subscribe(owner, service, request);
+        SubscriptionProvider provider = findCatalogProvider(request.providerId());
+        return subscribe(owner, provider, request);
     }
 
     @Transactional
@@ -54,9 +54,9 @@ public class SubscriptionService {
         User owner = findUser(username);
         requireNotInPast(owner, request);
         Category category = findCategory(request.categoryId());
-        ServiceProvider service = serviceProviderRepository.save(
-                ServiceProvider.custom(request.name().strip(), category, owner));
-        return subscribe(owner, service, request);
+        SubscriptionProvider provider = subscriptionProviderRepository.save(
+                SubscriptionProvider.custom(request.name().strip(), category, owner));
+        return subscribe(owner, provider, request);
     }
 
     @Transactional(readOnly = true)
@@ -81,14 +81,14 @@ public class SubscriptionService {
     public SubscriptionResponse updateCustom(
             String username, long subscriptionId, UpdateCustomSubscriptionRequest request) {
         Subscription subscription = subscriptionAccess.getOwnedSubscription(username, subscriptionId);
-        ServiceProvider service = subscription.getService();
-        if (service.getServiceType() != ServiceType.CUSTOM) {
-            throw new CatalogServiceReadOnlyException(service.getName());
+        SubscriptionProvider provider = subscription.getProvider();
+        if (provider.getProviderType() != ProviderType.CUSTOM) {
+            throw new CatalogProviderReadOnlyException(provider.getName());
         }
         requireNotInPast(findUser(username), request);
         Category category = findCategory(request.categoryId());
-        service.setName(request.name().strip());
-        service.setCategory(category);
+        provider.setName(request.name().strip());
+        provider.setCategory(category);
         applyPaymentDetails(subscription, request);
         return SubscriptionResponse.from(subscription);
     }
@@ -104,12 +104,12 @@ public class SubscriptionService {
     @Transactional
     public void delete(String username, long subscriptionId) {
         Subscription subscription = subscriptionAccess.getOwnedSubscription(username, subscriptionId);
-        ServiceProvider service = subscription.getService();
+        SubscriptionProvider provider = subscription.getProvider();
 
         //  Decide what happens to payments when they are implemented.
         subscriptionRepository.delete(subscription);
-        if (service.getServiceType() == ServiceType.CUSTOM) {
-            serviceProviderRepository.delete(service);
+        if (provider.getProviderType() == ProviderType.CUSTOM) {
+            subscriptionProviderRepository.delete(provider);
         }
     }
 
@@ -140,9 +140,9 @@ public class SubscriptionService {
         subscription.setCancelledAt(null);
     }
 
-    private SubscriptionResponse subscribe(User owner, ServiceProvider service, PaymentDetails request) {
+    private SubscriptionResponse subscribe(User owner, SubscriptionProvider provider, PaymentDetails request) {
         Subscription subscription = new Subscription(
-                service, request.price(), request.billingCycle(), request.nextPaymentDate(), request.freeTrial());
+                provider, request.price(), request.billingCycle(), request.nextPaymentDate(), request.freeTrial());
         subscriptionRepository.save(subscription);
 
         membershipRepository.save(SubscriptionMembership.owner(owner, subscription));
@@ -155,10 +155,10 @@ public class SubscriptionService {
                 .orElseThrow(() -> new UsernameNotFoundException("User " + username + " does not exist"));
     }
 
-    private ServiceProvider findCatalogService(long serviceId) {
-        return serviceProviderRepository
-                .findByIdAndServiceType(serviceId, ServiceType.CATALOG)
-                .orElseThrow(() -> new CatalogServiceNotFoundException(serviceId));
+    private SubscriptionProvider findCatalogProvider(long providerId) {
+        return subscriptionProviderRepository
+                .findByIdAndProviderType(providerId, ProviderType.CATALOG)
+                .orElseThrow(() -> new CatalogProviderNotFoundException(providerId));
     }
 
     private Category findCategory(long categoryId) {

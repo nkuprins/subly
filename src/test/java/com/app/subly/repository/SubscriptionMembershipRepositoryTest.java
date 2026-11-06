@@ -7,9 +7,9 @@ import com.app.subly.model.UserRole;
 import com.app.subly.model.subscription.BillingCycle;
 import com.app.subly.model.subscription.Category;
 import com.app.subly.model.subscription.MembershipRole;
-import com.app.subly.model.subscription.ServiceProvider;
 import com.app.subly.model.subscription.Subscription;
 import com.app.subly.model.subscription.SubscriptionMembership;
+import com.app.subly.model.subscription.SubscriptionProvider;
 import com.app.subly.model.subscription.SubscriptionStatus;
 import jakarta.persistence.PersistenceUnitUtil;
 import java.math.BigDecimal;
@@ -53,10 +53,10 @@ class SubscriptionMembershipRepositoryTest {
         User member = persistUser(MEMBER);
         persistUser(STRANGER);
         Category gym = entityManager.persist(new Category("Test gym"));
-        ServiceProvider service = entityManager.persist(ServiceProvider.custom("My gym", gym, owner));
+        SubscriptionProvider provider = entityManager.persist(SubscriptionProvider.custom("My gym", gym, owner));
         LocalDate today = LocalDate.now();
         subscription = entityManager.persist(
-                new Subscription(service, new BigDecimal("35.00"), BillingCycle.MONTHLY, today.plusDays(10), false));
+                new Subscription(provider, new BigDecimal("35.00"), BillingCycle.MONTHLY, today.plusDays(10), false));
         ownerRow = entityManager.persist(new SubscriptionMembership(owner, subscription, MembershipRole.OWNER));
         memberRow = entityManager.persist(new SubscriptionMembership(member, subscription, MembershipRole.MEMBER));
         entityManager.flush();
@@ -74,7 +74,7 @@ class SubscriptionMembershipRepositoryTest {
                 entityManager.getEntityManager().getEntityManagerFactory().getPersistenceUnitUtil();
         assertThat(util.isLoaded(owner, "user")).isTrue();
         assertThat(util.isLoaded(owner, "subscription")).isTrue();
-        assertThat(util.isLoaded(owner.getSubscription(), "service")).isTrue();
+        assertThat(util.isLoaded(owner.getSubscription(), "provider")).isTrue();
         assertThat(owner.getUser().getUsername()).isEqualTo(OWNER);
     }
 

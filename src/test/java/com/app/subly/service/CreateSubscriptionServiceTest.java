@@ -11,14 +11,14 @@ import static org.mockito.Mockito.never;
 import com.app.subly.dto.subscription.CreateCustomSubscriptionRequest;
 import com.app.subly.dto.subscription.CreateSubscriptionRequest;
 import com.app.subly.dto.subscription.SubscriptionResponse;
-import com.app.subly.exception.subscription.CatalogServiceNotFoundException;
+import com.app.subly.exception.subscription.CatalogProviderNotFoundException;
 import com.app.subly.exception.subscription.CategoryNotFoundException;
 import com.app.subly.model.subscription.BillingCycle;
 import com.app.subly.model.subscription.MembershipRole;
-import com.app.subly.model.subscription.ServiceProvider;
-import com.app.subly.model.subscription.ServiceType;
+import com.app.subly.model.subscription.ProviderType;
 import com.app.subly.model.subscription.Subscription;
 import com.app.subly.model.subscription.SubscriptionMembership;
+import com.app.subly.model.subscription.SubscriptionProvider;
 import java.math.BigDecimal;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,7 +30,7 @@ import org.mockito.Captor;
 class CreateSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
 
     @Captor
-    ArgumentCaptor<ServiceProvider> serviceCaptor;
+    ArgumentCaptor<SubscriptionProvider> providerCaptor;
 
     @Captor
     ArgumentCaptor<Subscription> subscriptionCaptor;
@@ -47,10 +47,10 @@ class CreateSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
     class Create {
 
         @Test
-        void savesSubscriptionForExistingCatalogService() {
-            ServiceProvider catalogService = catalogService();
-            given(serviceProviderRepository.findByIdAndServiceType(SERVICE_ID, ServiceType.CATALOG))
-                    .willReturn(Optional.of(catalogService));
+        void savesSubscriptionForExistingCatalogProvider() {
+            SubscriptionProvider catalogProvider = catalogProvider();
+            given(subscriptionProviderRepository.findByIdAndProviderType(PROVIDER_ID, ProviderType.CATALOG))
+                    .willReturn(Optional.of(catalogProvider));
 
             CreateSubscriptionRequest request = catalogRequest();
 
@@ -58,29 +58,29 @@ class CreateSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
 
             then(subscriptionRepository).should().save(subscriptionCaptor.capture());
             Subscription saved = subscriptionCaptor.getValue();
-            assertThat(saved.getService()).isSameAs(catalogService);
-            then(serviceProviderRepository).should(never()).save(any());
+            assertThat(saved.getProvider()).isSameAs(catalogProvider);
+            then(subscriptionProviderRepository).should(never()).save(any());
             assertPaymentDetails(saved, request);
             assertSavedOwnerMembership(saved);
             assertThat(response).isEqualTo(SubscriptionResponse.from(saved));
         }
 
         @Test
-        void rejectsServiceThatIsNotInTheCatalog() {
-            given(serviceProviderRepository.findByIdAndServiceType(SERVICE_ID, ServiceType.CATALOG))
+        void rejectsProviderThatIsNotInTheCatalog() {
+            given(subscriptionProviderRepository.findByIdAndProviderType(PROVIDER_ID, ProviderType.CATALOG))
                     .willReturn(Optional.empty());
             CreateSubscriptionRequest request = catalogRequest();
 
             assertThatThrownBy(() -> subscriptionService.create(OWNER, request))
-                    .isInstanceOf(CatalogServiceNotFoundException.class)
-                    .hasMessageContaining(String.valueOf(SERVICE_ID));
+                    .isInstanceOf(CatalogProviderNotFoundException.class)
+                    .hasMessageContaining(String.valueOf(PROVIDER_ID));
             then(subscriptionRepository).shouldHaveNoInteractions();
             then(membershipRepository).shouldHaveNoInteractions();
         }
 
         private CreateSubscriptionRequest catalogRequest() {
             return new CreateSubscriptionRequest(
-                    SERVICE_ID, new BigDecimal("17.99"), BillingCycle.MONTHLY, today.plusDays(10), false);
+                    PROVIDER_ID, new BigDecimal("17.99"), BillingCycle.MONTHLY, today.plusDays(10), false);
         }
     }
 
@@ -88,23 +88,24 @@ class CreateSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
     class CreateCustom {
 
         @Test
-        void savesSubscriptionForNewCustomServiceWithStrippedName() {
+        void savesSubscriptionForNewCustomProviderWithStrippedName() {
             given(categoryRepository.findById(GYM_ID)).willReturn(Optional.of(gym));
-            given(serviceProviderRepository.save(any(ServiceProvider.class))).willAnswer(returnsFirstArg());
+            given(subscriptionProviderRepository.save(any(SubscriptionProvider.class)))
+                    .willAnswer(returnsFirstArg());
             CreateCustomSubscriptionRequest request = gymRequest();
 
             SubscriptionResponse response = subscriptionService.createCustom(OWNER, request);
 
-            then(serviceProviderRepository).should().save(serviceCaptor.capture());
-            ServiceProvider savedService = serviceCaptor.getValue();
-            assertThat(savedService.getName()).isEqualTo(CUSTOM_NAME);
-            assertThat(savedService.getServiceType()).isEqualTo(ServiceType.CUSTOM);
-            assertThat(savedService.getCategory()).isSameAs(gym);
-            assertThat(savedService.getCreatedBy()).isSameAs(owner);
+            then(subscriptionProviderRepository).should().save(providerCaptor.capture());
+            SubscriptionProvider savedProvider = providerCaptor.getValue();
+            assertThat(savedProvider.getName()).isEqualTo(CUSTOM_NAME);
+            assertThat(savedProvider.getProviderType()).isEqualTo(ProviderType.CUSTOM);
+            assertThat(savedProvider.getCategory()).isSameAs(gym);
+            assertThat(savedProvider.getCreatedBy()).isSameAs(owner);
 
             then(subscriptionRepository).should().save(subscriptionCaptor.capture());
             Subscription saved = subscriptionCaptor.getValue();
-            assertThat(saved.getService()).isSameAs(savedService);
+            assertThat(saved.getProvider()).isSameAs(savedProvider);
             assertPaymentDetails(saved, request);
             assertSavedOwnerMembership(saved);
 
@@ -119,7 +120,7 @@ class CreateSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
             assertThatThrownBy(() -> subscriptionService.createCustom(OWNER, request))
                     .isInstanceOf(CategoryNotFoundException.class)
                     .hasMessageContaining(String.valueOf(GYM_ID));
-            then(serviceProviderRepository).shouldHaveNoInteractions();
+            then(subscriptionProviderRepository).shouldHaveNoInteractions();
             then(subscriptionRepository).shouldHaveNoInteractions();
             then(membershipRepository).shouldHaveNoInteractions();
         }
