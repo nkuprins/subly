@@ -1,5 +1,7 @@
 package com.app.subly.repository;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.app.subly.model.User;
 import com.app.subly.model.UserRole;
 import com.app.subly.model.subscription.Category;
@@ -13,15 +15,16 @@ import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabas
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import org.springframework.test.context.ActiveProfiles;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 @ActiveProfiles("test")
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class ServiceProviderRepositoryTest {
 
-    @Autowired ServiceProviderRepository serviceProviderRepository;
-    @Autowired TestEntityManager entityManager;
+    @Autowired
+    ServiceProviderRepository serviceProviderRepository;
+
+    @Autowired
+    TestEntityManager entityManager;
 
     Category gym;
 

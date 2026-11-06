@@ -1,6 +1,10 @@
 package com.app.subly.service;
 
-import com.app.subly.model.subscription.MembershipRole;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
+
 import com.app.subly.dto.subscription.SubscriptionResponse;
 import com.app.subly.dto.subscription.UpdateCustomSubscriptionRequest;
 import com.app.subly.dto.subscription.UpdateSubscriptionRequest;
@@ -10,17 +14,12 @@ import com.app.subly.exception.subscription.SubscriptionAccessDeniedException;
 import com.app.subly.exception.subscription.SubscriptionNotFoundException;
 import com.app.subly.model.subscription.BillingCycle;
 import com.app.subly.model.subscription.Category;
+import com.app.subly.model.subscription.MembershipRole;
 import com.app.subly.model.subscription.Subscription;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-
 import java.math.BigDecimal;
 import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 
 class UpdateSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
 
@@ -65,8 +64,7 @@ class UpdateSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
         }
 
         private UpdateSubscriptionRequest updateRequest() {
-            return new UpdateSubscriptionRequest(new BigDecimal("19.99"), BillingCycle.YEARLY,
-                    today.plusDays(3), true);
+            return new UpdateSubscriptionRequest(new BigDecimal("19.99"), BillingCycle.YEARLY, today.plusDays(3), true);
         }
     }
 
@@ -134,8 +132,8 @@ class UpdateSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
         }
 
         private UpdateCustomSubscriptionRequest updateCustomRequest() {
-            return new UpdateCustomSubscriptionRequest("  Renamed  ", MUSIC_ID, new BigDecimal("12.34"),
-                    BillingCycle.YEARLY, today.plusDays(30), true);
+            return new UpdateCustomSubscriptionRequest(
+                    "  Renamed  ", MUSIC_ID, new BigDecimal("12.34"), BillingCycle.YEARLY, today.plusDays(30), true);
         }
     }
 

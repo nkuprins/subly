@@ -2,8 +2,8 @@ package com.app.subly.controller;
 
 import com.app.subly.exception.UserAlreadyExistsException;
 import com.app.subly.service.UserService;
-import org.springframework.ui.Model;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Controller
 public class PageController {
     private final UserService userService;
+
     public PageController(UserService userService) {
         this.userService = userService;
     }
@@ -27,12 +28,13 @@ public class PageController {
     }
 
     @PostMapping("/register")
-    public String createAccount(@RequestParam String username,
-                                @RequestParam String name,
-                                @RequestParam String email,
-                                @RequestParam String password,
-                                @RequestParam String confirmPassword,
-                                Model model) {
+    public String createAccount(
+            @RequestParam String username,
+            @RequestParam String name,
+            @RequestParam String email,
+            @RequestParam String password,
+            @RequestParam String confirmPassword,
+            Model model) {
         if (username.isBlank() || name.isBlank() || email.isBlank() || password.isBlank()) {
             model.addAttribute("registrationError", "All fields are required");
             return "register";

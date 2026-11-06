@@ -1,24 +1,23 @@
 package com.app.subly.controller;
 
-import com.app.subly.dto.subscription.VisibleSubscriptionResponse;
-import com.app.subly.model.subscription.MembershipRole;
-import org.junit.jupiter.api.Test;
-import org.springframework.security.test.context.support.WithAnonymousUser;
-
-import java.util.List;
-
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.app.subly.dto.subscription.VisibleSubscriptionResponse;
+import com.app.subly.model.subscription.MembershipRole;
+import java.util.List;
+import org.junit.jupiter.api.Test;
+import org.springframework.security.test.context.support.WithAnonymousUser;
+
 class ListSubscriptionControllerTest extends AbstractSubscriptionControllerTest {
 
     @Test
     void returns200WithOwnedSubscriptions() throws Exception {
-        given(service.findVisibleTo(USERNAME)).willReturn(List.of(
-                new VisibleSubscriptionResponse(gymResponse(), MembershipRole.OWNER)));
+        given(service.findVisibleTo(USERNAME))
+                .willReturn(List.of(new VisibleSubscriptionResponse(gymResponse(), MembershipRole.OWNER)));
 
         mockMvc.perform(get(URL))
                 .andExpect(status().isOk())
@@ -44,8 +43,7 @@ class ListSubscriptionControllerTest extends AbstractSubscriptionControllerTest 
     @Test
     @WithAnonymousUser
     void returns401ForAnonymousUser() throws Exception {
-        mockMvc.perform(get(URL))
-                .andExpect(status().isUnauthorized());
+        mockMvc.perform(get(URL)).andExpect(status().isUnauthorized());
 
         then(service).shouldHaveNoInteractions();
     }

@@ -1,12 +1,11 @@
 package com.app.subly.dashboard;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.app.subly.model.subscription.Currency;
 import com.app.subly.service.CurrencyConverter;
-import org.junit.jupiter.api.Test;
-
 import java.math.BigDecimal;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
 
 class CurrencyConverterTest {
 

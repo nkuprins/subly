@@ -1,16 +1,5 @@
 package com.app.subly.controller;
 
-import com.app.subly.dto.subscription.UpdateCustomSubscriptionRequest;
-import com.app.subly.dto.subscription.UpdateSubscriptionRequest;
-import com.app.subly.exception.subscription.CatalogServiceReadOnlyException;
-import com.app.subly.exception.subscription.SubscriptionAccessDeniedException;
-import com.app.subly.exception.subscription.SubscriptionNotFoundException;
-import com.app.subly.model.subscription.BillingCycle;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-
-import java.math.BigDecimal;
-
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.startsWith;
 import static org.mockito.ArgumentMatchers.any;
@@ -20,6 +9,16 @@ import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.app.subly.dto.subscription.UpdateCustomSubscriptionRequest;
+import com.app.subly.dto.subscription.UpdateSubscriptionRequest;
+import com.app.subly.exception.subscription.CatalogServiceReadOnlyException;
+import com.app.subly.exception.subscription.SubscriptionAccessDeniedException;
+import com.app.subly.exception.subscription.SubscriptionNotFoundException;
+import com.app.subly.model.subscription.BillingCycle;
+import java.math.BigDecimal;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
 class UpdateSubscriptionControllerTest extends AbstractSubscriptionControllerTest {
 
     @Nested
@@ -27,8 +26,8 @@ class UpdateSubscriptionControllerTest extends AbstractSubscriptionControllerTes
 
         @Test
         void returns200() throws Exception {
-            UpdateSubscriptionRequest request = new UpdateSubscriptionRequest(
-                    new BigDecimal("35.00"), BillingCycle.MONTHLY, NEXT_PAYMENT, false);
+            UpdateSubscriptionRequest request =
+                    new UpdateSubscriptionRequest(new BigDecimal("35.00"), BillingCycle.MONTHLY, NEXT_PAYMENT, false);
             given(service.update(USERNAME, SUBSCRIPTION_ID, request)).willReturn(gymResponse());
 
             send(BodyEndpoint.UPDATE, BodyEndpoint.UPDATE.validBody())

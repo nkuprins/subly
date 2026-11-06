@@ -10,6 +10,6 @@ import lombok.Getter;
 public class CreateCustomCategoryRequest {
 
     @NotBlank
-    @Size(max=100)
+    @Size(max = 100)
     private String categoryName;
 }

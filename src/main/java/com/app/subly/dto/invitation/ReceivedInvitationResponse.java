@@ -4,7 +4,6 @@ import com.app.subly.model.subscription.BillingCycle;
 import com.app.subly.model.subscription.Currency;
 import com.app.subly.model.subscription.PendingInvitation;
 import com.app.subly.model.subscription.Subscription;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 

@@ -1,11 +1,19 @@
 package com.app.subly.controller;
 
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.app.subly.config.SecurityConfig;
 import com.app.subly.dto.subscription.SubscriptionResponse;
 import com.app.subly.model.subscription.BillingCycle;
 import com.app.subly.model.subscription.Currency;
 import com.app.subly.model.subscription.ServiceType;
 import com.app.subly.service.SubscriptionService;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
@@ -18,15 +26,6 @@ import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import tools.jackson.databind.json.JsonMapper;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
-import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(SubscriptionController.class)
 @Import(SecurityConfig.class)
@@ -62,8 +61,17 @@ abstract class AbstractSubscriptionControllerTest {
     }
 
     static SubscriptionResponse gymResponse() {
-        return new SubscriptionResponse(SUBSCRIPTION_ID, CUSTOM_NAME, CATEGORY_ID, "Gym", ServiceType.CUSTOM,
-                new BigDecimal("35.00"), Currency.EUR, BillingCycle.MONTHLY, NEXT_PAYMENT, false);
+        return new SubscriptionResponse(
+                SUBSCRIPTION_ID,
+                CUSTOM_NAME,
+                CATEGORY_ID,
+                "Gym",
+                ServiceType.CUSTOM,
+                new BigDecimal("35.00"),
+                Currency.EUR,
+                BillingCycle.MONTHLY,
+                NEXT_PAYMENT,
+                false);
     }
 
     enum BodyEndpoint {

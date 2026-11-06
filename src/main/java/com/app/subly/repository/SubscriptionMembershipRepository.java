@@ -3,14 +3,13 @@ package com.app.subly.repository;
 import com.app.subly.model.subscription.MembershipRole;
 import com.app.subly.model.subscription.SubscriptionMembership;
 import com.app.subly.model.subscription.SubscriptionStatus;
-import org.springframework.data.jpa.repository.EntityGraph;
-import org.springframework.data.jpa.repository.JpaRepository;
-
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface SubscriptionMembershipRepository extends JpaRepository<SubscriptionMembership, Long> {
 

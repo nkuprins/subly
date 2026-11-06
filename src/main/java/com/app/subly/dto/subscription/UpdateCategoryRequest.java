@@ -16,6 +16,6 @@ public class UpdateCategoryRequest {
     private Long id;
 
     @NotBlank
-    @Size(max=100)
+    @Size(max = 100)
     private String newName;
 }

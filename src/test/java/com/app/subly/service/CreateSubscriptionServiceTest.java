@@ -1,5 +1,13 @@
 package com.app.subly.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.AdditionalAnswers.returnsFirstArg;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.never;
+
 import com.app.subly.dto.subscription.CreateCustomSubscriptionRequest;
 import com.app.subly.dto.subscription.CreateSubscriptionRequest;
 import com.app.subly.dto.subscription.SubscriptionResponse;
@@ -11,28 +19,24 @@ import com.app.subly.model.subscription.ServiceProvider;
 import com.app.subly.model.subscription.ServiceType;
 import com.app.subly.model.subscription.Subscription;
 import com.app.subly.model.subscription.SubscriptionMembership;
+import java.math.BigDecimal;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 
-import java.math.BigDecimal;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.AdditionalAnswers.returnsFirstArg;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
-import static org.mockito.Mockito.never;
-
 class CreateSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
 
-    @Captor ArgumentCaptor<ServiceProvider> serviceCaptor;
-    @Captor ArgumentCaptor<Subscription> subscriptionCaptor;
-    @Captor ArgumentCaptor<SubscriptionMembership> membershipCaptor;
+    @Captor
+    ArgumentCaptor<ServiceProvider> serviceCaptor;
+
+    @Captor
+    ArgumentCaptor<Subscription> subscriptionCaptor;
+
+    @Captor
+    ArgumentCaptor<SubscriptionMembership> membershipCaptor;
 
     @BeforeEach
     void ownerExists() {
@@ -75,8 +79,8 @@ class CreateSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
         }
 
         private CreateSubscriptionRequest catalogRequest() {
-            return new CreateSubscriptionRequest(SERVICE_ID, new BigDecimal("17.99"),
-                    BillingCycle.MONTHLY, today.plusDays(10), false);
+            return new CreateSubscriptionRequest(
+                    SERVICE_ID, new BigDecimal("17.99"), BillingCycle.MONTHLY, today.plusDays(10), false);
         }
     }
 
@@ -121,8 +125,13 @@ class CreateSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
         }
 
         private CreateCustomSubscriptionRequest gymRequest() {
-            return new CreateCustomSubscriptionRequest("  " + CUSTOM_NAME + "  ", GYM_ID,
-                    new BigDecimal("35.50"), BillingCycle.MONTHLY, today.plusDays(10), true);
+            return new CreateCustomSubscriptionRequest(
+                    "  " + CUSTOM_NAME + "  ",
+                    GYM_ID,
+                    new BigDecimal("35.50"),
+                    BillingCycle.MONTHLY,
+                    today.plusDays(10),
+                    true);
         }
     }
 

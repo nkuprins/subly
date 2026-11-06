@@ -6,7 +6,6 @@ import com.app.subly.model.subscription.Currency;
 import com.app.subly.model.subscription.ServiceProvider;
 import com.app.subly.model.subscription.ServiceType;
 import com.app.subly.model.subscription.Subscription;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 

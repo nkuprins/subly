@@ -18,7 +18,8 @@ public class CustomUserDetailsService implements UserDetailsService {
     private final PasswordEncoder encoder;
     private final AdminConfiguration adminConfiguration;
 
-    public CustomUserDetailsService(UserRepository repository, PasswordEncoder encoder, AdminConfiguration adminConfiguration){
+    public CustomUserDetailsService(
+            UserRepository repository, PasswordEncoder encoder, AdminConfiguration adminConfiguration) {
         this.repository = repository;
         this.encoder = encoder;
         this.adminConfiguration = adminConfiguration;
@@ -27,8 +28,9 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(@NonNull String username) throws UsernameNotFoundException {
-       User user = this.repository.findByUsername(username)
-               .orElseThrow(() -> new UsernameNotFoundException("No found user"));
+        User user = this.repository
+                .findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("No found user"));
 
         return org.springframework.security.core.userdetails.User.withUsername(user.getUsername())
                 .password(user.getPasswordHash())
@@ -36,8 +38,10 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .build();
     }
 
-    private void createDefaultAdminUser(){
-        if(this.repository.findByUsername(this.adminConfiguration.getAdminUsername()).isPresent()){
+    private void createDefaultAdminUser() {
+        if (this.repository
+                .findByUsername(this.adminConfiguration.getAdminUsername())
+                .isPresent()) {
             return;
         }
 

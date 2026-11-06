@@ -9,7 +9,6 @@ import lombok.Getter;
 @AllArgsConstructor
 public class DeleteCurrentUserRequest {
     @NotBlank
-    @Size(min=15, max=64)
+    @Size(min = 15, max = 64)
     private String password;
-
 }

@@ -1,21 +1,20 @@
 package com.app.subly.controller;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.app.subly.dto.subscription.CreateCustomSubscriptionRequest;
 import com.app.subly.dto.subscription.CreateSubscriptionRequest;
 import com.app.subly.exception.subscription.CatalogServiceNotFoundException;
 import com.app.subly.exception.subscription.CategoryNotFoundException;
 import com.app.subly.exception.subscription.PaymentDateInPastException;
 import com.app.subly.model.subscription.BillingCycle;
+import java.math.BigDecimal;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-
-import java.math.BigDecimal;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class CreateSubscriptionControllerTest extends AbstractSubscriptionControllerTest {
 
@@ -48,7 +47,8 @@ class CreateSubscriptionControllerTest extends AbstractSubscriptionControllerTes
 
             send(BodyEndpoint.CREATE, BodyEndpoint.CREATE.validBody())
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.detail").value("Next payment date " + TODAY.minusDays(1) + " is in the past"));
+                    .andExpect(
+                            jsonPath("$.detail").value("Next payment date " + TODAY.minusDays(1) + " is in the past"));
         }
     }
 

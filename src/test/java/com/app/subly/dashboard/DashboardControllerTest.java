@@ -1,11 +1,20 @@
 package com.app.subly.dashboard;
 
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.app.subly.config.SecurityConfig;
 import com.app.subly.controller.DashboardController;
 import com.app.subly.dto.dashboard.DashboardSummaryDto;
 import com.app.subly.dto.dashboard.UpcomingPaymentDto;
 import com.app.subly.model.subscription.Currency;
 import com.app.subly.service.DashboardService;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -14,16 +23,6 @@ import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.List;
-
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(DashboardController.class)
 @Import(SecurityConfig.class)
@@ -38,13 +37,8 @@ class DashboardControllerTest {
 
     @Test
     void returnsSummaryOfAuthenticatedUser() throws Exception {
-        given(dashboardService.getSummary("alice")).willReturn(
-                new DashboardSummaryDto(
-                        new BigDecimal("30.65"),
-                        new BigDecimal("367.80"),
-                        Currency.EUR
-                )
-        );
+        given(dashboardService.getSummary("alice"))
+                .willReturn(new DashboardSummaryDto(new BigDecimal("30.65"), new BigDecimal("367.80"), Currency.EUR));
 
         mockMvc.perform(get("/api/dashboard/summary"))
                 .andExpect(status().isOk())
@@ -58,10 +52,9 @@ class DashboardControllerTest {
     @Test
     void returnsUpcomingPaymentsOfAuthenticatedUser() throws Exception {
         LocalDate date = LocalDate.now().plusDays(10);
-        given(dashboardService.getUpcomingPayments("alice")).willReturn(List.of(
-                new UpcomingPaymentDto(5L, "Netflix",
-                        new BigDecimal("9.99"), Currency.USD, date, 10L)
-        ));
+        given(dashboardService.getUpcomingPayments("alice"))
+                .willReturn(List.of(
+                        new UpcomingPaymentDto(5L, "Netflix", new BigDecimal("9.99"), Currency.USD, date, 10L)));
 
         mockMvc.perform(get("/api/dashboard/upcoming-payments"))
                 .andExpect(status().isOk())
@@ -77,16 +70,14 @@ class DashboardControllerTest {
     @Test
     @WithAnonymousUser
     void summaryRequiresAuthentication() throws Exception {
-        mockMvc.perform(get("/api/dashboard/summary"))
-                .andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/dashboard/summary")).andExpect(status().isUnauthorized());
         then(dashboardService).shouldHaveNoInteractions();
     }
 
     @Test
     @WithAnonymousUser
     void upcomingPaymentsRequireAuthentication() throws Exception {
-        mockMvc.perform(get("/api/dashboard/upcoming-payments"))
-                .andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/dashboard/upcoming-payments")).andExpect(status().isUnauthorized());
         then(dashboardService).shouldHaveNoInteractions();
     }
 }

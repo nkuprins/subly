@@ -1,7 +1,14 @@
 package com.app.subly.repository;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.app.subly.model.User;
 import com.app.subly.model.UserRole;
+import java.time.ZoneId;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
@@ -10,17 +17,9 @@ import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.time.ZoneId;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 @ActiveProfiles("test")
 @DataJpaTest
-@AutoConfigureTestDatabase(replace= AutoConfigureTestDatabase.Replace.NONE)
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class UserRepositoryTest {
 
     @Autowired
@@ -30,9 +29,8 @@ public class UserRepositoryTest {
     private TestEntityManager manager;
 
     @Test
-    public void save_ShouldAddUserCorrectly(){
-        assertDoesNotThrow(()
-                -> repository.save(createUser("andris123", "andris@gmail.com", "Andris")));
+    public void save_ShouldAddUserCorrectly() {
+        assertDoesNotThrow(() -> repository.save(createUser("andris123", "andris@gmail.com", "Andris")));
 
         Optional<User> user = repository.findByUsername("andris123");
 
@@ -43,27 +41,23 @@ public class UserRepositoryTest {
     }
 
     @Test
-    public void save_ShouldFailIfUsernameAlreadyExists(){
+    public void save_ShouldFailIfUsernameAlreadyExists() {
         User firstUser = createUser("andris123", "andris@gmail.com", "Andris");
         User secondUser = createUser("andris123", "alex@gmail.com", "Alex");
 
-        assertDoesNotThrow(()
-                -> repository.saveAndFlush(firstUser));
+        assertDoesNotThrow(() -> repository.saveAndFlush(firstUser));
 
         assertThrows(DataIntegrityViolationException.class, () -> repository.saveAndFlush(secondUser));
-
     }
 
     @Test
-    public void save_ShouldFailIfEmailAlreadyExists(){
+    public void save_ShouldFailIfEmailAlreadyExists() {
         User firstUser = createUser("andris123", "andris@gmail.com", "Andris");
         User secondUser = createUser("alex123", "andris@gmail.com", "Alex");
 
-        assertDoesNotThrow(()
-                -> repository.saveAndFlush(firstUser));
+        assertDoesNotThrow(() -> repository.saveAndFlush(firstUser));
 
         assertThrows(DataIntegrityViolationException.class, () -> repository.saveAndFlush(secondUser));
-
     }
 
     @Test
@@ -108,10 +102,7 @@ public class UserRepositoryTest {
 
         secondUser.setEmail("andris@gmail.com");
 
-        assertThrows(
-                DataIntegrityViolationException.class,
-                () -> repository.flush()
-        );
+        assertThrows(DataIntegrityViolationException.class, () -> repository.flush());
     }
 
     @Test
@@ -124,10 +115,7 @@ public class UserRepositoryTest {
 
         secondUser.setUsername("andris123");
 
-        assertThrows(
-                DataIntegrityViolationException.class,
-                () -> repository.flush()
-        );
+        assertThrows(DataIntegrityViolationException.class, () -> repository.flush());
     }
 
     @Test
@@ -137,7 +125,7 @@ public class UserRepositoryTest {
         assertThat(user).isEmpty();
     }
 
-    private User createUser(String username, String email, String name){
+    private User createUser(String username, String email, String name) {
         User user = new User();
         user.setUsername(username);
         user.setName(name);
@@ -149,7 +137,7 @@ public class UserRepositoryTest {
     }
 
     @Test
-    public void findDistinctTimeZones_ShouldReturnEachZoneOnce(){
+    public void findDistinctTimeZones_ShouldReturnEachZoneOnce() {
         User tokyoUser = createUser("taro", "taro@gmail.com", "Taro");
         tokyoUser.setTimeZone(ZoneId.of("Asia/Tokyo"));
         repository.save(tokyoUser);

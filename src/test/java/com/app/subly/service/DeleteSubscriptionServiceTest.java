@@ -1,18 +1,17 @@
 package com.app.subly.service;
 
-import com.app.subly.model.subscription.MembershipRole;
-import com.app.subly.exception.subscription.SubscriptionAccessDeniedException;
-import com.app.subly.exception.subscription.SubscriptionNotFoundException;
-import com.app.subly.model.subscription.Subscription;
-import org.junit.jupiter.api.Test;
-
-import java.util.Optional;
-
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.never;
+
+import com.app.subly.exception.subscription.SubscriptionAccessDeniedException;
+import com.app.subly.exception.subscription.SubscriptionNotFoundException;
+import com.app.subly.model.subscription.MembershipRole;
+import com.app.subly.model.subscription.Subscription;
+import java.util.Optional;
+import org.junit.jupiter.api.Test;
 
 class DeleteSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
 

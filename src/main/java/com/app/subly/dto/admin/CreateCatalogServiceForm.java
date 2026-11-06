@@ -19,5 +19,4 @@ public class CreateCatalogServiceForm {
 
     @Size(max = 500)
     private String logoPath;
-
 }

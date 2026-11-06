@@ -1,5 +1,7 @@
 package com.app.subly.repository;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.app.subly.model.User;
 import com.app.subly.model.UserRole;
 import com.app.subly.model.subscription.BillingCycle;
@@ -10,6 +12,11 @@ import com.app.subly.model.subscription.Subscription;
 import com.app.subly.model.subscription.SubscriptionMembership;
 import com.app.subly.model.subscription.SubscriptionStatus;
 import jakarta.persistence.PersistenceUnitUtil;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,14 +24,6 @@ import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import org.springframework.test.context.ActiveProfiles;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @ActiveProfiles("test")
 @DataJpaTest
@@ -35,9 +34,14 @@ class SubscriptionMembershipRepositoryTest {
     static final String MEMBER = "test-member";
     static final String STRANGER = "test-stranger";
 
-    @Autowired SubscriptionMembershipRepository membershipRepository;
-    @Autowired SubscriptionRepository subscriptionRepository;
-    @Autowired TestEntityManager entityManager;
+    @Autowired
+    SubscriptionMembershipRepository membershipRepository;
+
+    @Autowired
+    SubscriptionRepository subscriptionRepository;
+
+    @Autowired
+    TestEntityManager entityManager;
 
     Subscription subscription;
     SubscriptionMembership ownerRow;
@@ -51,8 +55,8 @@ class SubscriptionMembershipRepositoryTest {
         Category gym = entityManager.persist(new Category("Test gym"));
         ServiceProvider service = entityManager.persist(ServiceProvider.custom("My gym", gym, owner));
         LocalDate today = LocalDate.now();
-        subscription = entityManager.persist(new Subscription(service, new BigDecimal("35.00"),
-                BillingCycle.MONTHLY, today.plusDays(10), false));
+        subscription = entityManager.persist(
+                new Subscription(service, new BigDecimal("35.00"), BillingCycle.MONTHLY, today.plusDays(10), false));
         ownerRow = entityManager.persist(new SubscriptionMembership(owner, subscription, MembershipRole.OWNER));
         memberRow = entityManager.persist(new SubscriptionMembership(member, subscription, MembershipRole.MEMBER));
         entityManager.flush();
@@ -62,10 +66,12 @@ class SubscriptionMembershipRepositoryTest {
     @Test
     void findsTheOwnerRowWithUserAndSubscriptionLoaded() {
         SubscriptionMembership owner = membershipRepository
-                .findBySubscriptionIdAndRole(subscription.getId(), MembershipRole.OWNER).orElseThrow();
+                .findBySubscriptionIdAndRole(subscription.getId(), MembershipRole.OWNER)
+                .orElseThrow();
 
         assertThat(owner.getId()).isEqualTo(ownerRow.getId());
-        PersistenceUnitUtil util = entityManager.getEntityManager().getEntityManagerFactory().getPersistenceUnitUtil();
+        PersistenceUnitUtil util =
+                entityManager.getEntityManager().getEntityManagerFactory().getPersistenceUnitUtil();
         assertThat(util.isLoaded(owner, "user")).isTrue();
         assertThat(util.isLoaded(owner, "subscription")).isTrue();
         assertThat(util.isLoaded(owner.getSubscription(), "service")).isTrue();
@@ -74,7 +80,8 @@ class SubscriptionMembershipRepositoryTest {
 
     @Test
     void findsNoOwnerRowForUnknownSubscription() {
-        assertThat(membershipRepository.findBySubscriptionIdAndRole(-1L, MembershipRole.OWNER)).isEmpty();
+        assertThat(membershipRepository.findBySubscriptionIdAndRole(-1L, MembershipRole.OWNER))
+                .isEmpty();
     }
 
     @Test
@@ -89,19 +96,22 @@ class SubscriptionMembershipRepositoryTest {
 
     @Test
     void ignoresCancelledSubscriptions() {
-        Subscription cancelled = subscriptionRepository.findById(subscription.getId()).orElseThrow();
+        Subscription cancelled =
+                subscriptionRepository.findById(subscription.getId()).orElseThrow();
         cancelled.setStatus(SubscriptionStatus.CANCELLED);
         cancelled.setCancelledAt(LocalDateTime.now());
         entityManager.flush();
 
-        assertThat(findOwnersDueBefore(subscription.getNextPaymentDate().plusDays(1))).isEmpty();
+        assertThat(findOwnersDueBefore(subscription.getNextPaymentDate().plusDays(1)))
+                .isEmpty();
     }
 
     @Test
     void ignoresOwnersInOtherTimeZones() {
         LocalDate dayAfterPayment = subscription.getNextPaymentDate().plusDays(1);
 
-        assertThat(findOwnersDueBefore(ZoneId.of("Asia/Tokyo"), dayAfterPayment)).isEmpty();
+        assertThat(findOwnersDueBefore(ZoneId.of("Asia/Tokyo"), dayAfterPayment))
+                .isEmpty();
     }
 
     @Test

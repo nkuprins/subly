@@ -7,13 +7,11 @@ import com.app.subly.model.User;
 import com.app.subly.model.UserRole;
 import com.app.subly.repository.UserRepository;
 import jakarta.transaction.Transactional;
+import java.time.ZoneId;
+import java.util.List;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.time.ZoneId;
-import java.util.List;
-
 
 @Service
 public class UserService {
@@ -47,7 +45,8 @@ public class UserService {
             throw new IllegalArgumentException("Id must be positive");
         }
 
-        User user = this.repository.findById(id)
+        User user = this.repository
+                .findById(id)
                 .orElseThrow(() -> new UserDoesNotExistException("The user with the id doesn't exist"));
 
         return mapToDTO(user);
@@ -71,7 +70,6 @@ public class UserService {
         return result.stream().map(this::mapToDTO).toList();
     }
 
-
     @Transactional
     public void deleteUserByUsername(String username, String rawPassword) {
         // Make an attempt to delete a user with the given username
@@ -90,15 +88,13 @@ public class UserService {
         } catch (DataIntegrityViolationException exception) {
             throw new UserIsConnectedError("Cannot delete the user because it is connected with some table's field");
         }
-
     }
 
-
     @Transactional
-    public void updateUserPassword(String username, String rawOldPassword, String rawNewPassword){
+    public void updateUserPassword(String username, String rawOldPassword, String rawNewPassword) {
         User user = this.getUserByUserName(username);
 
-        if(!this.encoder.matches(rawOldPassword, user.getPasswordHash())){
+        if (!this.encoder.matches(rawOldPassword, user.getPasswordHash())) {
             throw new WrongPasswordException("The passwords don't match");
         }
 
@@ -109,50 +105,51 @@ public class UserService {
     public void updateUserInformation(String oldUsername, UpdateUserInformationRequest newUserInfo) {
         User user = this.getUserByUserName(oldUsername);
 
-        try{
-            if(newUserInfo.isEmailProvided()){
-                if(this.isNotValidForUpdating(user.getEmail(), newUserInfo.getNewEmail())){
-                    throw new UserInfoUpdateException("You must provide a non-empty email that differs from your current");
+        try {
+            if (newUserInfo.isEmailProvided()) {
+                if (this.isNotValidForUpdating(user.getEmail(), newUserInfo.getNewEmail())) {
+                    throw new UserInfoUpdateException(
+                            "You must provide a non-empty email that differs from your current");
                 }
                 user.setEmail(newUserInfo.getNewEmail());
             }
 
-            if(newUserInfo.isUsernameProvided()){
-                if(this.isNotValidForUpdating(user.getUsername(), newUserInfo.getNewUsername())){
-                    throw new UserInfoUpdateException("You must provide a non-empty username that differs from your current");
+            if (newUserInfo.isUsernameProvided()) {
+                if (this.isNotValidForUpdating(user.getUsername(), newUserInfo.getNewUsername())) {
+                    throw new UserInfoUpdateException(
+                            "You must provide a non-empty username that differs from your current");
                 }
                 user.setUsername(newUserInfo.getNewUsername());
             }
 
-            if(newUserInfo.isNameProvided()){
-                if(this.isNotValidForUpdating(user.getName(), newUserInfo.getNewName())){
-                    throw new UserInfoUpdateException("You must provide a non-empty name that differs from your current");
+            if (newUserInfo.isNameProvided()) {
+                if (this.isNotValidForUpdating(user.getName(), newUserInfo.getNewName())) {
+                    throw new UserInfoUpdateException(
+                            "You must provide a non-empty name that differs from your current");
                 }
                 user.setName(newUserInfo.getNewName());
             }
 
-            if(newUserInfo.isTimeZoneProvided()){
-                if(newUserInfo.getNewTimeZone() == null){
+            if (newUserInfo.isTimeZoneProvided()) {
+                if (newUserInfo.getNewTimeZone() == null) {
                     throw new UserInfoUpdateException("You must provide a time zone");
                 }
                 user.setTimeZone(newUserInfo.getNewTimeZone());
             }
 
             this.repository.flush();
-        } catch(DataIntegrityViolationException ex) {
+        } catch (DataIntegrityViolationException ex) {
             throw new UserAlreadyExistsException("The user with provided email or username already exists");
         }
-
     }
 
-    public User getUserByUserName(String username){
-        return this.repository.findByUsername(username).orElseThrow(() -> new UserDoesNotExistException(
-                "No found user with the username"
-        ));
+    public User getUserByUserName(String username) {
+        return this.repository
+                .findByUsername(username)
+                .orElseThrow(() -> new UserDoesNotExistException("No found user with the username"));
     }
 
-    private User createUserFromRawData(String username, String name, String password, String email,
-                                       ZoneId timeZone) {
+    private User createUserFromRawData(String username, String name, String password, String email, ZoneId timeZone) {
         User user = new User();
         user.setUsername(username);
         user.setName(name);
@@ -165,7 +162,7 @@ public class UserService {
         return user;
     }
 
-    private boolean isNotValidForUpdating(String originalCredential, String providedCredential){
+    private boolean isNotValidForUpdating(String originalCredential, String providedCredential) {
         // Specially designed for update operations for email, username and name ONLY
         // 'originalCredential' - stored credential in the database
         // 'providedCredential' - credential provided in the request to update.
@@ -174,7 +171,7 @@ public class UserService {
         //   1) The provided credential is empty or null
         //   2) The provided credential is the same as the user's current credential
 
-        if(providedCredential == null || providedCredential.isBlank()){
+        if (providedCredential == null || providedCredential.isBlank()) {
             return true;
         }
         return originalCredential.equals(providedCredential);
