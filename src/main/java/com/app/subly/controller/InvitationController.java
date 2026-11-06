@@ -1,6 +1,6 @@
 package com.app.subly.controller;
 
-import com.app.subly.dto.invitation.InvitationResponse;
+import com.app.subly.dto.invitation.InviteResponse;
 import com.app.subly.dto.invitation.InviteRequest;
 import com.app.subly.dto.invitation.ReceivedInvitationResponse;
 import com.app.subly.services.InvitationService;
@@ -27,13 +27,13 @@ public class InvitationController {
 
     @PostMapping("/subscriptions/{id}/invitations")
     @ResponseStatus(HttpStatus.CREATED)
-    public InvitationResponse invite(Principal principal, @PathVariable long id,
-                                     @Valid @RequestBody InviteRequest request) {
+    public InviteResponse invite(Principal principal, @PathVariable long id,
+                                 @Valid @RequestBody InviteRequest request) {
         return service.invite(principal.getName(), id, request);
     }
 
     @GetMapping("/subscriptions/{id}/invitations")
-    public List<InvitationResponse> listPending(Principal principal, @PathVariable long id) {
+    public List<InviteResponse> listPending(Principal principal, @PathVariable long id) {
         return service.findPending(principal.getName(), id);
     }
 
