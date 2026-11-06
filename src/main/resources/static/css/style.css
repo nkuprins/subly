@@ -520,3 +520,32 @@ tbody tr {
     gap: 8px;
     font-weight: 500;
 }
+
+.upcoming-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 10px 0;
+    border-top: 1px solid #eee;
+}
+
+.upcoming-row:first-child {
+    border-top: none;
+}
+
+.upcoming-name {
+    font-weight: 600;
+    flex: 1;
+}
+
+.upcoming-date {
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.upcoming-amount {
+    font-weight: 700;
+    color: var(--primary);
+    min-width: 80px;
+    text-align: right;
+}

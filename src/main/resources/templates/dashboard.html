@@ -14,22 +14,25 @@
     <section class="cards">
         <div class="card">
             <span class="card-label">Monthly</span>
-            <span class="card-value">€0.00</span>
+            <span class="card-value" id="monthly-total">€0.00</span>
         </div>
         <div class="card">
             <span class="card-label">Yearly</span>
-            <span class="card-value">€0.00</span>
+            <span class="card-value" id="yearly-total">€0.00</span>
         </div>
         <div class="card">
             <span class="card-label">Active subscription</span>
-            <span class="card-value">0</span>
+            <span class="card-value" id="active-count">0</span>
         </div>
     </section>
     <section class="panel">
         <h2>Upcoming payments</h2>
-        <p class="muted">No upcoming payments yet</p>
+        <div id="upcoming-payments">
+        <p class="muted">Loading...</p>
+        </div>
     </section>
 </main>
 <div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/dashboard.js}"></script>
 </body>
 </html>
