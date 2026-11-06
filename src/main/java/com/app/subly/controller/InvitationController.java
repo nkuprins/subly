@@ -3,7 +3,7 @@ package com.app.subly.controller;
 import com.app.subly.dto.invitation.InviteResponse;
 import com.app.subly.dto.invitation.InviteRequest;
 import com.app.subly.dto.invitation.ReceivedInvitationResponse;
-import com.app.subly.services.InvitationService;
+import com.app.subly.service.InvitationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

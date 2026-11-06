@@ -1,8 +1,8 @@
 package com.app.subly.controller;
 
 import com.app.subly.dto.*;
-import com.app.subly.exceptions.*;
-import com.app.subly.services.UserService;
+import com.app.subly.exception.*;
+import com.app.subly.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -23,17 +23,6 @@ public class UserController {
 
     public UserController(UserService service) {
         this.service = service;
-    }
-
-    @PostMapping("/register")
-    public ResponseEntity<OperationResponse> createNewUser(@Valid @RequestBody CreateUserRequest request) {
-        try {
-            this.service.addNewUser(request.getUsername(), request.getName(), request.getPassword(), request.getEmail(),
-                    request.getTimeZone());
-            return ResponseEntity.ok(new OperationResponse(false, "The user has been registered successfully"));
-        } catch (UserAlreadyExistsException exception) {
-            return ResponseEntity.badRequest().body(new OperationResponse(true, exception.getMessage()));
-        }
     }
 
     @DeleteMapping("/delete/me")

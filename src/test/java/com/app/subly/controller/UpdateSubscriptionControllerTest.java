@@ -2,10 +2,10 @@ package com.app.subly.controller;
 
 import com.app.subly.dto.subscription.UpdateCustomSubscriptionRequest;
 import com.app.subly.dto.subscription.UpdateSubscriptionRequest;
-import com.app.subly.exceptions.subscription.CatalogServiceReadOnlyException;
-import com.app.subly.exceptions.subscription.SubscriptionAccessDeniedException;
-import com.app.subly.exceptions.subscription.SubscriptionNotFoundException;
-import com.app.subly.models.subscription.BillingCycle;
+import com.app.subly.exception.subscription.CatalogServiceReadOnlyException;
+import com.app.subly.exception.subscription.SubscriptionAccessDeniedException;
+import com.app.subly.exception.subscription.SubscriptionNotFoundException;
+import com.app.subly.model.subscription.BillingCycle;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 

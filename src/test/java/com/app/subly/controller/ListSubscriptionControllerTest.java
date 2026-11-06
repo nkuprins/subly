@@ -1,7 +1,7 @@
 package com.app.subly.controller;
 
 import com.app.subly.dto.subscription.VisibleSubscriptionResponse;
-import com.app.subly.models.subscription.MembershipRole;
+import com.app.subly.model.subscription.MembershipRole;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 

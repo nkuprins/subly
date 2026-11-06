@@ -1,7 +1,7 @@
 package com.app.subly.repository;
 
-import com.app.subly.models.subscription.ServiceProvider;
-import com.app.subly.models.subscription.ServiceType;
+import com.app.subly.model.subscription.ServiceProvider;
+import com.app.subly.model.subscription.ServiceType;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 

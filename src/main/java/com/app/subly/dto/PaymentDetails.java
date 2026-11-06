@@ -1,6 +1,6 @@
 package com.app.subly.dto;
 
-import com.app.subly.models.subscription.BillingCycle;
+import com.app.subly.model.subscription.BillingCycle;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

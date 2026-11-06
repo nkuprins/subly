@@ -153,10 +153,10 @@
                 </dependencies>
                 <configuration>
                     <targetClasses>
-                        <param>com.app.subly.services.*</param>
+                        <param>com.app.subly.service.*</param>
                     </targetClasses>
                     <targetTests>
-                        <param>com.app.subly.services.*</param>
+                        <param>com.app.subly.service.*</param>
                         <param>com.app.subly.dashboard.*</param>
                     </targetTests>
                 </configuration>
