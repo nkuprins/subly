@@ -9,10 +9,10 @@ import lombok.Getter;
 @AllArgsConstructor
 public class ChangePasswordRequest {
     @NotBlank
-    @Size(min=15, max=64)
+    @Size(min = 15, max = 64)
     private String oldPassword;
 
     @NotBlank
-    @Size(min=15, max=64)
+    @Size(min = 15, max = 64)
     private String newPassword;
 }

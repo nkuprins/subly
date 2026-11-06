@@ -63,3 +63,24 @@ To use a different database or credentials, set the variables before running:
 ```bash
 DB_URL=jdbc:mysql://myhost:3306/subly DB_USERNAME=me DB_PASSWORD=secret ./mvnw spring-boot:run
 ```
+
+## Code style
+
+Java code is formatted with [Spotless](https://github.com/diffplug/spotless) and
+[palantir-java-format](https://github.com/palantir/palantir-java-format). CI fails if the code is not formatted.
+
+Format the code before you push:
+
+```bash
+./mvnw spotless:apply
+```
+
+Check the format without changing files:
+
+```bash
+./mvnw spotless:check
+```
+
+Use `this.` only when a parameter or local variable has the same name as the field, for example `this.name = name`.
+Write `repository.save(user)`, not `this.repository.save(user)`. Spotless does not check this rule. IntelliJ shows it
+with the "Unnecessary 'this' qualifier" inspection.

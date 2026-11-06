@@ -1,16 +1,15 @@
 package com.app.subly.model.subscription;
 
 import jakarta.persistence.*;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 
 @Entity
 @Table(name = "subscriptions")
@@ -25,8 +24,8 @@ public class Subscription {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "service_id", nullable = false)
-    private ServiceProvider service;
+    @JoinColumn(name = "provider_id", nullable = false)
+    private SubscriptionProvider provider;
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
@@ -69,18 +68,22 @@ public class Subscription {
     @Column(nullable = false)
     private int maxParticipants = 1;
 
-    public Subscription(ServiceProvider service, BigDecimal price, BillingCycle billingCycle,
-                        LocalDate nextPaymentDate, boolean freeTrial) {
-        this.service = service;
+    public Subscription(
+            SubscriptionProvider provider,
+            BigDecimal price,
+            BillingCycle billingCycle,
+            LocalDate nextPaymentDate,
+            boolean freeTrial) {
+        this.provider = provider;
         this.price = price;
         this.billingCycle = billingCycle;
-        this.billingAnchorDate = nextPaymentDate;
+        billingAnchorDate = nextPaymentDate;
         this.nextPaymentDate = nextPaymentDate;
         this.freeTrial = freeTrial;
     }
 
     public void reschedule(LocalDate nextPaymentDate) {
-        this.billingAnchorDate = nextPaymentDate;
+        billingAnchorDate = nextPaymentDate;
         this.nextPaymentDate = nextPaymentDate;
     }
 

@@ -1,6 +1,6 @@
 package com.app.subly.model.subscription;
 
-public enum ServiceType {
+public enum ProviderType {
     CATALOG,
     CUSTOM
 }

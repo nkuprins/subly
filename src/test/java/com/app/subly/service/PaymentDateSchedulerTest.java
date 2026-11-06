@@ -1,22 +1,21 @@
 package com.app.subly.service;
 
-import com.app.subly.repository.UserRepository;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.times;
 
+import com.app.subly.repository.UserRepository;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.List;
-
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
-import static org.mockito.Mockito.times;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class PaymentDateSchedulerTest {
@@ -24,8 +23,11 @@ class PaymentDateSchedulerTest {
     private static final ZoneId RIGA = ZoneId.of("Europe/Riga");
     private static final ZoneId TOKYO = ZoneId.of("Asia/Tokyo");
 
-    @Mock UserRepository userRepository;
-    @Mock SubscriptionService subscriptionService;
+    @Mock
+    UserRepository userRepository;
+
+    @Mock
+    SubscriptionService subscriptionService;
 
     // Starts at 16:00 UTC on 4 Nov: still 4 Nov in Riga, but already 5 Nov in Tokyo.
     final MovableClock clock = new MovableClock(Instant.parse("2026-11-04T16:00:00Z"));
@@ -54,12 +56,9 @@ class PaymentDateSchedulerTest {
         clock.moveTo("2026-11-04T22:00:00Z");
         scheduler.advancePastPaymentDates();
 
-        then(subscriptionService).should(times(1))
-                .advancePaymentDates(RIGA, LocalDate.of(2026, 11, 4));
-        then(subscriptionService).should(times(1))
-                .advancePaymentDates(RIGA, LocalDate.of(2026, 11, 5));
-        then(subscriptionService).should(times(1))
-                .advancePaymentDates(TOKYO, LocalDate.of(2026, 11, 5));
+        then(subscriptionService).should(times(1)).advancePaymentDates(RIGA, LocalDate.of(2026, 11, 4));
+        then(subscriptionService).should(times(1)).advancePaymentDates(RIGA, LocalDate.of(2026, 11, 5));
+        then(subscriptionService).should(times(1)).advancePaymentDates(TOKYO, LocalDate.of(2026, 11, 5));
         then(subscriptionService).shouldHaveNoMoreInteractions();
     }
 

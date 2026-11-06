@@ -1,33 +1,28 @@
 package com.app.subly.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.BDDMockito.given;
+
 import com.app.subly.dto.subscription.VisibleSubscriptionResponse;
 import com.app.subly.model.subscription.MembershipRole;
 import com.app.subly.model.subscription.Subscription;
 import com.app.subly.model.subscription.SubscriptionMembership;
 import com.app.subly.model.subscription.SubscriptionStatus;
-import org.junit.jupiter.api.Test;
-
 import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.BDDMockito.given;
+import org.junit.jupiter.api.Test;
 
 class ListSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
 
     @Test
     void returnsVisibleSubscriptionsWithMembershipRoles() {
-        Subscription owned = subscription(customService());
-        Subscription shared = subscription(catalogService());
+        Subscription owned = subscription(customProvider());
+        Subscription shared = subscription(catalogProvider());
 
-        SubscriptionMembership ownerMembership =
-                SubscriptionMembership.owner(owner, owned);
+        SubscriptionMembership ownerMembership = SubscriptionMembership.owner(owner, owned);
 
-        SubscriptionMembership memberMembership =
-                new SubscriptionMembership(
-                        owner, shared, MembershipRole.MEMBER);
+        SubscriptionMembership memberMembership = new SubscriptionMembership(owner, shared, MembershipRole.MEMBER);
 
-        given(membershipRepository
-                .findByUser_UsernameAndSubscription_StatusOrderBySubscription_NextPaymentDateAsc(
+        given(membershipRepository.findByUser_UsernameAndSubscription_StatusOrderBySubscription_NextPaymentDateAsc(
                         OWNER, SubscriptionStatus.ACTIVE))
                 .willReturn(List.of(ownerMembership, memberMembership));
 

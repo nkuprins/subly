@@ -14,7 +14,11 @@ public class InvitationExceptionHandler {
         return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
-    @ExceptionHandler({AlreadyMemberException.class, AlreadyInvitedException.class, InvitationCannotBeAcceptedException.class})
+    @ExceptionHandler({
+        AlreadyMemberException.class,
+        AlreadyInvitedException.class,
+        InvitationCannotBeAcceptedException.class
+    })
     public ProblemDetail handleConflict(RuntimeException ex) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
     }

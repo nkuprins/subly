@@ -3,9 +3,8 @@ package com.app.subly.dto;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
-import lombok.Getter;
-
 import java.time.ZoneId;
+import lombok.Getter;
 
 @Getter
 public class UpdateUserInformationRequest {
@@ -15,37 +14,38 @@ public class UpdateUserInformationRequest {
 
     @Email
     private String newEmail;
+
     private boolean emailProvided = false;
 
-    @Size(max=100)
+    @Size(max = 100)
     private String newName;
+
     private boolean nameProvided = false;
 
     private ZoneId newTimeZone;
     private boolean timeZoneProvided = false;
 
     @JsonSetter("newUsername")
-    public void setNewUsername(String username){
-        this.newUsername = username;
-        this.usernameProvided = true;
+    public void setNewUsername(String username) {
+        newUsername = username;
+        usernameProvided = true;
     }
 
     @JsonSetter("newEmail")
-    public void setNewEmail(String email){
-        this.newEmail = email;
-        this.emailProvided = true;
+    public void setNewEmail(String email) {
+        newEmail = email;
+        emailProvided = true;
     }
 
     @JsonSetter("newName")
-    public void setNewName(String name){
-        this.newName = name;
-        this.nameProvided = true;
+    public void setNewName(String name) {
+        newName = name;
+        nameProvided = true;
     }
 
     @JsonSetter("newTimeZone")
-    public void setNewTimeZone(ZoneId timeZone){
-        this.newTimeZone = timeZone;
-        this.timeZoneProvided = true;
+    public void setNewTimeZone(ZoneId timeZone) {
+        newTimeZone = timeZone;
+        timeZoneProvided = true;
     }
-
 }

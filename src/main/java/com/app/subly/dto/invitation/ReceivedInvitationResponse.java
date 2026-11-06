@@ -4,14 +4,13 @@ import com.app.subly.model.subscription.BillingCycle;
 import com.app.subly.model.subscription.Currency;
 import com.app.subly.model.subscription.PendingInvitation;
 import com.app.subly.model.subscription.Subscription;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public record ReceivedInvitationResponse(
         Long id,
         Long subscriptionId,
-        String serviceName,
+        String providerName,
         String ownerUsername,
         BigDecimal price,
         Currency currency,
@@ -23,7 +22,7 @@ public record ReceivedInvitationResponse(
         return new ReceivedInvitationResponse(
                 invitation.getId(),
                 subscription.getId(),
-                subscription.getService().getName(),
+                subscription.getProvider().getName(),
                 ownerUsername,
                 subscription.getPrice(),
                 subscription.getCurrency(),

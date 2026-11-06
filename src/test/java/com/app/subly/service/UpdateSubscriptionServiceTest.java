@@ -1,26 +1,25 @@
 package com.app.subly.service;
 
-import com.app.subly.model.subscription.MembershipRole;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
+
 import com.app.subly.dto.subscription.SubscriptionResponse;
 import com.app.subly.dto.subscription.UpdateCustomSubscriptionRequest;
 import com.app.subly.dto.subscription.UpdateSubscriptionRequest;
-import com.app.subly.exception.subscription.CatalogServiceReadOnlyException;
+import com.app.subly.exception.subscription.CatalogProviderReadOnlyException;
 import com.app.subly.exception.subscription.CategoryNotFoundException;
 import com.app.subly.exception.subscription.SubscriptionAccessDeniedException;
 import com.app.subly.exception.subscription.SubscriptionNotFoundException;
 import com.app.subly.model.subscription.BillingCycle;
 import com.app.subly.model.subscription.Category;
+import com.app.subly.model.subscription.MembershipRole;
 import com.app.subly.model.subscription.Subscription;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-
 import java.math.BigDecimal;
 import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 
 class UpdateSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
 
@@ -32,7 +31,7 @@ class UpdateSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
     class Update {
 
         @Test
-        void changesPaymentDetailsAndKeepsTheService() {
+        void changesPaymentDetailsAndKeepsTheProvider() {
             Subscription subscription = givenOwnedCatalogSubscription();
             givenOwnerExists();
             UpdateSubscriptionRequest request = updateRequest();
@@ -40,7 +39,7 @@ class UpdateSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
             SubscriptionResponse response = subscriptionService.update(OWNER, SUBSCRIPTION_ID, request);
 
             assertPaymentDetails(subscription, request);
-            assertThat(subscription.getService().getName()).isEqualTo(CATALOG_NAME);
+            assertThat(subscription.getProvider().getName()).isEqualTo(CATALOG_NAME);
             assertThat(response).isEqualTo(SubscriptionResponse.from(subscription));
         }
 
@@ -65,8 +64,7 @@ class UpdateSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
         }
 
         private UpdateSubscriptionRequest updateRequest() {
-            return new UpdateSubscriptionRequest(new BigDecimal("19.99"), BillingCycle.YEARLY,
-                    today.plusDays(3), true);
+            return new UpdateSubscriptionRequest(new BigDecimal("19.99"), BillingCycle.YEARLY, today.plusDays(3), true);
         }
     }
 
@@ -82,8 +80,8 @@ class UpdateSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
 
             SubscriptionResponse response = subscriptionService.updateCustom(OWNER, SUBSCRIPTION_ID, request);
 
-            assertThat(subscription.getService().getName()).isEqualTo("Renamed");
-            assertThat(subscription.getService().getCategory()).isSameAs(music);
+            assertThat(subscription.getProvider().getName()).isEqualTo("Renamed");
+            assertThat(subscription.getProvider().getCategory()).isSameAs(music);
             assertPaymentDetails(subscription, request);
             assertThat(response).isEqualTo(SubscriptionResponse.from(subscription));
         }
@@ -94,7 +92,7 @@ class UpdateSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
             UpdateCustomSubscriptionRequest request = updateCustomRequest();
 
             assertThatThrownBy(() -> subscriptionService.updateCustom(OWNER, SUBSCRIPTION_ID, request))
-                    .isInstanceOf(CatalogServiceReadOnlyException.class);
+                    .isInstanceOf(CatalogProviderReadOnlyException.class);
             assertUnchanged(subscription, CATALOG_NAME, gym);
             then(categoryRepository).shouldHaveNoInteractions();
         }
@@ -134,14 +132,14 @@ class UpdateSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
         }
 
         private UpdateCustomSubscriptionRequest updateCustomRequest() {
-            return new UpdateCustomSubscriptionRequest("  Renamed  ", MUSIC_ID, new BigDecimal("12.34"),
-                    BillingCycle.YEARLY, today.plusDays(30), true);
+            return new UpdateCustomSubscriptionRequest(
+                    "  Renamed  ", MUSIC_ID, new BigDecimal("12.34"), BillingCycle.YEARLY, today.plusDays(30), true);
         }
     }
 
-    private static void assertUnchanged(Subscription subscription, String serviceName, Category category) {
-        assertThat(subscription.getService().getName()).isEqualTo(serviceName);
-        assertThat(subscription.getService().getCategory()).isSameAs(category);
+    private static void assertUnchanged(Subscription subscription, String providerName, Category category) {
+        assertThat(subscription.getProvider().getName()).isEqualTo(providerName);
+        assertThat(subscription.getProvider().getCategory()).isSameAs(category);
         assertThat(subscription.getPrice()).isEqualByComparingTo(ORIGINAL_PRICE);
     }
 }

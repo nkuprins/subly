@@ -8,11 +8,11 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "subscription_services")
+@Table(name = "subscription_providers")
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ServiceProvider {
+public class SubscriptionProvider {
 
     @Id
     @Setter(AccessLevel.NONE)
@@ -35,20 +35,20 @@ public class ServiceProvider {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private ServiceType serviceType;
+    private ProviderType providerType;
 
-    private ServiceProvider(String name, Category category, User createdBy, ServiceType serviceType) {
+    private SubscriptionProvider(String name, Category category, User createdBy, ProviderType providerType) {
         this.name = name;
         this.category = category;
         this.createdBy = createdBy;
-        this.serviceType = serviceType;
+        this.providerType = providerType;
     }
 
-    public static ServiceProvider catalog(String name, Category category) {
-        return new ServiceProvider(name, category, null, ServiceType.CATALOG);
+    public static SubscriptionProvider catalog(String name, Category category) {
+        return new SubscriptionProvider(name, category, null, ProviderType.CATALOG);
     }
 
-    public static ServiceProvider custom(String name, Category category, User creator) {
-        return new ServiceProvider(name, category, creator, ServiceType.CUSTOM);
+    public static SubscriptionProvider custom(String name, Category category, User creator) {
+        return new SubscriptionProvider(name, category, creator, ProviderType.CUSTOM);
     }
 }

@@ -3,20 +3,19 @@ package com.app.subly.repository;
 import com.app.subly.model.subscription.MembershipRole;
 import com.app.subly.model.subscription.SubscriptionMembership;
 import com.app.subly.model.subscription.SubscriptionStatus;
-import org.springframework.data.jpa.repository.EntityGraph;
-import org.springframework.data.jpa.repository.JpaRepository;
-
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface SubscriptionMembershipRepository extends JpaRepository<SubscriptionMembership, Long> {
 
     boolean existsBySubscriptionIdAndUserId(Long subscriptionId, Long userId);
 
-    @EntityGraph(attributePaths = {"user", "subscription.service.category"})
+    @EntityGraph(attributePaths = {"user", "subscription.provider.category"})
     Optional<SubscriptionMembership> findBySubscriptionIdAndRole(Long subscriptionId, MembershipRole role);
 
     @EntityGraph(attributePaths = "user")
@@ -24,7 +23,7 @@ public interface SubscriptionMembershipRepository extends JpaRepository<Subscrip
 
     List<SubscriptionMembership> findBySubscription_IdIn(Collection<Long> subscriptionIds);
 
-    @EntityGraph(attributePaths = {"subscription", "subscription.service"})
+    @EntityGraph(attributePaths = {"subscription", "subscription.provider"})
     List<SubscriptionMembership> findByUser_UsernameAndSubscription_StatusOrderBySubscription_NextPaymentDateAsc(
             String username, SubscriptionStatus status);
 

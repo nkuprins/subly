@@ -1,15 +1,14 @@
 package com.app.subly.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import com.app.subly.exception.subscription.SubscriptionAccessDeniedException;
 import com.app.subly.model.subscription.Subscription;
 import com.app.subly.model.subscription.SubscriptionStatus;
-import org.junit.jupiter.api.Test;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import org.junit.jupiter.api.Test;
 
 class ReactivateSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
 
@@ -25,14 +24,11 @@ class ReactivateSubscriptionServiceTest extends AbstractSubscriptionServiceTest 
 
         subscriptionService.reactivate(OWNER, SUBSCRIPTION_ID);
 
-        assertThat(subscription.getStatus())
-                .isEqualTo(SubscriptionStatus.ACTIVE);
+        assertThat(subscription.getStatus()).isEqualTo(SubscriptionStatus.ACTIVE);
 
-        assertThat(subscription.getCancelledAt())
-                .isNull();
+        assertThat(subscription.getCancelledAt()).isNull();
 
-        assertThat(subscription.getNextPaymentDate())
-                .isEqualTo(LocalDate.of(2026, 11, 10));
+        assertThat(subscription.getNextPaymentDate()).isEqualTo(LocalDate.of(2026, 11, 10));
     }
 
     @Test
@@ -43,14 +39,11 @@ class ReactivateSubscriptionServiceTest extends AbstractSubscriptionServiceTest 
 
         subscriptionService.reactivate(OWNER, SUBSCRIPTION_ID);
 
-        assertThat(subscription.getStatus())
-                .isEqualTo(SubscriptionStatus.ACTIVE);
+        assertThat(subscription.getStatus()).isEqualTo(SubscriptionStatus.ACTIVE);
 
-        assertThat(subscription.getNextPaymentDate())
-                .isEqualTo(originalDate);
+        assertThat(subscription.getNextPaymentDate()).isEqualTo(originalDate);
 
-        assertThat(subscription.getCancelledAt())
-                .isNull();
+        assertThat(subscription.getCancelledAt()).isNull();
     }
 
     @Test
@@ -60,11 +53,9 @@ class ReactivateSubscriptionServiceTest extends AbstractSubscriptionServiceTest 
         subscription.setStatus(SubscriptionStatus.CANCELLED);
         subscription.setCancelledAt(LocalDateTime.of(2026, 10, 1, 12, 0));
 
-        assertThatThrownBy(() ->
-                subscriptionService.reactivate(STRANGER, SUBSCRIPTION_ID))
+        assertThatThrownBy(() -> subscriptionService.reactivate(STRANGER, SUBSCRIPTION_ID))
                 .isInstanceOf(SubscriptionAccessDeniedException.class);
 
-        assertThat(subscription.getStatus())
-                .isEqualTo(SubscriptionStatus.CANCELLED);
+        assertThat(subscription.getStatus()).isEqualTo(SubscriptionStatus.CANCELLED);
     }
 }

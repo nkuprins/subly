@@ -27,7 +27,7 @@ async function prefill() {
         alert('Subscription not found');
         return;
     }
-    byId('name').value = sub.serviceName;
+    byId('name').value = sub.providerName;
     byId('price').value = sub.price;
     byId('categoryId').value = sub.categoryId;
     byId('cycle').value = sub.billingCycle;

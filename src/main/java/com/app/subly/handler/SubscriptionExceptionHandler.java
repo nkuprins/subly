@@ -1,8 +1,8 @@
 package com.app.subly.handler;
 
-import com.app.subly.exception.subscription.CatalogServiceReadOnlyException;
+import com.app.subly.exception.subscription.CatalogProviderNotFoundException;
+import com.app.subly.exception.subscription.CatalogProviderReadOnlyException;
 import com.app.subly.exception.subscription.CategoryNotFoundException;
-import com.app.subly.exception.subscription.CatalogServiceNotFoundException;
 import com.app.subly.exception.subscription.PaymentDateInPastException;
 import com.app.subly.exception.subscription.SubscriptionAccessDeniedException;
 import com.app.subly.exception.subscription.SubscriptionNotFoundException;
@@ -24,8 +24,12 @@ public class SubscriptionExceptionHandler {
         return ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, ex.getMessage());
     }
 
-    @ExceptionHandler({CategoryNotFoundException.class, CatalogServiceNotFoundException.class,
-            CatalogServiceReadOnlyException.class, PaymentDateInPastException.class})
+    @ExceptionHandler({
+        CategoryNotFoundException.class,
+        CatalogProviderNotFoundException.class,
+        CatalogProviderReadOnlyException.class,
+        PaymentDateInPastException.class
+    })
     public ProblemDetail handleBadRequest(RuntimeException ex) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
     }

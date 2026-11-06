@@ -14,49 +14,49 @@
         <div>
             <p class="eyebrow">Subly administration</p>
             <h1>Admin panel</h1>
-            <p class="admin-intro">Manage the shared services members can add to their subscriptions.</p>
+            <p class="admin-intro">Manage the shared providers members can add to their subscriptions.</p>
         </div>
     </div>
 
-    <div class="notice notice-success" role="status" th:if="${created}">Service added to the catalogue.</div>
+    <div class="notice notice-success" role="status" th:if="${created}">Provider added to the catalogue.</div>
 
     <section class="admin-metrics" aria-label="Catalogue summary">
         <div class="admin-metric">
-            <span class="admin-metric-label">Services in catalogue</span>
-            <strong class="admin-metric-value" th:text="${serviceCount}"></strong>
+            <span class="admin-metric-label">Providers in catalogue</span>
+            <strong class="admin-metric-value" th:text="${providerCount}"></strong>
         </div>
     </section>
 
     <section class="catalogue-panel" aria-labelledby="catalogue-title">
         <div class="catalogue-toolbar">
             <div>
-                <h2 id="catalogue-title">Service catalogue</h2>
-                <p>Shared services available to members</p>
+                <h2 id="catalogue-title">Provider catalogue</h2>
+                <p>Shared providers available to members</p>
             </div>
-            <a th:href="@{/admin/services/new}" class="btn btn-primary">Add service <span aria-hidden="true">＋</span></a>
+            <a th:href="@{/admin/providers/new}" class="btn btn-primary">Add provider <span aria-hidden="true">＋</span></a>
         </div>
-        <div class="table-scroll" th:if="${!#lists.isEmpty(services)}">
+        <div class="table-scroll" th:if="${!#lists.isEmpty(providers)}">
             <table class="catalogue-table">
                 <thead>
                 <tr><th scope="col">Logo</th><th scope="col">Name</th><th scope="col">Category</th></tr>
                 </thead>
                 <tbody>
-                <tr th:each="service : ${services}">
+                <tr th:each="provider : ${providers}">
                     <td>
-                        <img class="service-logo" th:if="${service.logoPath != null and !#strings.isEmpty(service.logoPath)}" th:src="${service.logoPath}" th:alt="|${service.name} logo|"/>
-                        <span class="service-logo service-monogram" th:unless="${service.logoPath != null and !#strings.isEmpty(service.logoPath)}" th:text="${#strings.substring(service.name, 0, 1).toUpperCase()}"></span>
+                        <img class="provider-logo" th:if="${provider.logoPath != null and !#strings.isEmpty(provider.logoPath)}" th:src="${provider.logoPath}" th:alt="|${provider.name} logo|"/>
+                        <span class="provider-logo provider-monogram" th:unless="${provider.logoPath != null and !#strings.isEmpty(provider.logoPath)}" th:text="${#strings.substring(provider.name, 0, 1).toUpperCase()}"></span>
                     </td>
-                    <td class="service-name" th:text="${service.name}"></td>
-                    <td><span class="category-chip" th:text="${service.category.name}"></span></td>
+                    <td class="provider-name" th:text="${provider.name}"></td>
+                    <td><span class="category-chip" th:text="${provider.category.name}"></span></td>
                 </tr>
                 </tbody>
             </table>
         </div>
-        <div class="catalogue-empty" th:if="${#lists.isEmpty(services)}">
+        <div class="catalogue-empty" th:if="${#lists.isEmpty(providers)}">
             <span class="empty-icon" aria-hidden="true">▤</span>
-            <h3>No catalogue services yet</h3>
-            <p>Add a service to make it available to members.</p>
-            <a th:href="@{/admin/services/new}" class="btn btn-primary">Add first service</a>
+            <h3>No catalogue providers yet</h3>
+            <p>Add a provider to make it available to members.</p>
+            <a th:href="@{/admin/providers/new}" class="btn btn-primary">Add first provider</a>
         </div>
     </section>
 </main>
