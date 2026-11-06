@@ -23,14 +23,13 @@ public class CustomUserDetailsService implements UserDetailsService {
         this.repository = repository;
         this.encoder = encoder;
         this.adminConfiguration = adminConfiguration;
-        this.createDefaultAdminUser();
+        createDefaultAdminUser();
     }
 
     @Override
     public UserDetails loadUserByUsername(@NonNull String username) throws UsernameNotFoundException {
-        User user = this.repository
-                .findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("No found user"));
+        User user =
+                repository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("No found user"));
 
         return org.springframework.security.core.userdetails.User.withUsername(user.getUsername())
                 .password(user.getPasswordHash())
@@ -39,19 +38,17 @@ public class CustomUserDetailsService implements UserDetailsService {
     }
 
     private void createDefaultAdminUser() {
-        if (this.repository
-                .findByUsername(this.adminConfiguration.getAdminUsername())
-                .isPresent()) {
+        if (repository.findByUsername(adminConfiguration.getAdminUsername()).isPresent()) {
             return;
         }
 
         User user = new User();
-        user.setUsername(this.adminConfiguration.getAdminUsername());
-        user.setName(this.adminConfiguration.getAdminName());
-        user.setPasswordHash(this.encoder.encode(this.adminConfiguration.getAdminPassword()));
-        user.setEmail(this.adminConfiguration.getAdminEmail());
+        user.setUsername(adminConfiguration.getAdminUsername());
+        user.setName(adminConfiguration.getAdminName());
+        user.setPasswordHash(encoder.encode(adminConfiguration.getAdminPassword()));
+        user.setEmail(adminConfiguration.getAdminEmail());
         user.setRole(UserRole.ADMIN);
 
-        this.repository.save(user);
+        repository.save(user);
     }
 }

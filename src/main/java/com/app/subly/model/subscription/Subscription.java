@@ -77,13 +77,13 @@ public class Subscription {
         this.service = service;
         this.price = price;
         this.billingCycle = billingCycle;
-        this.billingAnchorDate = nextPaymentDate;
+        billingAnchorDate = nextPaymentDate;
         this.nextPaymentDate = nextPaymentDate;
         this.freeTrial = freeTrial;
     }
 
     public void reschedule(LocalDate nextPaymentDate) {
-        this.billingAnchorDate = nextPaymentDate;
+        billingAnchorDate = nextPaymentDate;
         this.nextPaymentDate = nextPaymentDate;
     }
 

@@ -27,25 +27,25 @@ public class UpdateUserInformationRequest {
 
     @JsonSetter("newUsername")
     public void setNewUsername(String username) {
-        this.newUsername = username;
-        this.usernameProvided = true;
+        newUsername = username;
+        usernameProvided = true;
     }
 
     @JsonSetter("newEmail")
     public void setNewEmail(String email) {
-        this.newEmail = email;
-        this.emailProvided = true;
+        newEmail = email;
+        emailProvided = true;
     }
 
     @JsonSetter("newName")
     public void setNewName(String name) {
-        this.newName = name;
-        this.nameProvided = true;
+        newName = name;
+        nameProvided = true;
     }
 
     @JsonSetter("newTimeZone")
     public void setNewTimeZone(ZoneId timeZone) {
-        this.newTimeZone = timeZone;
-        this.timeZoneProvided = true;
+        newTimeZone = timeZone;
+        timeZoneProvided = true;
     }
 }

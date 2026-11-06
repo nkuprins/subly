@@ -19,7 +19,7 @@ public class CategoryService {
 
     public CategoryService(CategoryRepository repository) {
         this.repository = repository;
-        this.createDefaultCategories();
+        createDefaultCategories();
     }
 
     @Transactional
@@ -27,7 +27,7 @@ public class CategoryService {
         Category category = new Category(categoryName);
 
         try {
-            this.repository.saveAndFlush(category);
+            repository.saveAndFlush(category);
         } catch (DataIntegrityViolationException exception) {
             throw new CategoryAlreadyExistsException(categoryName);
         }
@@ -35,7 +35,7 @@ public class CategoryService {
 
     @Transactional
     public void editCategoryName(Long id, String newCategoryName) {
-        Category category = this.repository.findById(id).orElseThrow(() -> new CategoryNotFoundException(id));
+        Category category = repository.findById(id).orElseThrow(() -> new CategoryNotFoundException(id));
 
         if (category.getName().equals(newCategoryName)) {
             throw new CategoryUpdateException("The new name must differ from the old name");
@@ -43,17 +43,17 @@ public class CategoryService {
 
         try {
             category.setName(newCategoryName);
-            this.repository.saveAndFlush(category);
+            repository.saveAndFlush(category);
         } catch (DataIntegrityViolationException exception) {
             throw new CategoryAlreadyExistsException(newCategoryName);
         }
     }
 
     public void deleteCategory(Long id) {
-        Category category = this.repository.findById(id).orElseThrow(() -> new CategoryNotFoundException(id));
+        Category category = repository.findById(id).orElseThrow(() -> new CategoryNotFoundException(id));
 
         try {
-            this.repository.delete(category);
+            repository.delete(category);
         } catch (OptimisticLockingFailureException ex) {
             throw new CategoryDeletionException(
                     "Cannot delete the category because some table's field references to it");
@@ -61,7 +61,7 @@ public class CategoryService {
     }
 
     public List<CategoryResponse> getAllCategories() {
-        return this.repository.findAll().stream()
+        return repository.findAll().stream()
                 .map((category) -> new CategoryResponse(category.getId(), category.getName()))
                 .toList();
     }
@@ -72,7 +72,7 @@ public class CategoryService {
 
         for (String categoryName : categories) {
             try {
-                this.addNewCategory(categoryName);
+                addNewCategory(categoryName);
                 logger.info("Category {}: CREATED", categoryName);
             } catch (CategoryAlreadyExistsException ex) {
                 logger.info("Category {}: OK", categoryName);

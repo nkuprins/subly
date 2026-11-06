@@ -80,3 +80,7 @@ Check the format without changing files:
 ```bash
 ./mvnw spotless:check
 ```
+
+Use `this.` only when a parameter or local variable has the same name as the field, for example `this.name = name`.
+Write `repository.save(user)`, not `this.repository.save(user)`. Spotless does not check this rule. IntelliJ shows it
+with the "Unnecessary 'this' qualifier" inspection.

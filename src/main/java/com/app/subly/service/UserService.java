@@ -30,7 +30,7 @@ public class UserService {
         // before calling this method.
 
         try {
-            this.repository.save(this.createUserFromRawData(username, name, password, email, timeZone));
+            repository.save(createUserFromRawData(username, name, password, email, timeZone));
         } catch (DataIntegrityViolationException exception) {
             throw new UserAlreadyExistsException("A user with the username or the email already exists");
         }
@@ -45,7 +45,7 @@ public class UserService {
             throw new IllegalArgumentException("Id must be positive");
         }
 
-        User user = this.repository
+        User user = repository
                 .findById(id)
                 .orElseThrow(() -> new UserDoesNotExistException("The user with the id doesn't exist"));
 
@@ -61,7 +61,7 @@ public class UserService {
             throw new IllegalArgumentException("The list of ids is null");
         }
 
-        List<User> result = this.repository.findAllById(ids);
+        List<User> result = repository.findAllById(ids);
 
         if (result.isEmpty() || result.size() != ids.size()) {
             throw new UserDoesNotExistException("No found all the users with those ids");
@@ -77,14 +77,14 @@ public class UserService {
         // UserIsConnectedError is raised in case some table's column refers to this user.
         // WrongPasswordException is raised if a raw password != password hash
 
-        User user = this.getUserByUserName(username);
+        User user = getUserByUserName(username);
 
-        if (!this.encoder.matches(rawPassword, user.getPasswordHash())) {
+        if (!encoder.matches(rawPassword, user.getPasswordHash())) {
             throw new WrongPasswordException("The passwords don't match");
         }
 
         try {
-            this.repository.deleteByUsername(username);
+            repository.deleteByUsername(username);
         } catch (DataIntegrityViolationException exception) {
             throw new UserIsConnectedError("Cannot delete the user because it is connected with some table's field");
         }
@@ -92,22 +92,22 @@ public class UserService {
 
     @Transactional
     public void updateUserPassword(String username, String rawOldPassword, String rawNewPassword) {
-        User user = this.getUserByUserName(username);
+        User user = getUserByUserName(username);
 
-        if (!this.encoder.matches(rawOldPassword, user.getPasswordHash())) {
+        if (!encoder.matches(rawOldPassword, user.getPasswordHash())) {
             throw new WrongPasswordException("The passwords don't match");
         }
 
-        user.setPasswordHash(this.encoder.encode(rawNewPassword));
+        user.setPasswordHash(encoder.encode(rawNewPassword));
     }
 
     @Transactional
     public void updateUserInformation(String oldUsername, UpdateUserInformationRequest newUserInfo) {
-        User user = this.getUserByUserName(oldUsername);
+        User user = getUserByUserName(oldUsername);
 
         try {
             if (newUserInfo.isEmailProvided()) {
-                if (this.isNotValidForUpdating(user.getEmail(), newUserInfo.getNewEmail())) {
+                if (isNotValidForUpdating(user.getEmail(), newUserInfo.getNewEmail())) {
                     throw new UserInfoUpdateException(
                             "You must provide a non-empty email that differs from your current");
                 }
@@ -115,7 +115,7 @@ public class UserService {
             }
 
             if (newUserInfo.isUsernameProvided()) {
-                if (this.isNotValidForUpdating(user.getUsername(), newUserInfo.getNewUsername())) {
+                if (isNotValidForUpdating(user.getUsername(), newUserInfo.getNewUsername())) {
                     throw new UserInfoUpdateException(
                             "You must provide a non-empty username that differs from your current");
                 }
@@ -123,7 +123,7 @@ public class UserService {
             }
 
             if (newUserInfo.isNameProvided()) {
-                if (this.isNotValidForUpdating(user.getName(), newUserInfo.getNewName())) {
+                if (isNotValidForUpdating(user.getName(), newUserInfo.getNewName())) {
                     throw new UserInfoUpdateException(
                             "You must provide a non-empty name that differs from your current");
                 }
@@ -137,14 +137,14 @@ public class UserService {
                 user.setTimeZone(newUserInfo.getNewTimeZone());
             }
 
-            this.repository.flush();
+            repository.flush();
         } catch (DataIntegrityViolationException ex) {
             throw new UserAlreadyExistsException("The user with provided email or username already exists");
         }
     }
 
     public User getUserByUserName(String username) {
-        return this.repository
+        return repository
                 .findByUsername(username)
                 .orElseThrow(() -> new UserDoesNotExistException("No found user with the username"));
     }

@@ -32,8 +32,8 @@ public class UserController {
             HttpServletRequest request,
             HttpServletResponse response) {
         try {
-            this.service.deleteUserByUsername(details.getUsername(), deleteRequest.getPassword());
-            this.logoutCurrentSession(request, response);
+            service.deleteUserByUsername(details.getUsername(), deleteRequest.getPassword());
+            logoutCurrentSession(request, response);
             return ResponseEntity.ok(new OperationResponse(false, "The user account has been deleted"));
         } catch (UserDoesNotExistException | UserIsConnectedError | WrongPasswordException ex) {
             return ResponseEntity.badRequest().body(new OperationResponse(true, ex.getMessage()));
@@ -53,9 +53,9 @@ public class UserController {
         }
 
         try {
-            this.service.updateUserPassword(
+            service.updateUserPassword(
                     details.getUsername(), changeRequest.getOldPassword(), changeRequest.getNewPassword());
-            this.logoutCurrentSession(request, response);
+            logoutCurrentSession(request, response);
             return ResponseEntity.ok(
                     new OperationResponse(false, "The password has been changed successfully. Please log in again."));
         } catch (UserDoesNotExistException | WrongPasswordException ex) {
@@ -79,8 +79,8 @@ public class UserController {
         }
 
         try {
-            this.service.updateUserInformation(details.getUsername(), updateRequest);
-            this.logoutCurrentSession(request, response);
+            service.updateUserInformation(details.getUsername(), updateRequest);
+            logoutCurrentSession(request, response);
             return ResponseEntity.ok(new OperationResponse(
                     false, "The information has been saved. Please log in again to apply changes."));
         } catch (UserDoesNotExistException | UserInfoUpdateException | UserAlreadyExistsException ex) {
@@ -91,7 +91,7 @@ public class UserController {
     @PostMapping("/logout/me")
     public ResponseEntity<OperationResponse> logoutCurrentUser(
             HttpServletRequest request, HttpServletResponse response) {
-        this.logoutCurrentSession(request, response);
+        logoutCurrentSession(request, response);
         return ResponseEntity.noContent().build();
     }
 

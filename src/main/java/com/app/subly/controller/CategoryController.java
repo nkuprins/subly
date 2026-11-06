@@ -24,7 +24,7 @@ public class CategoryController {
     @PostMapping("/create")
     public ResponseEntity<OperationResponse> createCategory(@Valid @RequestBody CreateCustomCategoryRequest request) {
         try {
-            this.service.addNewCategory(request.getCategoryName());
+            service.addNewCategory(request.getCategoryName());
             return ResponseEntity.ok(
                     new OperationResponse(false, "Successfully added new category " + request.getCategoryName()));
         } catch (CategoryNotFoundException | CategoryAlreadyExistsException ex) {
@@ -35,7 +35,7 @@ public class CategoryController {
     @PutMapping("/edit")
     public ResponseEntity<OperationResponse> editCategory(@Valid @RequestBody UpdateCategoryRequest request) {
         try {
-            this.service.editCategoryName(request.getId(), request.getNewName());
+            service.editCategoryName(request.getId(), request.getNewName());
             return ResponseEntity.ok(new OperationResponse(false, "The category name has been changed successfully"));
         } catch (CategoryNotFoundException | CategoryAlreadyExistsException | CategoryUpdateException ex) {
             return ResponseEntity.badRequest().body(new OperationResponse(true, ex.getMessage()));
@@ -49,7 +49,7 @@ public class CategoryController {
         }
 
         try {
-            this.service.deleteCategory(id);
+            service.deleteCategory(id);
             return ResponseEntity.ok(new OperationResponse(false, "The category has been deleted successfully"));
         } catch (CategoryDeletionException | CategoryNotFoundException ex) {
             return ResponseEntity.badRequest().body(new OperationResponse(true, ex.getMessage()));
@@ -58,6 +58,6 @@ public class CategoryController {
 
     @GetMapping("/listAll")
     public List<CategoryResponse> getAllCategories() {
-        return this.service.getAllCategories();
+        return service.getAllCategories();
     }
 }
