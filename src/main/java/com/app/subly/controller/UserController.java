@@ -25,17 +25,6 @@ public class UserController {
         this.service = service;
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<OperationResponse> createNewUser(@Valid @RequestBody CreateUserRequest request) {
-        try {
-            this.service.addNewUser(request.getUsername(), request.getName(), request.getPassword(), request.getEmail(),
-                    request.getTimeZone());
-            return ResponseEntity.ok(new OperationResponse(false, "The user has been registered successfully"));
-        } catch (UserAlreadyExistsException exception) {
-            return ResponseEntity.badRequest().body(new OperationResponse(true, exception.getMessage()));
-        }
-    }
-
     @DeleteMapping("/delete/me")
     public ResponseEntity<OperationResponse> deleteUser(@AuthenticationPrincipal UserDetails details,
                                                         @RequestBody @Valid DeleteCurrentUserRequest deleteRequest,

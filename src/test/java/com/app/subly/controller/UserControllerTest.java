@@ -36,56 +36,6 @@ public class UserControllerTest {
 
 
     @Test
-    void register_ShouldReturnOkWhenUserIsCreated() throws Exception {
-
-        mockMvc.perform(post("/users/register")
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                        {
-                            "username": "andris123",
-                            "name": "Andris",
-                            "password": "largepassword123456",
-                            "email": "andris@gmail.com"
-                        }
-                        """))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.error").value(false))
-                .andExpect(jsonPath("$.message")
-                        .value("The user has been registered successfully"));
-
-        verify(service).addNewUser(
-                "andris123",
-                "Andris",
-                "largepassword123456",
-                "andris@gmail.com",
-                null
-        );
-    }
-    @Test
-    void register_ShouldReturnBadRequestWhenUserAlreadyExists() throws Exception {
-
-        doThrow(new UserAlreadyExistsException("User already exists"))
-                .when(service)
-                .addNewUser(anyString(), anyString(), anyString(), anyString(), any());
-
-        mockMvc.perform(post("/users/register")
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                        {
-                            "username": "andris123",
-                            "name": "Andris",
-                            "password": "largepassword123456",
-                            "email": "andris@gmail.com"
-                        }
-                        """))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value(true))
-                .andExpect(jsonPath("$.message").value("User already exists"));
-    }
-
-    @Test
     @WithMockUser(username = "andris123")
     void deleteUser_ShouldReturnOkWhenUserIsDeleted() throws Exception {
 
