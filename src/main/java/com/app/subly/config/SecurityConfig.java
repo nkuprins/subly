@@ -23,7 +23,7 @@ public class SecurityConfig {
                     authorize.requestMatchers("/users/register").permitAll()
                             .requestMatchers("/users/**").authenticated()
                             .requestMatchers("/api/category/listAll").authenticated()
-                            .requestMatchers("/api/category/**").hasRole("ADMIN")
+                            .requestMatchers("/api/category/**", "/admin/**").hasRole("ADMIN")
                             .requestMatchers("/api/subscriptions",
                                     "/api/subscriptions/**",
                                     "/api/dashboard/**",
