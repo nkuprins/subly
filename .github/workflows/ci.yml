@@ -35,5 +35,8 @@ jobs:
           java-version: 21
           cache: maven
 
+      - name: Check code format
+        run: ./mvnw -B spotless:check
+
       - name: Run tests
         run: ./mvnw -B test
