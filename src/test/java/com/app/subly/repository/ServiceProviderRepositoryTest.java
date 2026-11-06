@@ -1,10 +1,10 @@
 package com.app.subly.repository;
 
-import com.app.subly.models.User;
-import com.app.subly.models.UserRole;
-import com.app.subly.models.subscription.Category;
-import com.app.subly.models.subscription.ServiceProvider;
-import com.app.subly.models.subscription.ServiceType;
+import com.app.subly.model.User;
+import com.app.subly.model.UserRole;
+import com.app.subly.model.subscription.Category;
+import com.app.subly.model.subscription.ServiceProvider;
+import com.app.subly.model.subscription.ServiceType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

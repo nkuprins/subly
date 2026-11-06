@@ -1,6 +1,6 @@
 package com.app.subly.dto;
 
-import com.app.subly.models.UserRole;
+import com.app.subly.model.UserRole;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

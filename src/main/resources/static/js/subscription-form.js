@@ -22,7 +22,7 @@ async function prefill() {
     const res = await fetch('/api/subscriptions');
     if (!res.ok) return;
     const subs = await res.json();
-    const sub = subs.find(s => s.id === subId);
+    const sub = subs.map(s => s.subscription).find(s => s.id === subId);
     if (!sub) {
         alert('Subscription not found');
         return;

@@ -1,6 +1,6 @@
 package com.app.subly.repository;
 
-import com.app.subly.models.subscription.Category;
+import com.app.subly.model.subscription.Category;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 

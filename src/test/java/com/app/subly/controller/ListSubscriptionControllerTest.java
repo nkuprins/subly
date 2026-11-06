@@ -1,7 +1,7 @@
 package com.app.subly.controller;
 
 import com.app.subly.dto.subscription.VisibleSubscriptionResponse;
-import com.app.subly.models.subscription.MembershipRole;
+import com.app.subly.model.subscription.MembershipRole;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 
@@ -34,7 +34,7 @@ class ListSubscriptionControllerTest extends AbstractSubscriptionControllerTest 
 
     @Test
     void returns200WithEmptyArrayForUserWhoOwnsNothing() throws Exception {
-        given(service.findOwnedBy(USERNAME)).willReturn(List.of());
+        given(service.findVisibleTo(USERNAME)).willReturn(List.of());
 
         mockMvc.perform(get(URL))
                 .andExpect(status().isOk())

@@ -1,4 +1,3 @@
-
 async function loadSubscriptions() {
     const res = await fetch('/api/subscriptions');
     if (!res.ok) {
@@ -17,16 +16,16 @@ async function loadSubscriptions() {
 
     tbody.innerHTML = subs.map(s => `
         <tr>
-            <td>${s.serviceName}</td>
-            <td>${s.price}</td>
-            <td>${s.currency}</td>
-            <td><span class="pill ${s.billingCycle === 'YEARLY' ? 'pill-year' : ''}">${s.billingCycle}</span></td>
-            <td>${s.nextPaymentDate}</td>
+            <td>${s.subscription.serviceName}</td>
+            <td>${s.subscription.price}</td>
+            <td>${s.subscription.currency}</td>
+            <td><span class="pill ${s.subscription.billingCycle === 'YEARLY' ? 'pill-year' : ''}">${s.subscription.billingCycle}</span></td>
+            <td>${s.subscription.nextPaymentDate}</td>
             <td>
                 <div class="actions">
-                    <a href="/subscriptions/${s.id}/edit" class="link">Edit</a>
+                    <a href="/subscriptions/${s.subscription.id}/edit" class="link">Edit</a>
                     <button type="button" class="link link-danger btn-link"
-                            onclick="deleteSubscription(${s.id})">Delete</button>
+                            onclick="deleteSubscription(${s.subscription.id})">Delete</button>
                 </div>
             </td>
         </tr>`).join('');

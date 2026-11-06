@@ -1,6 +1,6 @@
 package com.app.subly.repository;
 
-import com.app.subly.models.subscription.PendingInvitation;
+import com.app.subly.model.subscription.PendingInvitation;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 

@@ -1,7 +1,7 @@
 package com.app.subly.controller;
 
 import com.app.subly.dto.subscription.*;
-import com.app.subly.services.SubscriptionService;
+import com.app.subly.service.SubscriptionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

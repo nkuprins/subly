@@ -2,10 +2,10 @@ package com.app.subly.controller;
 
 import com.app.subly.dto.subscription.CreateCustomSubscriptionRequest;
 import com.app.subly.dto.subscription.CreateSubscriptionRequest;
-import com.app.subly.exceptions.subscription.CatalogServiceNotFoundException;
-import com.app.subly.exceptions.subscription.CategoryNotFoundException;
-import com.app.subly.exceptions.subscription.PaymentDateInPastException;
-import com.app.subly.models.subscription.BillingCycle;
+import com.app.subly.exception.subscription.CatalogServiceNotFoundException;
+import com.app.subly.exception.subscription.CategoryNotFoundException;
+import com.app.subly.exception.subscription.PaymentDateInPastException;
+import com.app.subly.model.subscription.BillingCycle;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
