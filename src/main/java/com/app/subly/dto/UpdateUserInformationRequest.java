@@ -1,6 +1,7 @@
 package com.app.subly.dto;
 
 import com.fasterxml.jackson.annotation.JsonSetter;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
 import java.time.ZoneId;
@@ -24,6 +25,11 @@ public class UpdateUserInformationRequest {
 
     private ZoneId newTimeZone;
     private boolean timeZoneProvided = false;
+
+    @AssertTrue(message = "You must provide at least one property to change.")
+    public boolean isAnyFieldProvided() {
+        return usernameProvided || emailProvided || nameProvided || timeZoneProvided;
+    }
 
     @JsonSetter("newUsername")
     public void setNewUsername(String username) {

@@ -1,7 +1,7 @@
 package com.app.subly.controller;
 
 import com.app.subly.dto.admin.CreateCatalogProviderForm;
-import com.app.subly.exception.subscription.CategoryNotFoundException;
+import com.app.subly.exception.category.InvalidCategoryException;
 import com.app.subly.model.subscription.SubscriptionProvider;
 import com.app.subly.service.AdminCatalogService;
 import jakarta.validation.Valid;
@@ -50,7 +50,7 @@ public class AdminController {
 
         try {
             catalogService.createCatalogProvider(form.getName(), form.getCategoryId(), form.getLogoPath());
-        } catch (CategoryNotFoundException exception) {
+        } catch (InvalidCategoryException exception) {
             bindingResult.rejectValue("categoryId", "category.invalid", "Choose a category that still exists.");
             return showForm(model);
         }

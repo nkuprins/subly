@@ -1,6 +1,6 @@
 package com.app.subly.controller;
 
-import com.app.subly.exception.UserAlreadyExistsException;
+import com.app.subly.exception.user.UserAlreadyExistsException;
 import com.app.subly.service.UserService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

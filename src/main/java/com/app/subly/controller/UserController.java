@@ -1,12 +1,11 @@
 package com.app.subly.controller;
 
 import com.app.subly.dto.*;
-import com.app.subly.exception.*;
 import com.app.subly.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -26,73 +25,43 @@ public class UserController {
     }
 
     @DeleteMapping("/delete/me")
-    public ResponseEntity<OperationResponse> deleteUser(
+    public OperationResponse deleteUser(
             @AuthenticationPrincipal UserDetails details,
             @RequestBody @Valid DeleteCurrentUserRequest deleteRequest,
             HttpServletRequest request,
             HttpServletResponse response) {
-        try {
-            service.deleteUserByUsername(details.getUsername(), deleteRequest.getPassword());
-            logoutCurrentSession(request, response);
-            return ResponseEntity.ok(new OperationResponse(false, "The user account has been deleted"));
-        } catch (UserDoesNotExistException | UserIsConnectedError | WrongPasswordException ex) {
-            return ResponseEntity.badRequest().body(new OperationResponse(true, ex.getMessage()));
-        }
+        service.deleteUserByUsername(details.getUsername(), deleteRequest.getPassword());
+        logoutCurrentSession(request, response);
+        return new OperationResponse("The user account has been deleted");
     }
 
     @PutMapping("/update/password/me")
-    public ResponseEntity<OperationResponse> updateCurrentUserPassword(
+    public OperationResponse updateCurrentUserPassword(
             @AuthenticationPrincipal UserDetails details,
             @Valid @RequestBody ChangePasswordRequest changeRequest,
             HttpServletRequest request,
             HttpServletResponse response) {
-
-        if (changeRequest.getOldPassword().equals(changeRequest.getNewPassword())) {
-            return ResponseEntity.badRequest()
-                    .body(new OperationResponse(true, "New password and old password must be different"));
-        }
-
-        try {
-            service.updateUserPassword(
-                    details.getUsername(), changeRequest.getOldPassword(), changeRequest.getNewPassword());
-            logoutCurrentSession(request, response);
-            return ResponseEntity.ok(
-                    new OperationResponse(false, "The password has been changed successfully. Please log in again."));
-        } catch (UserDoesNotExistException | WrongPasswordException ex) {
-            return ResponseEntity.badRequest().body(new OperationResponse(true, ex.getMessage()));
-        }
+        service.updateUserPassword(
+                details.getUsername(), changeRequest.getOldPassword(), changeRequest.getNewPassword());
+        logoutCurrentSession(request, response);
+        return new OperationResponse("The password has been changed successfully. Please log in again.");
     }
 
     @PatchMapping("/update/info/me")
-    public ResponseEntity<OperationResponse> updateUserInformation(
+    public OperationResponse updateUserInformation(
             @AuthenticationPrincipal UserDetails details,
             @Valid @RequestBody UpdateUserInformationRequest updateRequest,
             HttpServletRequest request,
             HttpServletResponse response) {
-
-        if (!updateRequest.isUsernameProvided()
-                && !updateRequest.isEmailProvided()
-                && !updateRequest.isNameProvided()
-                && !updateRequest.isTimeZoneProvided()) {
-            return ResponseEntity.badRequest()
-                    .body(new OperationResponse(true, "You must provide at least one property to change."));
-        }
-
-        try {
-            service.updateUserInformation(details.getUsername(), updateRequest);
-            logoutCurrentSession(request, response);
-            return ResponseEntity.ok(new OperationResponse(
-                    false, "The information has been saved. Please log in again to apply changes."));
-        } catch (UserDoesNotExistException | UserInfoUpdateException | UserAlreadyExistsException ex) {
-            return ResponseEntity.badRequest().body(new OperationResponse(true, ex.getMessage()));
-        }
+        service.updateUserInformation(details.getUsername(), updateRequest);
+        logoutCurrentSession(request, response);
+        return new OperationResponse("The information has been saved. Please log in again to apply changes.");
     }
 
     @PostMapping("/logout/me")
-    public ResponseEntity<OperationResponse> logoutCurrentUser(
-            HttpServletRequest request, HttpServletResponse response) {
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void logoutCurrentUser(HttpServletRequest request, HttpServletResponse response) {
         logoutCurrentSession(request, response);
-        return ResponseEntity.noContent().build();
     }
 
     private void logoutCurrentSession(HttpServletRequest request, HttpServletResponse response) {

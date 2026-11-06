@@ -1,6 +1,8 @@
 package com.app.subly.exception.invitation;
 
-public class SelfInvitationException extends RuntimeException {
+import com.app.subly.exception.BadRequestException;
+
+public class SelfInvitationException extends BadRequestException {
     public SelfInvitationException() {
         super("You cannot invite yourself");
     }

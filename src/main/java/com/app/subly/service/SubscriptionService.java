@@ -2,9 +2,9 @@ package com.app.subly.service;
 
 import com.app.subly.dto.PaymentDetails;
 import com.app.subly.dto.subscription.*;
+import com.app.subly.exception.category.InvalidCategoryException;
 import com.app.subly.exception.subscription.CatalogProviderNotFoundException;
 import com.app.subly.exception.subscription.CatalogProviderReadOnlyException;
-import com.app.subly.exception.subscription.CategoryNotFoundException;
 import com.app.subly.exception.subscription.PaymentDateInPastException;
 import com.app.subly.model.User;
 import com.app.subly.model.subscription.Category;
@@ -162,7 +162,7 @@ public class SubscriptionService {
     }
 
     private Category findCategory(long categoryId) {
-        return categoryRepository.findById(categoryId).orElseThrow(() -> new CategoryNotFoundException(categoryId));
+        return categoryRepository.findById(categoryId).orElseThrow(() -> new InvalidCategoryException(categoryId));
     }
 
     private void requireNotInPast(User user, PaymentDetails request) {

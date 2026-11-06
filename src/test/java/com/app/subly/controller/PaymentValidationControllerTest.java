@@ -2,6 +2,7 @@ package com.app.subly.controller;
 
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.BDDMockito.then;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.math.BigDecimal;
@@ -9,6 +10,7 @@ import java.util.Arrays;
 import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
 class PaymentValidationControllerTest extends AbstractSubscriptionControllerTest {
@@ -19,6 +21,15 @@ class PaymentValidationControllerTest extends AbstractSubscriptionControllerTest
         send(endpoint, body).andExpect(validationError());
 
         then(service).shouldHaveNoInteractions();
+    }
+
+    @ParameterizedTest
+    @EnumSource(BodyEndpoint.class)
+    void namesTheInvalidField(BodyEndpoint endpoint) throws Exception {
+        send(endpoint, endpoint.bodyWith("price", 0))
+                .andExpect(validationError())
+                .andExpect(jsonPath("$.errors[0].field").value("price"))
+                .andExpect(jsonPath("$.errors[0].message").value("must be greater than 0"));
     }
 
     @ParameterizedTest(name = "{0}: {1}")

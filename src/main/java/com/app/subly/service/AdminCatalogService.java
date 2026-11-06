@@ -1,6 +1,6 @@
 package com.app.subly.service;
 
-import com.app.subly.exception.subscription.CategoryNotFoundException;
+import com.app.subly.exception.category.InvalidCategoryException;
 import com.app.subly.model.subscription.Category;
 import com.app.subly.model.subscription.ProviderType;
 import com.app.subly.model.subscription.SubscriptionProvider;
@@ -31,7 +31,7 @@ public class AdminCatalogService {
     @Transactional
     public void createCatalogProvider(String name, Long categoryId, String logoPath) {
         Category category =
-                categoryRepository.findById(categoryId).orElseThrow(() -> new CategoryNotFoundException(categoryId));
+                categoryRepository.findById(categoryId).orElseThrow(() -> new InvalidCategoryException(categoryId));
         SubscriptionProvider provider = SubscriptionProvider.catalog(name.strip(), category);
         provider.setLogoPath(logoPath == null || logoPath.isBlank() ? null : logoPath.strip());
         subscriptionProviderRepository.save(provider);

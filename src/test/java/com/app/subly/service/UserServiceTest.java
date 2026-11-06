@@ -9,7 +9,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.app.subly.dto.UpdateUserInformationRequest;
-import com.app.subly.exception.*;
+import com.app.subly.exception.user.*;
 import com.app.subly.model.User;
 import com.app.subly.repository.UserRepository;
 import java.util.Optional;
@@ -82,7 +82,7 @@ public class UserServiceTest {
 
         doThrow(DataIntegrityViolationException.class).when(repository).deleteByUsername("andris123");
 
-        assertThrows(UserIsConnectedError.class, () -> service.deleteUserByUsername("andris123", "secretPassword"));
+        assertThrows(UserIsConnectedException.class, () -> service.deleteUserByUsername("andris123", "secretPassword"));
     }
 
     @Test

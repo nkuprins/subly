@@ -1,7 +1,0 @@
-package com.app.subly.exception;
-
-public class WrongPasswordException extends RuntimeException {
-    public WrongPasswordException(String message) {
-        super(message);
-    }
-}

@@ -4,11 +4,10 @@ import com.app.subly.dto.OperationResponse;
 import com.app.subly.dto.subscription.CategoryResponse;
 import com.app.subly.dto.subscription.CreateCustomCategoryRequest;
 import com.app.subly.dto.subscription.UpdateCategoryRequest;
-import com.app.subly.exception.subscription.*;
 import com.app.subly.service.CategoryService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import java.util.List;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -22,38 +21,21 @@ public class CategoryController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<OperationResponse> createCategory(@Valid @RequestBody CreateCustomCategoryRequest request) {
-        try {
-            service.addNewCategory(request.getCategoryName());
-            return ResponseEntity.ok(
-                    new OperationResponse(false, "Successfully added new category " + request.getCategoryName()));
-        } catch (CategoryNotFoundException | CategoryAlreadyExistsException ex) {
-            return ResponseEntity.badRequest().body(new OperationResponse(true, ex.getMessage()));
-        }
+    public OperationResponse createCategory(@Valid @RequestBody CreateCustomCategoryRequest request) {
+        service.addNewCategory(request.getCategoryName());
+        return new OperationResponse("Successfully added new category " + request.getCategoryName());
     }
 
     @PutMapping("/edit")
-    public ResponseEntity<OperationResponse> editCategory(@Valid @RequestBody UpdateCategoryRequest request) {
-        try {
-            service.editCategoryName(request.getId(), request.getNewName());
-            return ResponseEntity.ok(new OperationResponse(false, "The category name has been changed successfully"));
-        } catch (CategoryNotFoundException | CategoryAlreadyExistsException | CategoryUpdateException ex) {
-            return ResponseEntity.badRequest().body(new OperationResponse(true, ex.getMessage()));
-        }
+    public OperationResponse editCategory(@Valid @RequestBody UpdateCategoryRequest request) {
+        service.editCategoryName(request.getId(), request.getNewName());
+        return new OperationResponse("The category name has been changed successfully");
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<OperationResponse> deleteCategory(@PathVariable Long id) {
-        if (id == null || id < 0) {
-            return ResponseEntity.badRequest().body(new OperationResponse(true, "Id must be greater than 0"));
-        }
-
-        try {
-            service.deleteCategory(id);
-            return ResponseEntity.ok(new OperationResponse(false, "The category has been deleted successfully"));
-        } catch (CategoryDeletionException | CategoryNotFoundException ex) {
-            return ResponseEntity.badRequest().body(new OperationResponse(true, ex.getMessage()));
-        }
+    public OperationResponse deleteCategory(@PathVariable @Positive Long id) {
+        service.deleteCategory(id);
+        return new OperationResponse("The category has been deleted successfully");
     }
 
     @GetMapping("/listAll")

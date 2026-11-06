@@ -57,6 +57,7 @@ abstract class AbstractSubscriptionControllerTest {
         return result -> {
             status().isBadRequest().match(result);
             jsonPath("$.detail").value(VALIDATION_FAILED).match(result);
+            jsonPath("$.errors").isNotEmpty().match(result);
         };
     }
 

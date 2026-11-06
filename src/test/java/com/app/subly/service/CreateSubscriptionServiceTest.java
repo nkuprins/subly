@@ -11,8 +11,8 @@ import static org.mockito.Mockito.never;
 import com.app.subly.dto.subscription.CreateCustomSubscriptionRequest;
 import com.app.subly.dto.subscription.CreateSubscriptionRequest;
 import com.app.subly.dto.subscription.SubscriptionResponse;
+import com.app.subly.exception.category.InvalidCategoryException;
 import com.app.subly.exception.subscription.CatalogProviderNotFoundException;
-import com.app.subly.exception.subscription.CategoryNotFoundException;
 import com.app.subly.model.subscription.BillingCycle;
 import com.app.subly.model.subscription.MembershipRole;
 import com.app.subly.model.subscription.ProviderType;
@@ -118,7 +118,7 @@ class CreateSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
             CreateCustomSubscriptionRequest request = gymRequest();
 
             assertThatThrownBy(() -> subscriptionService.createCustom(OWNER, request))
-                    .isInstanceOf(CategoryNotFoundException.class)
+                    .isInstanceOf(InvalidCategoryException.class)
                     .hasMessageContaining(String.valueOf(GYM_ID));
             then(subscriptionProviderRepository).shouldHaveNoInteractions();
             then(subscriptionRepository).shouldHaveNoInteractions();
