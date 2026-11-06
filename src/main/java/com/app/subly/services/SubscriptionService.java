@@ -61,15 +61,6 @@ public class SubscriptionService {
     }
 
     @Transactional(readOnly = true)
-    public List<SubscriptionResponse> findOwnedBy(String username) {
-        return membershipRepository
-                .findByUserUsernameAndRoleOrderBySubscriptionNextPaymentDate(username, MembershipRole.OWNER)
-                .stream()
-                .map(membership -> SubscriptionResponse.from(membership.getSubscription()))
-                .toList();
-    }
-
-    @Transactional(readOnly = true)
     public List<VisibleSubscriptionResponse> findVisibleTo(String username) {
         return membershipRepository
                 .findByUser_UsernameAndSubscription_StatusOrderBySubscription_NextPaymentDateAsc(
