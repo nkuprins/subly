@@ -1,6 +1,6 @@
 package com.app.subly.services;
 
-import com.app.subly.dto.invitation.InvitationResponse;
+import com.app.subly.dto.invitation.InviteResponse;
 import com.app.subly.dto.invitation.InviteRequest;
 import com.app.subly.dto.invitation.ReceivedInvitationResponse;
 import com.app.subly.exceptions.invitation.*;
@@ -30,7 +30,7 @@ public class InvitationService {
     private final SubscriptionRepository subscriptionRepository;
 
     @Transactional
-    public InvitationResponse invite(String ownerUsername, long subscriptionId, InviteRequest request) {
+    public InviteResponse invite(String ownerUsername, long subscriptionId, InviteRequest request) {
         Subscription subscription = subscriptionAccess.getOwnedSubscription(ownerUsername, subscriptionId);
         String usernameOrEmail = request.usernameOrEmail().strip();
         User invitedUser = userRepository.findByUsername(usernameOrEmail)
@@ -46,14 +46,14 @@ public class InvitationService {
             throw new AlreadyInvitedException(invitedUser.getUsername(), subscriptionId);
         }
         PendingInvitation invitation = invitationRepository.save(new PendingInvitation(invitedUser, subscription));
-        return InvitationResponse.from(invitation);
+        return InviteResponse.from(invitation);
     }
 
     @Transactional(readOnly = true)
-    public List<InvitationResponse> findPending(String ownerUsername, long subscriptionId) {
+    public List<InviteResponse> findPending(String ownerUsername, long subscriptionId) {
         subscriptionAccess.getOwnedSubscription(ownerUsername, subscriptionId);
         return invitationRepository.findBySubscriptionIdOrderByInvitedAt(subscriptionId).stream()
-                .map(InvitationResponse::from)
+                .map(InviteResponse::from)
                 .toList();
     }
 

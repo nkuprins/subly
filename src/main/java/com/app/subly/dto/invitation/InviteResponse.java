@@ -4,10 +4,10 @@ import com.app.subly.models.subscription.PendingInvitation;
 
 import java.time.LocalDateTime;
 
-public record InvitationResponse(Long id, String username, LocalDateTime invitedAt) {
+public record InviteResponse(Long id, String username, LocalDateTime invitedAt) {
 
-    public static InvitationResponse from(PendingInvitation invitation) {
-        return new InvitationResponse(
+    public static InviteResponse from(PendingInvitation invitation) {
+        return new InviteResponse(
                 invitation.getId(),
                 invitation.getUser().getUsername(),
                 invitation.getInvitedAt());
