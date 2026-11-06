@@ -1,4 +1,3 @@
-
 async function loadSubscriptions() {
     const res = await fetch('/api/subscriptions');
     if (!res.ok) {
@@ -7,7 +6,7 @@ async function loadSubscriptions() {
     }
     const subs = await res.json();
     const tbody = document.getElementById('subs-body');
-    console.log(subs);
+
     if (subs.length === 0) {
         tbody.innerHTML =
             `<tr><td colspan="6" class="empty-row">No subscriptions yet.
