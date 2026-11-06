@@ -34,7 +34,7 @@ class ListSubscriptionControllerTest extends AbstractSubscriptionControllerTest 
 
     @Test
     void returns200WithEmptyArrayForUserWhoOwnsNothing() throws Exception {
-        given(service.findOwnedBy(USERNAME)).willReturn(List.of());
+        given(service.findVisibleTo(USERNAME)).willReturn(List.of());
 
         mockMvc.perform(get(URL))
                 .andExpect(status().isOk())
