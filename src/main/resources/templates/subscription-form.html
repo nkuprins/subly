@@ -16,20 +16,25 @@
     <div class="form-card">
         <form class="form">
             <div class="field">
-                <label for="name">Provider</label>
-                <input type="text" id="name" name="name" placeholder="Netflix" required/>
-            </div>
-            <div class="field-row">
-                <div class="field">
-                    <label for="price">Price</label>
-                    <input type="number" id="price" name="price" step="0.01" min="0" placeholder="0.00" required/>
-                </div>
-                <div class="field">
-                    <label for="categoryId">Category</label>
-                    <select id="categoryId" name="categoryId" required>
-                        <option value="">Choose a category</option>
+                <label id="provider-label">Provider</label>
+                <div class="provider-picker">
+                    <select id="providerId" name="providerId" class="provider-value" aria-hidden="true" tabindex="-1">
+                        <option value="">Choose a provider</option>
                     </select>
+                    <div class="provider-combobox">
+                        <button type="button" id="providerCombo" class="provider-combo" role="combobox" aria-labelledby="provider-label" aria-haspopup="listbox" aria-expanded="false" aria-controls="providerOptions" aria-describedby="provider-help" aria-required="true">
+                            <span id="providerCurrent" class="provider-current"><span class="provider-placeholder">Choose a provider</span></span>
+                            <span class="provider-chevron" aria-hidden="true">▾</span>
+                        </button>
+                        <div id="providerOptions" class="provider-options" role="listbox" aria-labelledby="provider-label" hidden></div>
+                    </div>
+                    <button type="button" class="btn btn-secondary" id="addProvider">Add yours</button>
                 </div>
+                <p id="provider-help" class="field-help">Can’t find your provider? Add your own.</p>
+            </div>
+            <div class="field">
+                <label for="price">Price</label>
+                <input type="number" id="price" name="price" step="0.01" min="0" placeholder="0.00" required/>
             </div>
             <div class="field-row">
                 <div class="field">
@@ -59,6 +64,32 @@
         </form>
     </div>
 </main>
+<dialog class="provider-dialog" id="providerDialog" aria-labelledby="providerDialogTitle">
+    <form class="provider-dialog-card" id="providerDialogForm" novalidate>
+        <button type="button" class="provider-dialog-close" id="closeProviderDialog" aria-label="Close">&times;</button>
+        <h2 id="providerDialogTitle">Add your provider</h2>
+        <p>Add a provider for your account. It will be available in your provider list.</p>
+        <div class="field">
+            <label for="customProviderName">Provider name</label>
+            <input type="text" id="customProviderName" maxlength="200" autocomplete="off" required/>
+        </div>
+        <div class="field">
+            <label for="customProviderCategory">Category</label>
+            <select id="customProviderCategory" required>
+                <option value="">Choose a category</option>
+            </select>
+        </div>
+        <div class="field">
+            <label for="customProviderLogo">Logo URL or app path <span class="optional-label">Optional</span></label>
+            <input type="text" id="customProviderLogo" maxlength="500" placeholder="https://… or /images/provider.svg"/>
+            <p class="field-help">Use a publicly accessible image URL or an image stored in the app.</p>
+        </div>
+        <div class="form-actions">
+            <button type="button" class="btn btn-quiet" id="cancelProvider">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="saveProvider">Add provider</button>
+        </div>
+    </form>
+</dialog>
 <div th:replace="~{fragments/footer :: footer}"></div>
 <script th:src="@{/js/subscription-form.js}"></script>
 </body>
