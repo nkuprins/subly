@@ -95,6 +95,10 @@ public class Subscription {
         this.maxParticipants = maxParticipants;
     }
 
+    public boolean isActive() {
+        return status == SubscriptionStatus.ACTIVE;
+    }
+
     public void cancel(Instant now) {
         status = SubscriptionStatus.CANCELLED;
         cancelledAt = now;

@@ -89,7 +89,7 @@ public class InvitationService {
                 .findLockedById(invitation.getSubscription().getId())
                 .orElseThrow(() -> new InvitationCannotBeAcceptedException("Subscription no longer exists"));
 
-        if (subscription.getStatus() != SubscriptionStatus.ACTIVE) {
+        if (!subscription.isActive()) {
             throw new InvitationCannotBeAcceptedException("Subscription is not active");
         }
 

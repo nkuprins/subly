@@ -82,7 +82,7 @@ public class SubscriptionService {
     public void cancel(String username, long subscriptionId) {
         Subscription subscription = subscriptionAccess.getOwnedSubscription(username, subscriptionId);
 
-        if (subscription.getStatus() == SubscriptionStatus.CANCELLED) {
+        if (!subscription.isActive()) {
             return;
         }
 
@@ -94,7 +94,7 @@ public class SubscriptionService {
         SubscriptionMembership owner = subscriptionAccess.getOwnerMembership(username, subscriptionId);
         Subscription subscription = owner.getSubscription();
 
-        if (subscription.getStatus() == SubscriptionStatus.ACTIVE) {
+        if (subscription.isActive()) {
             return;
         }
 
