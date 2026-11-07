@@ -5,13 +5,13 @@ import com.app.subly.exception.user.*;
 import com.app.subly.model.User;
 import com.app.subly.model.UserRole;
 import com.app.subly.repository.UserRepository;
-import jakarta.transaction.Transactional;
 import java.time.ZoneId;
 import java.util.function.Consumer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -39,7 +39,7 @@ public class UserService {
         // UserIsConnectedException is raised in case some table's column refers to this user.
         // WrongPasswordException is raised if a raw password != password hash
 
-        User user = getUserByUserName(username);
+        User user = getUserByUsername(username);
 
         if (!encoder.matches(rawPassword, user.getPasswordHash())) {
             throw new WrongPasswordException("The passwords don't match");
@@ -55,7 +55,7 @@ public class UserService {
 
     @Transactional
     public void updateUserPassword(String username, String rawOldPassword, String rawNewPassword) {
-        User user = getUserByUserName(username);
+        User user = getUserByUsername(username);
 
         if (!encoder.matches(rawOldPassword, user.getPasswordHash())) {
             throw new WrongPasswordException("The passwords don't match");
@@ -66,7 +66,7 @@ public class UserService {
 
     @Transactional
     public void updateUserInformation(String oldUsername, UpdateUserInformationRequest newUserInfo) {
-        User user = getUserByUserName(oldUsername);
+        User user = getUserByUsername(oldUsername);
 
         try {
             if (newUserInfo.isEmailProvided()) {
@@ -94,7 +94,7 @@ public class UserService {
         }
     }
 
-    public User getUserByUserName(String username) {
+    public User getUserByUsername(String username) {
         return repository
                 .findByUsername(username)
                 .orElseThrow(() -> new UserDoesNotExistException("No found user with the username"));

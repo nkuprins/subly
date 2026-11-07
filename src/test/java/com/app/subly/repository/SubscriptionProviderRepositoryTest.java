@@ -44,7 +44,7 @@ class SubscriptionProviderRepositoryTest {
 
     @Test
     void findsCatalogAndOwnProvidersByName() {
-        assertThat(subscriptionProviderRepository.findAllByProviderTypeOrCreatedBy_UsernameOrderByNameAsc(
+        assertThat(subscriptionProviderRepository.findAllByProviderTypeOrCreatedByUsernameOrderByNameAsc(
                         ProviderType.CATALOG, "test-owner"))
                 .extracting(SubscriptionProvider::getName)
                 .containsExactly("A own", "B catalog");
@@ -52,11 +52,11 @@ class SubscriptionProviderRepositoryTest {
 
     @Test
     void findByIdAndCreatedByUsernameSkipsCatalogAndOthersProviders() {
-        assertThat(subscriptionProviderRepository.findByIdAndCreatedBy_Username(ownCustom.getId(), "test-owner"))
+        assertThat(subscriptionProviderRepository.findByIdAndCreatedByUsername(ownCustom.getId(), "test-owner"))
                 .isPresent();
-        assertThat(subscriptionProviderRepository.findByIdAndCreatedBy_Username(catalog.getId(), "test-owner"))
+        assertThat(subscriptionProviderRepository.findByIdAndCreatedByUsername(catalog.getId(), "test-owner"))
                 .isEmpty();
-        assertThat(subscriptionProviderRepository.findByIdAndCreatedBy_Username(othersCustom.getId(), "test-owner"))
+        assertThat(subscriptionProviderRepository.findByIdAndCreatedByUsername(othersCustom.getId(), "test-owner"))
                 .isEmpty();
     }
 

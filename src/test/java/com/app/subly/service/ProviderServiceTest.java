@@ -133,7 +133,7 @@ class ProviderServiceTest {
         @Test
         void changesNameCategoryAndLogo() {
             SubscriptionProvider provider = SubscriptionProvider.custom("My gym", gym, owner);
-            given(subscriptionProviderRepository.findByIdAndCreatedBy_Username(PROVIDER_ID, OWNER))
+            given(subscriptionProviderRepository.findByIdAndCreatedByUsername(PROVIDER_ID, OWNER))
                     .willReturn(Optional.of(provider));
             given(categoryRepository.findById(MUSIC_ID)).willReturn(Optional.of(music));
 
@@ -147,7 +147,7 @@ class ProviderServiceTest {
 
         @Test
         void rejectsProviderTheUserDoesNotOwn() {
-            given(subscriptionProviderRepository.findByIdAndCreatedBy_Username(PROVIDER_ID, OWNER))
+            given(subscriptionProviderRepository.findByIdAndCreatedByUsername(PROVIDER_ID, OWNER))
                     .willReturn(Optional.empty());
 
             assertThatThrownBy(() -> providerService.updateCustomProvider(OWNER, PROVIDER_ID, request))
@@ -159,7 +159,7 @@ class ProviderServiceTest {
         @Test
         void rejectsUnknownCategoryWithoutChangingTheProvider() {
             SubscriptionProvider provider = SubscriptionProvider.custom("My gym", gym, owner);
-            given(subscriptionProviderRepository.findByIdAndCreatedBy_Username(PROVIDER_ID, OWNER))
+            given(subscriptionProviderRepository.findByIdAndCreatedByUsername(PROVIDER_ID, OWNER))
                     .willReturn(Optional.of(provider));
             given(categoryRepository.findById(MUSIC_ID)).willReturn(Optional.empty());
 

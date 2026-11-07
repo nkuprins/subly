@@ -55,7 +55,7 @@ public class UserServiceTest {
     public void getUserShouldThrowExceptionIfUserNotExist() {
         when(repository.findByUsername("andris123")).thenReturn(Optional.empty());
 
-        assertThrows(UserDoesNotExistException.class, () -> service.getUserByUserName("andris123"));
+        assertThrows(UserDoesNotExistException.class, () -> service.getUserByUsername("andris123"));
     }
 
     @Test

@@ -1,7 +1,7 @@
 package com.app.subly.service;
 
-import com.app.subly.dto.dashboard.DashboardSummaryDto;
-import com.app.subly.dto.dashboard.UpcomingPaymentDto;
+import com.app.subly.dto.dashboard.DashboardSummaryResponse;
+import com.app.subly.dto.dashboard.UpcomingPaymentResponse;
 import com.app.subly.model.subscription.Currency;
 import com.app.subly.model.subscription.MembershipRole;
 import com.app.subly.model.subscription.Subscription;
@@ -38,7 +38,7 @@ public class DashboardService {
     private final Clock clock;
 
     @Transactional(readOnly = true)
-    public DashboardSummaryDto getSummary(String username) {
+    public DashboardSummaryResponse getSummary(String username) {
 
         List<SubscriptionShare> shares = loadSubscriptionShares(username);
 
@@ -58,12 +58,12 @@ public class DashboardService {
 
         BigDecimal monthlyTotal = yearlyTotal.divide(MONTHS_IN_YEAR, MONEY_SCALE, RoundingMode.HALF_UP);
 
-        return new DashboardSummaryDto(
+        return new DashboardSummaryResponse(
                 monthlyTotal, yearlyTotal.setScale(MONEY_SCALE, RoundingMode.HALF_UP), Currency.EUR);
     }
 
     @Transactional(readOnly = true)
-    public List<UpcomingPaymentDto> getUpcomingPayments(String username) {
+    public List<UpcomingPaymentResponse> getUpcomingPayments(String username) {
 
         LocalDate today = userRepository.getByUsername(username).today(clock);
         LocalDate endDate = today.plusDays(UPCOMING_DAYS);
@@ -78,7 +78,7 @@ public class DashboardService {
                 .map(share -> {
                     Subscription subscription = share.subscription();
 
-                    return new UpcomingPaymentDto(
+                    return new UpcomingPaymentResponse(
                             subscription.getId(),
                             subscription.getProvider().getName(),
                             share.amount(),
@@ -91,7 +91,7 @@ public class DashboardService {
 
     private List<SubscriptionShare> loadSubscriptionShares(String username) {
         List<SubscriptionMembership> memberships =
-                membershipRepository.findByUser_UsernameAndSubscription_StatusOrderBySubscription_NextPaymentDateAsc(
+                membershipRepository.findByUserUsernameAndSubscriptionStatusOrderBySubscriptionNextPaymentDateAsc(
                         username, SubscriptionStatus.ACTIVE);
 
         if (memberships.isEmpty()) {
@@ -103,7 +103,7 @@ public class DashboardService {
                 .distinct()
                 .toList();
 
-        Map<Long, Long> memberCounts = membershipRepository.findBySubscription_IdIn(subscriptionIds).stream()
+        Map<Long, Long> memberCounts = membershipRepository.findBySubscriptionIdIn(subscriptionIds).stream()
                 .collect(Collectors.groupingBy(
                         membership -> membership.getSubscription().getId(), Collectors.counting()));
 

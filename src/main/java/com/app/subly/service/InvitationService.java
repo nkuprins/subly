@@ -80,8 +80,8 @@ public class InvitationService {
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    public void accept(String username, long invtationId) {
-        PendingInvitation invitation = invitationRepository.getByIdAndUserUsername(invtationId, username);
+    public void accept(String username, long invitationId) {
+        PendingInvitation invitation = invitationRepository.getByIdAndUserUsername(invitationId, username);
 
         Subscription subscription = subscriptionRepository
                 .findLockedById(invitation.getSubscription().getId())

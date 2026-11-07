@@ -45,7 +45,7 @@ public class SubscriptionService {
     @Transactional(readOnly = true)
     public List<VisibleSubscriptionResponse> findVisibleTo(String username) {
         return membershipRepository
-                .findByUser_UsernameAndSubscription_StatusOrderBySubscription_NextPaymentDateAsc(
+                .findByUserUsernameAndSubscriptionStatusOrderBySubscriptionNextPaymentDateAsc(
                         username, SubscriptionStatus.ACTIVE)
                 .stream()
                 .map(VisibleSubscriptionResponse::from)

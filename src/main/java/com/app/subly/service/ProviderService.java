@@ -33,7 +33,7 @@ public class ProviderService {
     @Transactional(readOnly = true)
     public List<ProviderResponse> findVisibleTo(String username) {
         return subscriptionProviderRepository
-                .findAllByProviderTypeOrCreatedBy_UsernameOrderByNameAsc(ProviderType.CATALOG, username)
+                .findAllByProviderTypeOrCreatedByUsernameOrderByNameAsc(ProviderType.CATALOG, username)
                 .stream()
                 .map(ProviderResponse::from)
                 .toList();
@@ -54,7 +54,7 @@ public class ProviderService {
     @Transactional
     public ProviderResponse updateCustomProvider(String username, long providerId, ProviderRequest request) {
         SubscriptionProvider provider = subscriptionProviderRepository
-                .findByIdAndCreatedBy_Username(providerId, username)
+                .findByIdAndCreatedByUsername(providerId, username)
                 .orElseThrow(() -> new ProviderNotFoundException(providerId));
         provider.setCategory(findCategory(request.categoryId()));
         provider.setName(request.name().strip());
