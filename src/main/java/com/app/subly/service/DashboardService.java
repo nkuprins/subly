@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -67,10 +66,7 @@ public class DashboardService {
     @Transactional(readOnly = true)
     public List<UpcomingPaymentDto> getUpcomingPayments(String username) {
 
-        LocalDate today = userRepository
-                .findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User " + username + " does not exist"))
-                .today(clock);
+        LocalDate today = userRepository.getByUsername(username).today(clock);
         LocalDate endDate = today.plusDays(UPCOMING_DAYS);
 
         return loadSubscriptionShares(username).stream()

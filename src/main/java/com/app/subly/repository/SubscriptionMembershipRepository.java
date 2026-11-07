@@ -15,8 +15,12 @@ public interface SubscriptionMembershipRepository extends JpaRepository<Subscrip
 
     boolean existsBySubscriptionIdAndUserId(Long subscriptionId, Long userId);
 
-    @EntityGraph(attributePaths = {"user", "subscription.provider.category"})
+    @EntityGraph(attributePaths = {"user", "subscription"})
     Optional<SubscriptionMembership> findBySubscriptionIdAndRole(Long subscriptionId, MembershipRole role);
+
+    @EntityGraph(attributePaths = {"user", "subscription.provider.category"})
+    Optional<SubscriptionMembership> findWithSubscriptionDetailsBySubscriptionIdAndRole(
+            Long subscriptionId, MembershipRole role);
 
     @EntityGraph(attributePaths = "user")
     List<SubscriptionMembership> findBySubscriptionIdInAndRole(Collection<Long> subscriptionIds, MembershipRole role);

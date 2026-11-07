@@ -29,7 +29,6 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -242,7 +241,7 @@ class DashboardServiceTest {
     private void givenUserIn(ZoneId zone) {
         User user = TestUsers.user(USERNAME);
         user.setTimeZone(zone);
-        when(userRepository.findByUsername(USERNAME)).thenReturn(Optional.of(user));
+        when(userRepository.getByUsername(USERNAME)).thenReturn(user);
     }
 
     private void stubMemberships(List<SubscriptionMembership> mine, List<SubscriptionMembership> all) {

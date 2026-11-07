@@ -120,7 +120,7 @@ class ProviderServiceTest {
 
     private User givenUser(String username, UserRole role) {
         User user = TestUsers.user(username, role);
-        given(userRepository.findByUsername(username)).willReturn(Optional.of(user));
+        given(userRepository.getByUsername(username)).willReturn(user);
         return user;
     }
 

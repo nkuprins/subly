@@ -2,6 +2,7 @@ package com.app.subly.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.BDDMockito.then;
 
 import com.app.subly.exception.subscription.SubscriptionAccessDeniedException;
 import com.app.subly.model.subscription.Subscription;
@@ -19,8 +20,6 @@ class ReactivateSubscriptionServiceTest extends AbstractSubscriptionServiceTest 
         subscription.reschedule(LocalDate.of(2026, 9, 10));
         subscription.cancel(Instant.parse("2026-09-05T12:00:00Z"));
 
-        givenOwnerExists();
-
         subscriptionService.reactivate(OWNER, SUBSCRIPTION_ID);
 
         assertThat(subscription.getStatus()).isEqualTo(SubscriptionStatus.ACTIVE);
@@ -28,6 +27,7 @@ class ReactivateSubscriptionServiceTest extends AbstractSubscriptionServiceTest 
         assertThat(subscription.getCancelledAt()).isNull();
 
         assertThat(subscription.getNextPaymentDate()).isEqualTo(LocalDate.of(2026, 11, 10));
+        then(userRepository).shouldHaveNoInteractions();
     }
 
     @Test

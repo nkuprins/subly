@@ -20,7 +20,6 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,7 +36,7 @@ public class SubscriptionService {
 
     @Transactional
     public SubscriptionResponse create(String username, CreateSubscriptionRequest request) {
-        User owner = findUser(username);
+        User owner = userRepository.getByUsername(username);
         requireNotInPast(owner, request);
         SubscriptionProvider provider = findVisibleProvider(request.providerId(), owner);
         return subscribe(owner, provider, request);
@@ -55,8 +54,10 @@ public class SubscriptionService {
 
     @Transactional
     public SubscriptionResponse update(String username, long subscriptionId, UpdateSubscriptionRequest request) {
-        Subscription subscription = subscriptionAccess.getOwnedSubscription(username, subscriptionId);
-        requireNotInPast(findUser(username), request);
+        SubscriptionMembership owner =
+                subscriptionAccess.getOwnerMembershipWithSubscriptionDetails(username, subscriptionId);
+        Subscription subscription = owner.getSubscription();
+        requireNotInPast(owner.getUser(), request);
         applyPaymentDetails(subscription, request);
         return SubscriptionResponse.from(subscription);
     }
@@ -90,13 +91,14 @@ public class SubscriptionService {
 
     @Transactional
     public void reactivate(String username, long subscriptionId) {
-        Subscription subscription = subscriptionAccess.getOwnedSubscription(username, subscriptionId);
+        SubscriptionMembership owner = subscriptionAccess.getOwnerMembership(username, subscriptionId);
+        Subscription subscription = owner.getSubscription();
 
         if (subscription.getStatus() == SubscriptionStatus.ACTIVE) {
             return;
         }
 
-        LocalDate today = findUser(username).today(clock);
+        LocalDate today = owner.getUser().today(clock);
 
         subscription.reactivate(today);
     }
@@ -108,12 +110,6 @@ public class SubscriptionService {
 
         membershipRepository.save(SubscriptionMembership.owner(owner, subscription));
         return SubscriptionResponse.from(subscription);
-    }
-
-    private User findUser(String username) {
-        return userRepository
-                .findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User " + username + " does not exist"));
     }
 
     private SubscriptionProvider findVisibleProvider(long providerId, User owner) {

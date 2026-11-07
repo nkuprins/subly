@@ -70,12 +70,29 @@ class SubscriptionMembershipRepositoryTest {
                 .orElseThrow();
 
         assertThat(owner.getId()).isEqualTo(ownerRow.getId());
-        PersistenceUnitUtil util =
-                entityManager.getEntityManager().getEntityManagerFactory().getPersistenceUnitUtil();
+        PersistenceUnitUtil util = persistenceUnitUtil();
         assertThat(util.isLoaded(owner, "user")).isTrue();
         assertThat(util.isLoaded(owner, "subscription")).isTrue();
-        assertThat(util.isLoaded(owner.getSubscription(), "provider")).isTrue();
+        assertThat(util.isLoaded(owner.getSubscription(), "provider")).isFalse();
         assertThat(owner.getUser().getUsername()).isEqualTo(OWNER);
+    }
+
+    @Test
+    void findsTheOwnerRowWithSubscriptionDetailsLoaded() {
+        SubscriptionMembership owner = membershipRepository
+                .findWithSubscriptionDetailsBySubscriptionIdAndRole(subscription.getId(), MembershipRole.OWNER)
+                .orElseThrow();
+
+        assertThat(owner.getId()).isEqualTo(ownerRow.getId());
+        PersistenceUnitUtil util = persistenceUnitUtil();
+        assertThat(util.isLoaded(owner, "user")).isTrue();
+        assertThat(util.isLoaded(owner.getSubscription(), "provider")).isTrue();
+        assertThat(util.isLoaded(owner.getSubscription().getProvider(), "category"))
+                .isTrue();
+    }
+
+    private PersistenceUnitUtil persistenceUnitUtil() {
+        return entityManager.getEntityManager().getEntityManagerFactory().getPersistenceUnitUtil();
     }
 
     @Test

@@ -14,7 +14,6 @@ import com.app.subly.repository.SubscriptionProviderRepository;
 import com.app.subly.repository.UserRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,7 +46,7 @@ public class ProviderService {
 
     @Transactional
     public ProviderResponse create(String username, ProviderRequest request) {
-        User user = findUser(username);
+        User user = userRepository.getByUsername(username);
         Category category = findCategory(request.categoryId());
         String name = request.name().strip();
         SubscriptionProvider provider = user.getRole() == UserRole.ADMIN
@@ -70,12 +69,6 @@ public class ProviderService {
 
     private Category findCategory(long categoryId) {
         return categoryRepository.findById(categoryId).orElseThrow(() -> new InvalidCategoryException(categoryId));
-    }
-
-    private User findUser(String username) {
-        return userRepository
-                .findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User " + username + " does not exist"));
     }
 
     private static String normalizeLogoPath(String logoPath) {

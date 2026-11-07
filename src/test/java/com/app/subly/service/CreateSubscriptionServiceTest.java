@@ -35,7 +35,7 @@ class CreateSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
     @BeforeEach
     void ownerExists() {
         owner.setId(1L);
-        given(userRepository.findByUsername(OWNER)).willReturn(Optional.of(owner));
+        given(userRepository.getByUsername(OWNER)).willReturn(owner);
     }
 
     @Test

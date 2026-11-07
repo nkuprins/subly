@@ -3,6 +3,7 @@ package com.app.subly.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
 
 import com.app.subly.dto.subscription.SubscriptionResponse;
 import com.app.subly.dto.subscription.UpdateSubscriptionRequest;
@@ -24,8 +25,8 @@ class UpdateSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
 
         @Test
         void changesPaymentDetailsAndKeepsTheProvider() {
-            Subscription subscription = givenOwnedCatalogSubscription();
-            givenOwnerExists();
+            Subscription subscription = subscription(catalogProvider());
+            givenOwnerRowWithSubscriptionDetails(subscription);
             UpdateSubscriptionRequest request = updateRequest();
 
             SubscriptionResponse response = subscriptionService.update(OWNER, SUBSCRIPTION_ID, request);
@@ -33,11 +34,13 @@ class UpdateSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
             assertPaymentDetails(subscription, request);
             assertThat(subscription.getProvider().getName()).isEqualTo(CATALOG_NAME);
             assertThat(response).isEqualTo(SubscriptionResponse.from(subscription));
+            then(userRepository).shouldHaveNoInteractions();
         }
 
         @Test
         void rejectsNonOwner() {
-            Subscription subscription = givenSubscriptionOwnedBySomeoneElse();
+            Subscription subscription = subscription(customProvider());
+            givenOwnerRowWithSubscriptionDetails(subscription);
             UpdateSubscriptionRequest request = updateRequest();
 
             assertThatThrownBy(() -> subscriptionService.update(STRANGER, SUBSCRIPTION_ID, request))
@@ -47,7 +50,8 @@ class UpdateSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
 
         @Test
         void rejectsUnknownSubscription() {
-            given(membershipRepository.findBySubscriptionIdAndRole(SUBSCRIPTION_ID, MembershipRole.OWNER))
+            given(membershipRepository.findWithSubscriptionDetailsBySubscriptionIdAndRole(
+                            SUBSCRIPTION_ID, MembershipRole.OWNER))
                     .willReturn(Optional.empty());
             UpdateSubscriptionRequest request = updateRequest();
 

@@ -1,6 +1,7 @@
 package com.app.subly.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -15,6 +16,7 @@ import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.test.context.ActiveProfiles;
 
 @ActiveProfiles("test")
@@ -123,6 +125,20 @@ public class UserRepositoryTest {
         Optional<User> user = repository.findByUsername("unknown");
 
         assertThat(user).isEmpty();
+    }
+
+    @Test
+    void getByUsername_ShouldReturnUserIfExists() {
+        repository.save(createUser("andris123", "andris@gmail.com", "Andris"));
+
+        assertThat(repository.getByUsername("andris123").getEmail()).isEqualTo("andris@gmail.com");
+    }
+
+    @Test
+    void getByUsername_ShouldThrowIfUserDoesNotExist() {
+        assertThatThrownBy(() -> repository.getByUsername("unknown"))
+                .isInstanceOf(UsernameNotFoundException.class)
+                .hasMessageContaining("unknown");
     }
 
     private User createUser(String username, String email, String name) {

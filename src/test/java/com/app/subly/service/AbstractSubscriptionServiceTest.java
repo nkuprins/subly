@@ -72,7 +72,7 @@ abstract class AbstractSubscriptionServiceTest {
     }
 
     void givenOwnerExists() {
-        given(userRepository.findByUsername(OWNER)).willReturn(Optional.of(owner));
+        given(userRepository.getByUsername(OWNER)).willReturn(owner);
     }
 
     Subscription givenOwnedCustomSubscription() {
@@ -88,6 +88,12 @@ abstract class AbstractSubscriptionServiceTest {
         given(membershipRepository.findBySubscriptionIdAndRole(SUBSCRIPTION_ID, MembershipRole.OWNER))
                 .willReturn(Optional.of(SubscriptionMembership.owner(owner, subscription)));
         return subscription;
+    }
+
+    void givenOwnerRowWithSubscriptionDetails(Subscription subscription) {
+        given(membershipRepository.findWithSubscriptionDetailsBySubscriptionIdAndRole(
+                        SUBSCRIPTION_ID, MembershipRole.OWNER))
+                .willReturn(Optional.of(SubscriptionMembership.owner(owner, subscription)));
     }
 
     static void assertPaymentDetails(Subscription subscription, PaymentDetails request) {
