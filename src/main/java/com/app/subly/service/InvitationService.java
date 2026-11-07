@@ -81,9 +81,7 @@ public class InvitationService {
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public void accept(String username, long invtationId) {
-        PendingInvitation invitation = invitationRepository
-                .findByIdAndUserUsername(invtationId, username)
-                .orElseThrow(() -> new InvitationNotFoundException(invtationId));
+        PendingInvitation invitation = invitationRepository.getByIdAndUserUsername(invtationId, username);
 
         Subscription subscription = subscriptionRepository
                 .findLockedById(invitation.getSubscription().getId())
@@ -121,9 +119,7 @@ public class InvitationService {
     @Transactional
     public void decline(String username, long invitationId) {
 
-        PendingInvitation invitation = invitationRepository
-                .findByIdAndUserUsername(invitationId, username)
-                .orElseThrow(() -> new InvitationNotFoundException(invitationId));
+        PendingInvitation invitation = invitationRepository.getByIdAndUserUsername(invitationId, username);
 
         invitationRepository.delete(invitation);
     }

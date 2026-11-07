@@ -65,7 +65,7 @@ class InvitationServiceTest {
 
     @Test
     void acceptsInvitationAndCreatesMembership() {
-        given(invitationRepository.findByIdAndUserUsername(5L, "bob")).willReturn(Optional.of(invitation));
+        given(invitationRepository.getByIdAndUserUsername(5L, "bob")).willReturn(invitation);
 
         given(subscriptionRepository.findLockedById(10L)).willReturn(Optional.of(subscription));
 
@@ -88,7 +88,7 @@ class InvitationServiceTest {
 
     @Test
     void declinesInvitationWithoutCreatingMembership() {
-        given(invitationRepository.findByIdAndUserUsername(5L, "bob")).willReturn(Optional.of(invitation));
+        given(invitationRepository.getByIdAndUserUsername(5L, "bob")).willReturn(invitation);
 
         service.decline("bob", 5L);
 
@@ -98,14 +98,25 @@ class InvitationServiceTest {
 
     @Test
     void cannotAcceptAnotherUsersInvitation() {
+        given(invitationRepository.getByIdAndUserUsername(5L, "alice")).willThrow(new InvitationNotFoundException(5L));
+
         assertThatThrownBy(() -> service.accept("alice", 5L)).isInstanceOf(InvitationNotFoundException.class);
 
         then(membershipRepository).shouldHaveNoInteractions();
     }
 
     @Test
+    void cannotDeclineAnotherUsersInvitation() {
+        given(invitationRepository.getByIdAndUserUsername(5L, "alice")).willThrow(new InvitationNotFoundException(5L));
+
+        assertThatThrownBy(() -> service.decline("alice", 5L)).isInstanceOf(InvitationNotFoundException.class);
+
+        then(invitationRepository).should(never()).delete(any());
+    }
+
+    @Test
     void cannotAcceptFullSubscription() {
-        given(invitationRepository.findByIdAndUserUsername(5L, "bob")).willReturn(Optional.of(invitation));
+        given(invitationRepository.getByIdAndUserUsername(5L, "bob")).willReturn(invitation);
 
         given(subscriptionRepository.findLockedById(10L)).willReturn(Optional.of(subscription));
 
@@ -120,7 +131,7 @@ class InvitationServiceTest {
     void cannotAcceptCancelledSubscription() {
         subscription.cancel(Instant.parse("2026-10-01T12:00:00Z"));
 
-        given(invitationRepository.findByIdAndUserUsername(5L, "bob")).willReturn(Optional.of(invitation));
+        given(invitationRepository.getByIdAndUserUsername(5L, "bob")).willReturn(invitation);
 
         given(subscriptionRepository.findLockedById(10L)).willReturn(Optional.of(subscription));
 
@@ -134,7 +145,7 @@ class InvitationServiceTest {
         Subscription notSharable =
                 new Subscription(null, new BigDecimal("18.00"), BillingCycle.MONTHLY, LocalDate.of(2026, 12, 1), false);
 
-        given(invitationRepository.findByIdAndUserUsername(5L, "bob")).willReturn(Optional.of(invitation));
+        given(invitationRepository.getByIdAndUserUsername(5L, "bob")).willReturn(invitation);
 
         given(subscriptionRepository.findLockedById(10L)).willReturn(Optional.of(notSharable));
 
@@ -145,7 +156,7 @@ class InvitationServiceTest {
 
     @Test
     void cannotAcceptIfAlreadyMember() {
-        given(invitationRepository.findByIdAndUserUsername(5L, "bob")).willReturn(Optional.of(invitation));
+        given(invitationRepository.getByIdAndUserUsername(5L, "bob")).willReturn(invitation);
 
         given(subscriptionRepository.findLockedById(10L)).willReturn(Optional.of(subscription));
 
