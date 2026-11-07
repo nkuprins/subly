@@ -15,8 +15,8 @@ import com.app.subly.repository.SubscriptionProviderRepository;
 import com.app.subly.repository.SubscriptionRepository;
 import com.app.subly.repository.UserRepository;
 import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -85,8 +85,7 @@ public class SubscriptionService {
             return;
         }
 
-        subscription.setStatus(SubscriptionStatus.CANCELLED);
-        subscription.setCancelledAt(LocalDateTime.now(clock));
+        subscription.cancel(Instant.now(clock));
     }
 
     @Transactional
@@ -99,9 +98,7 @@ public class SubscriptionService {
 
         LocalDate today = findUser(username).today(clock);
 
-        subscription.advancePaymentDate(today);
-        subscription.setStatus(SubscriptionStatus.ACTIVE);
-        subscription.setCancelledAt(null);
+        subscription.reactivate(today);
     }
 
     private SubscriptionResponse subscribe(User owner, SubscriptionProvider provider, PaymentDetails request) {

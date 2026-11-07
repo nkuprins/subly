@@ -9,15 +9,15 @@ import lombok.Setter;
 @Entity
 @Table(name = "categories")
 @Getter
-@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Category {
 
     @Id
-    @Setter(AccessLevel.NONE)
+    @Setter
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Setter
     @Column(nullable = false, unique = true, length = 100)
     private String name;
 

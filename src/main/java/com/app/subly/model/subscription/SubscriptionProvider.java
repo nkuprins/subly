@@ -10,18 +10,19 @@ import lombok.Setter;
 @Entity
 @Table(name = "subscription_providers")
 @Getter
-@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class SubscriptionProvider {
 
     @Id
-    @Setter(AccessLevel.NONE)
+    @Setter
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Setter
     @Column(nullable = false, length = 200)
     private String name;
 
+    @Setter
     @Column(length = 500)
     private String logoPath;
 
@@ -29,6 +30,7 @@ public class SubscriptionProvider {
     @JoinColumn(name = "created_by")
     private User createdBy;
 
+    @Setter
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;

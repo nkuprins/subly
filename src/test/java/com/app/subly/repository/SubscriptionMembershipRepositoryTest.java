@@ -2,8 +2,8 @@ package com.app.subly.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.app.subly.model.TestUsers;
 import com.app.subly.model.User;
-import com.app.subly.model.UserRole;
 import com.app.subly.model.subscription.BillingCycle;
 import com.app.subly.model.subscription.Category;
 import com.app.subly.model.subscription.MembershipRole;
@@ -13,8 +13,8 @@ import com.app.subly.model.subscription.SubscriptionProvider;
 import com.app.subly.model.subscription.SubscriptionStatus;
 import jakarta.persistence.PersistenceUnitUtil;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -98,8 +98,7 @@ class SubscriptionMembershipRepositoryTest {
     void ignoresCancelledSubscriptions() {
         Subscription cancelled =
                 subscriptionRepository.findById(subscription.getId()).orElseThrow();
-        cancelled.setStatus(SubscriptionStatus.CANCELLED);
-        cancelled.setCancelledAt(LocalDateTime.now());
+        cancelled.cancel(Instant.now());
         entityManager.flush();
 
         assertThat(findOwnersDueBefore(subscription.getNextPaymentDate().plusDays(1)))
@@ -134,12 +133,7 @@ class SubscriptionMembershipRepositoryTest {
     }
 
     private User persistUser(String username) {
-        User user = new User();
-        user.setUsername(username);
-        user.setName(username);
-        user.setEmail(username + "@test.local");
-        user.setPasswordHash("not-a-real-hash");
-        user.setRole(UserRole.USER);
+        User user = TestUsers.user(username);
         return entityManager.persist(user);
     }
 }

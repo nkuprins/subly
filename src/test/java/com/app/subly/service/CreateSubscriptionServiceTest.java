@@ -10,6 +10,7 @@ import static org.mockito.Mockito.never;
 import com.app.subly.dto.subscription.CreateSubscriptionRequest;
 import com.app.subly.dto.subscription.SubscriptionResponse;
 import com.app.subly.exception.subscription.ProviderNotFoundException;
+import com.app.subly.model.TestUsers;
 import com.app.subly.model.User;
 import com.app.subly.model.subscription.BillingCycle;
 import com.app.subly.model.subscription.MembershipRole;
@@ -56,7 +57,7 @@ class CreateSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
 
     @Test
     void rejectsCustomProviderOfAnotherUser() {
-        User stranger = new User();
+        User stranger = TestUsers.user("stranger");
         stranger.setId(2L);
         given(subscriptionProviderRepository.findById(PROVIDER_ID))
                 .willReturn(Optional.of(SubscriptionProvider.custom(CUSTOM_NAME, gym, stranger)));

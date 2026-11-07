@@ -11,6 +11,7 @@ import com.app.subly.dto.provider.ProviderRequest;
 import com.app.subly.dto.provider.ProviderResponse;
 import com.app.subly.exception.category.InvalidCategoryException;
 import com.app.subly.exception.subscription.ProviderNotFoundException;
+import com.app.subly.model.TestUsers;
 import com.app.subly.model.User;
 import com.app.subly.model.UserRole;
 import com.app.subly.model.subscription.Category;
@@ -56,8 +57,7 @@ class ProviderServiceTest {
     @BeforeEach
     void setUp() {
         providerService = new ProviderService(subscriptionProviderRepository, categoryRepository, userRepository);
-        owner = new User();
-        owner.setUsername(OWNER);
+        owner = TestUsers.user(OWNER);
         gym = new Category("Test gym");
     }
 
@@ -119,9 +119,7 @@ class ProviderServiceTest {
     }
 
     private User givenUser(String username, UserRole role) {
-        User user = new User();
-        user.setUsername(username);
-        user.setRole(role);
+        User user = TestUsers.user(username, role);
         given(userRepository.findByUsername(username)).willReturn(Optional.of(user));
         return user;
     }

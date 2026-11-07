@@ -84,3 +84,15 @@ Check the format without changing files:
 Use `this.` only when a parameter or local variable has the same name as the field, for example `this.name = name`.
 Write `repository.save(user)`, not `this.repository.save(user)`. Spotless does not check this rule. IntelliJ shows it
 with the "Unnecessary 'this' qualifier" inspection.
+
+## Entity conventions
+
+- Create entities with a constructor or factory. It takes the fields that a new row needs, so you can't create an
+  empty entity. The no-arg constructor is `protected`, because only JPA needs it.
+- Put `@Setter` on the ID and on each editable field. Never on the class, because a new field then has no setter until you
+  manually decide it needs one preventing accidental mistakes.
+- A field can be in both the constructor and a setter: the constructor sets it when the entity is created, and the
+  setter changes it later.
+- Fields that must change together get one method, for example `cancel(now)`, so the sQL CHECKs stay true.
+- The id setter is public so that unit tests can set an ID. Don't call it in application code.
+- Future option: `@Builder` on a private `User` constructor, so the four `String` arguments can't be swapped.

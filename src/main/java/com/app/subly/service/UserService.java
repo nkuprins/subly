@@ -151,12 +151,7 @@ public class UserService {
     }
 
     private User createUserFromRawData(String username, String name, String password, String email, ZoneId timeZone) {
-        User user = new User();
-        user.setUsername(username);
-        user.setName(name);
-        user.setPasswordHash(encoder.encode(password));
-        user.setEmail(email);
-        user.setRole(UserRole.USER);
+        User user = new User(username, name, encoder.encode(password), email, UserRole.USER);
         if (timeZone != null) {
             user.setTimeZone(timeZone);
         }
