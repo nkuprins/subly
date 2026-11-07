@@ -39,6 +39,11 @@ public class PageController {
             model.addAttribute("registrationError", "All fields are required");
             return "register";
         }
+        if (username.length() > User.USERNAME_MAX_LENGTH) {
+            model.addAttribute(
+                    "registrationError", "Username must be " + User.USERNAME_MAX_LENGTH + " characters or fewer");
+            return "register";
+        }
         if (name.length() > User.NAME_MAX_LENGTH) {
             model.addAttribute("registrationError", "Name must be " + User.NAME_MAX_LENGTH + " characters or fewer");
             return "register";

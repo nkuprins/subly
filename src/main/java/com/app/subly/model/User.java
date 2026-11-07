@@ -19,6 +19,8 @@ public class User {
 
     public static final ZoneId DEFAULT_TIME_ZONE = ZoneId.of("Europe/Riga");
 
+    public static final int USERNAME_MAX_LENGTH = 100;
+
     public static final int NAME_MAX_LENGTH = 100;
 
     @Id
@@ -27,7 +29,7 @@ public class User {
     private Long id;
 
     @Setter
-    @Column(unique = true, nullable = false)
+    @Column(unique = true, nullable = false, length = USERNAME_MAX_LENGTH)
     private String username;
 
     @Setter

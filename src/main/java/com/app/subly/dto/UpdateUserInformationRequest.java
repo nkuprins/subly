@@ -11,7 +11,9 @@ import lombok.Getter;
 @Getter
 public class UpdateUserInformationRequest {
 
+    @Size(max = User.USERNAME_MAX_LENGTH)
     private String newUsername;
+
     private boolean usernameProvided = false;
 
     @Email
