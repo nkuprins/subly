@@ -9,6 +9,7 @@ import com.app.subly.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.function.Consumer;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -108,27 +109,15 @@ public class UserService {
 
         try {
             if (newUserInfo.isEmailProvided()) {
-                if (isNotValidForUpdating(user.getEmail(), newUserInfo.getNewEmail())) {
-                    throw new UserInfoUpdateException(
-                            "You must provide a non-empty email that differs from your current");
-                }
-                user.setEmail(newUserInfo.getNewEmail());
+                updateField("email", user.getEmail(), newUserInfo.getNewEmail(), user::setEmail);
             }
 
             if (newUserInfo.isUsernameProvided()) {
-                if (isNotValidForUpdating(user.getUsername(), newUserInfo.getNewUsername())) {
-                    throw new UserInfoUpdateException(
-                            "You must provide a non-empty username that differs from your current");
-                }
-                user.setUsername(newUserInfo.getNewUsername());
+                updateField("username", user.getUsername(), newUserInfo.getNewUsername(), user::setUsername);
             }
 
             if (newUserInfo.isNameProvided()) {
-                if (isNotValidForUpdating(user.getName(), newUserInfo.getNewName())) {
-                    throw new UserInfoUpdateException(
-                            "You must provide a non-empty name that differs from your current");
-                }
-                user.setName(newUserInfo.getNewName());
+                updateField("name", user.getName(), newUserInfo.getNewName(), user::setName);
             }
 
             if (newUserInfo.isTimeZoneProvided()) {
@@ -156,6 +145,14 @@ public class UserService {
             user.setTimeZone(timeZone);
         }
         return user;
+    }
+
+    private void updateField(String label, String current, String provided, Consumer<String> setter) {
+        if (isNotValidForUpdating(current, provided)) {
+            throw new UserInfoUpdateException(
+                    "You must provide a non-empty " + label + " that differs from your current");
+        }
+        setter.accept(provided);
     }
 
     private boolean isNotValidForUpdating(String originalCredential, String providedCredential) {
