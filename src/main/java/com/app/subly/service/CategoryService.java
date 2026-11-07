@@ -23,28 +23,30 @@ public class CategoryService {
 
     @Transactional
     public void addNewCategory(String categoryName) {
-        Category category = new Category(categoryName);
+        String name = categoryName.strip();
+        Category category = new Category(name);
 
         try {
             repository.saveAndFlush(category);
         } catch (DataIntegrityViolationException exception) {
-            throw new CategoryAlreadyExistsException(categoryName);
+            throw new CategoryAlreadyExistsException(name);
         }
     }
 
     @Transactional
     public void editCategoryName(Long id, String newCategoryName) {
         Category category = repository.findById(id).orElseThrow(() -> new CategoryNotFoundException(id));
+        String newName = newCategoryName.strip();
 
-        if (category.getName().equals(newCategoryName)) {
+        if (category.getName().equals(newName)) {
             throw new CategoryUpdateException("The new name must differ from the old name");
         }
 
         try {
-            category.setName(newCategoryName);
+            category.setName(newName);
             repository.saveAndFlush(category);
         } catch (DataIntegrityViolationException exception) {
-            throw new CategoryAlreadyExistsException(newCategoryName);
+            throw new CategoryAlreadyExistsException(newName);
         }
     }
 

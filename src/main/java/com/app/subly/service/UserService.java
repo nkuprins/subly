@@ -26,7 +26,7 @@ public class UserService {
         // before calling this method.
 
         try {
-            repository.save(createUserFromRawData(username, name, password, email, timeZone));
+            repository.save(createUserFromRawData(username.strip(), name.strip(), password, email.strip(), timeZone));
         } catch (DataIntegrityViolationException exception) {
             throw new UserAlreadyExistsException("A user with the username or the email already exists");
         }
@@ -109,11 +109,12 @@ public class UserService {
     }
 
     private void updateField(String label, String current, String provided, Consumer<String> setter) {
-        if (isNotValidForUpdating(current, provided)) {
+        String value = provided == null ? null : provided.strip();
+        if (isNotValidForUpdating(current, value)) {
             throw new UserInfoUpdateException(
                     "You must provide a non-empty " + label + " that differs from your current");
         }
-        setter.accept(provided);
+        setter.accept(value);
     }
 
     private boolean isNotValidForUpdating(String originalCredential, String providedCredential) {
