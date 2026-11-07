@@ -23,13 +23,6 @@ public class SubscriptionController {
         return service.create(principal.getName(), request);
     }
 
-    @PostMapping("/custom")
-    @ResponseStatus(HttpStatus.CREATED)
-    public SubscriptionResponse createCustom(
-            Principal principal, @Valid @RequestBody CreateCustomSubscriptionRequest request) {
-        return service.createCustom(principal.getName(), request);
-    }
-
     @GetMapping
     public List<VisibleSubscriptionResponse> listMine(Principal principal) {
         return service.findVisibleTo(principal.getName());
@@ -41,14 +34,6 @@ public class SubscriptionController {
             @PathVariable @Positive long id,
             @Valid @RequestBody UpdateSubscriptionRequest request) {
         return service.update(principal.getName(), id, request);
-    }
-
-    @PutMapping("/{id}/custom")
-    public SubscriptionResponse updateCustom(
-            Principal principal,
-            @PathVariable @Positive long id,
-            @Valid @RequestBody UpdateCustomSubscriptionRequest request) {
-        return service.updateCustom(principal.getName(), id, request);
     }
 
     @PatchMapping("/{id}/cancel")

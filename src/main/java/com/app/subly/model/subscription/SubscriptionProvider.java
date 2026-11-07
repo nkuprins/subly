@@ -51,4 +51,8 @@ public class SubscriptionProvider {
     public static SubscriptionProvider custom(String name, Category category, User creator) {
         return new SubscriptionProvider(name, category, creator, ProviderType.CUSTOM);
     }
+
+    public boolean isVisibleTo(User user) {
+        return providerType == ProviderType.CATALOG || createdBy.getId().equals(user.getId());
+    }
 }

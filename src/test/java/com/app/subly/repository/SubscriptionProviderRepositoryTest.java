@@ -26,36 +26,47 @@ class SubscriptionProviderRepositoryTest {
     @Autowired
     TestEntityManager entityManager;
 
-    Category gym;
+    SubscriptionProvider catalog;
+    SubscriptionProvider ownCustom;
+    SubscriptionProvider othersCustom;
 
     @BeforeEach
     void setUp() {
-        gym = entityManager.persist(new Category("Test gym"));
+        Category gym = entityManager.persist(new Category("Test gym"));
+        User owner = persistUser("test-owner");
+        User other = persistUser("test-other");
+        catalog = entityManager.persist(SubscriptionProvider.catalog("B catalog", gym));
+        ownCustom = entityManager.persist(SubscriptionProvider.custom("A own", gym, owner));
+        othersCustom = entityManager.persist(SubscriptionProvider.custom("C other", gym, other));
+        entityManager.flush();
+        entityManager.clear();
     }
 
     @Test
-    void findByIdAndProviderTypeReturnsCatalogProvider() {
-        SubscriptionProvider catalog =
-                entityManager.persistFlushFind(SubscriptionProvider.catalog("Test catalog", gym));
-
-        assertThat(subscriptionProviderRepository.findByIdAndProviderType(catalog.getId(), ProviderType.CATALOG))
-                .map(SubscriptionProvider::getName)
-                .contains("Test catalog");
+    void findsCatalogAndOwnProvidersByName() {
+        assertThat(subscriptionProviderRepository.findAllByProviderTypeOrCreatedBy_UsernameOrderByNameAsc(
+                        ProviderType.CATALOG, "test-owner"))
+                .extracting(SubscriptionProvider::getName)
+                .containsExactly("A own", "B catalog");
     }
 
     @Test
-    void findByIdAndProviderTypeSkipsCustomProviderWhenAskedForCatalog() {
-        User creator = new User();
-        creator.setUsername("test-owner");
-        creator.setName("Test Owner");
-        creator.setEmail("test-owner@test.local");
-        creator.setPasswordHash("not-a-real-hash");
-        creator.setRole(UserRole.USER);
-        entityManager.persist(creator);
-        SubscriptionProvider custom =
-                entityManager.persistFlushFind(SubscriptionProvider.custom("My gym", gym, creator));
-
-        assertThat(subscriptionProviderRepository.findByIdAndProviderType(custom.getId(), ProviderType.CATALOG))
+    void findByIdAndCreatedByUsernameSkipsCatalogAndOthersProviders() {
+        assertThat(subscriptionProviderRepository.findByIdAndCreatedBy_Username(ownCustom.getId(), "test-owner"))
+                .isPresent();
+        assertThat(subscriptionProviderRepository.findByIdAndCreatedBy_Username(catalog.getId(), "test-owner"))
                 .isEmpty();
+        assertThat(subscriptionProviderRepository.findByIdAndCreatedBy_Username(othersCustom.getId(), "test-owner"))
+                .isEmpty();
+    }
+
+    private User persistUser(String username) {
+        User user = new User();
+        user.setUsername(username);
+        user.setName("Test User");
+        user.setEmail(username + "@test.local");
+        user.setPasswordHash("not-a-real-hash");
+        user.setRole(UserRole.USER);
+        return entityManager.persist(user);
     }
 }

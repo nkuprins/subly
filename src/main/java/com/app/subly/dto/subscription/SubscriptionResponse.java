@@ -11,6 +11,7 @@ import java.time.LocalDate;
 
 public record SubscriptionResponse(
         Long id,
+        Long providerId,
         String providerName,
         Long categoryId,
         String categoryName,
@@ -26,6 +27,7 @@ public record SubscriptionResponse(
         Category category = provider.getCategory();
         return new SubscriptionResponse(
                 subscription.getId(),
+                provider.getId(),
                 provider.getName(),
                 category.getId(),
                 category.getName(),
