@@ -3,10 +3,10 @@ package com.app.subly.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.app.subly.model.TestUsers;
-import com.app.subly.model.User;
-import com.app.subly.model.subscription.Category;
-import com.app.subly.model.subscription.ProviderType;
-import com.app.subly.model.subscription.SubscriptionProvider;
+import com.app.subly.model.category.Category;
+import com.app.subly.model.provider.ProviderType;
+import com.app.subly.model.provider.SubscriptionProvider;
+import com.app.subly.model.user.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

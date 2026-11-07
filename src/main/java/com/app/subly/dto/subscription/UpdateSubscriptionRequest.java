@@ -1,6 +1,5 @@
 package com.app.subly.dto.subscription;
 
-import com.app.subly.dto.PaymentDetails;
 import com.app.subly.model.subscription.BillingCycle;
 import com.app.subly.model.subscription.Subscription;
 import jakarta.validation.constraints.Digits;

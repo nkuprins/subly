@@ -1,4 +1,4 @@
-package com.app.subly.model;
+package com.app.subly.model.user;
 
 import jakarta.persistence.*;
 import java.time.Clock;

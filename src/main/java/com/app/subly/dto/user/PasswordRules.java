@@ -1,4 +1,4 @@
-package com.app.subly.dto;
+package com.app.subly.dto.user;
 
 // Idea: create custom annotation for complex password check
 public final class PasswordRules {

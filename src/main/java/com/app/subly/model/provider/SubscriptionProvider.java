@@ -1,6 +1,7 @@
-package com.app.subly.model.subscription;
+package com.app.subly.model.provider;
 
-import com.app.subly.model.User;
+import com.app.subly.model.category.Category;
+import com.app.subly.model.user.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;

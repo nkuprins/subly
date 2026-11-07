@@ -1,6 +1,6 @@
 package com.app.subly.dto.invitation;
 
-import com.app.subly.model.subscription.PendingInvitation;
+import com.app.subly.model.invitation.PendingInvitation;
 import java.time.Instant;
 
 public record InviteResponse(Long id, String username, Instant invitedAt) {

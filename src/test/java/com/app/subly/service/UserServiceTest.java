@@ -8,10 +8,10 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.app.subly.dto.UpdateUserInformationRequest;
+import com.app.subly.dto.user.UpdateUserInformationRequest;
 import com.app.subly.exception.user.*;
-import com.app.subly.model.User;
-import com.app.subly.model.UserRole;
+import com.app.subly.model.user.User;
+import com.app.subly.model.user.UserRole;
 import com.app.subly.repository.UserRepository;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;

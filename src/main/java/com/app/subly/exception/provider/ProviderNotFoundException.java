@@ -1,4 +1,4 @@
-package com.app.subly.exception.subscription;
+package com.app.subly.exception.provider;
 
 import com.app.subly.exception.BadRequestException;
 

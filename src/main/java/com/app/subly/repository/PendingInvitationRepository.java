@@ -1,7 +1,7 @@
 package com.app.subly.repository;
 
 import com.app.subly.exception.invitation.InvitationNotFoundException;
-import com.app.subly.model.subscription.PendingInvitation;
+import com.app.subly.model.invitation.PendingInvitation;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.EntityGraph;

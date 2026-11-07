@@ -1,6 +1,6 @@
 package com.app.subly.model.subscription;
 
-import com.app.subly.model.User;
+import com.app.subly.model.user.User;
 import jakarta.persistence.*;
 import java.time.Instant;
 import lombok.AccessLevel;

@@ -1,6 +1,6 @@
 package com.app.subly.repository;
 
-import com.app.subly.model.User;
+import com.app.subly.model.user.User;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;

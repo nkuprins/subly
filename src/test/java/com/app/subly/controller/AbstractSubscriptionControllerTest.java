@@ -6,9 +6,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.app.subly.config.SecurityConfig;
 import com.app.subly.dto.subscription.SubscriptionResponse;
+import com.app.subly.model.provider.ProviderType;
 import com.app.subly.model.subscription.BillingCycle;
 import com.app.subly.model.subscription.Currency;
-import com.app.subly.model.subscription.ProviderType;
 import com.app.subly.service.SubscriptionService;
 import java.math.BigDecimal;
 import java.time.LocalDate;

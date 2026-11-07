@@ -2,6 +2,8 @@ package com.app.subly.model.subscription;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.app.subly.model.category.Category;
+import com.app.subly.model.provider.SubscriptionProvider;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import org.junit.jupiter.api.Test;

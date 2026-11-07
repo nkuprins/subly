@@ -1,8 +1,8 @@
 package com.app.subly.controller;
 
-import com.app.subly.dto.PasswordRules;
+import com.app.subly.dto.user.PasswordRules;
 import com.app.subly.exception.user.UserAlreadyExistsException;
-import com.app.subly.model.User;
+import com.app.subly.model.user.User;
 import com.app.subly.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;

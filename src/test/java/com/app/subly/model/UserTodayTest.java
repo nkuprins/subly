@@ -2,6 +2,7 @@ package com.app.subly.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.app.subly.model.user.User;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;

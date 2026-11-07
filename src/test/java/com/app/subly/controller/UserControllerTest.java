@@ -10,10 +10,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.app.subly.config.SecurityConfig;
-import com.app.subly.dto.UpdateUserInformationRequest;
+import com.app.subly.dto.user.UpdateUserInformationRequest;
 import com.app.subly.exception.user.UserAlreadyExistsException;
 import com.app.subly.exception.user.WrongPasswordException;
-import com.app.subly.model.User;
+import com.app.subly.model.user.User;
 import com.app.subly.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

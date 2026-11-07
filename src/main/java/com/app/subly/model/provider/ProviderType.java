@@ -1,4 +1,4 @@
-package com.app.subly.model.subscription;
+package com.app.subly.model.provider;
 
 public enum ProviderType {
     CATALOG,

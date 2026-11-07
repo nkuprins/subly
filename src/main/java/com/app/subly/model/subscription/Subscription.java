@@ -1,5 +1,6 @@
 package com.app.subly.model.subscription;
 
+import com.app.subly.model.provider.SubscriptionProvider;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.Instant;

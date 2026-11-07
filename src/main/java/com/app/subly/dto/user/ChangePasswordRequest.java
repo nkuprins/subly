@@ -1,4 +1,4 @@
-package com.app.subly.dto;
+package com.app.subly.dto.user;
 
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;

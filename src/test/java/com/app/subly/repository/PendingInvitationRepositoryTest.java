@@ -5,12 +5,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.app.subly.exception.invitation.InvitationNotFoundException;
 import com.app.subly.model.TestUsers;
-import com.app.subly.model.User;
+import com.app.subly.model.category.Category;
+import com.app.subly.model.invitation.PendingInvitation;
+import com.app.subly.model.provider.SubscriptionProvider;
 import com.app.subly.model.subscription.BillingCycle;
-import com.app.subly.model.subscription.Category;
-import com.app.subly.model.subscription.PendingInvitation;
 import com.app.subly.model.subscription.Subscription;
-import com.app.subly.model.subscription.SubscriptionProvider;
+import com.app.subly.model.user.User;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import org.junit.jupiter.api.BeforeEach;

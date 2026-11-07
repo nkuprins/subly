@@ -1,6 +1,6 @@
 package com.app.subly.controller;
 
-import com.app.subly.model.subscription.SubscriptionProvider;
+import com.app.subly.model.provider.SubscriptionProvider;
 import com.app.subly.service.CategoryService;
 import com.app.subly.service.ProviderService;
 import java.util.List;

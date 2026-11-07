@@ -9,14 +9,14 @@ import static org.mockito.Mockito.never;
 
 import com.app.subly.dto.subscription.CreateSubscriptionRequest;
 import com.app.subly.dto.subscription.SubscriptionResponse;
-import com.app.subly.exception.subscription.ProviderNotFoundException;
+import com.app.subly.exception.provider.ProviderNotFoundException;
 import com.app.subly.model.TestUsers;
-import com.app.subly.model.User;
+import com.app.subly.model.provider.SubscriptionProvider;
 import com.app.subly.model.subscription.BillingCycle;
 import com.app.subly.model.subscription.MembershipRole;
 import com.app.subly.model.subscription.Subscription;
 import com.app.subly.model.subscription.SubscriptionMembership;
-import com.app.subly.model.subscription.SubscriptionProvider;
+import com.app.subly.model.user.User;
 import java.math.BigDecimal;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;

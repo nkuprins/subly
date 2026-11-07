@@ -1,8 +1,8 @@
 package com.app.subly.service;
 
-import com.app.subly.dto.subscription.CategoryResponse;
+import com.app.subly.dto.category.CategoryResponse;
 import com.app.subly.exception.category.*;
-import com.app.subly.model.subscription.Category;
+import com.app.subly.model.category.Category;
 import com.app.subly.repository.CategoryRepository;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;

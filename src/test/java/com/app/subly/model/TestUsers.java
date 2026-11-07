@@ -1,5 +1,8 @@
 package com.app.subly.model;
 
+import com.app.subly.model.user.User;
+import com.app.subly.model.user.UserRole;
+
 public final class TestUsers {
 
     private TestUsers() {}

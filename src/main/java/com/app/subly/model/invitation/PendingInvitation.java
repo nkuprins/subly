@@ -1,6 +1,7 @@
-package com.app.subly.model.subscription;
+package com.app.subly.model.invitation;
 
-import com.app.subly.model.User;
+import com.app.subly.model.subscription.Subscription;
+import com.app.subly.model.user.User;
 import jakarta.persistence.*;
 import java.time.Instant;
 import lombok.AccessLevel;

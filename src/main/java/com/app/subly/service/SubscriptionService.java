@@ -1,15 +1,15 @@
 package com.app.subly.service;
 
-import com.app.subly.dto.PaymentDetails;
 import com.app.subly.dto.subscription.*;
+import com.app.subly.dto.subscription.PaymentDetails;
+import com.app.subly.exception.provider.ProviderNotFoundException;
 import com.app.subly.exception.subscription.PaymentDateInPastException;
-import com.app.subly.exception.subscription.ProviderNotFoundException;
-import com.app.subly.model.User;
+import com.app.subly.model.provider.SubscriptionProvider;
 import com.app.subly.model.subscription.MembershipRole;
 import com.app.subly.model.subscription.Subscription;
 import com.app.subly.model.subscription.SubscriptionMembership;
-import com.app.subly.model.subscription.SubscriptionProvider;
 import com.app.subly.model.subscription.SubscriptionStatus;
+import com.app.subly.model.user.User;
 import com.app.subly.repository.SubscriptionMembershipRepository;
 import com.app.subly.repository.SubscriptionProviderRepository;
 import com.app.subly.repository.SubscriptionRepository;

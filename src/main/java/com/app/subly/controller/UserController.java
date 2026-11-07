@@ -1,6 +1,9 @@
 package com.app.subly.controller;
 
 import com.app.subly.dto.*;
+import com.app.subly.dto.user.ChangePasswordRequest;
+import com.app.subly.dto.user.DeleteCurrentUserRequest;
+import com.app.subly.dto.user.UpdateUserInformationRequest;
 import com.app.subly.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

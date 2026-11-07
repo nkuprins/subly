@@ -1,9 +1,9 @@
 package com.app.subly.controller;
 
 import com.app.subly.dto.OperationResponse;
-import com.app.subly.dto.subscription.CategoryResponse;
-import com.app.subly.dto.subscription.CreateCustomCategoryRequest;
-import com.app.subly.dto.subscription.UpdateCategoryRequest;
+import com.app.subly.dto.category.CategoryResponse;
+import com.app.subly.dto.category.CreateCustomCategoryRequest;
+import com.app.subly.dto.category.UpdateCategoryRequest;
 import com.app.subly.service.CategoryService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;

@@ -6,8 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.app.subly.model.User;
-import com.app.subly.model.UserRole;
+import com.app.subly.model.user.User;
+import com.app.subly.model.user.UserRole;
 import java.time.ZoneId;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;

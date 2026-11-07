@@ -1,6 +1,6 @@
-package com.app.subly.dto;
+package com.app.subly.dto.user;
 
-import com.app.subly.model.User;
+import com.app.subly.model.user.User;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
