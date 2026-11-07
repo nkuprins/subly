@@ -1,0 +1,20 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Access denied · Subly</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+<main class="container page">
+    <section class="panel" aria-labelledby="access-denied-title">
+        <h1 id="access-denied-title">Access denied</h1>
+        <p class="muted">You do not have permission to view this page.</p>
+        <a class="btn btn-primary" th:href="@{/dashboard}">Back to dashboard</a>
+    </section>
+</main>
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

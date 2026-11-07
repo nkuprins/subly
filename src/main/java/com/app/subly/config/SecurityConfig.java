@@ -37,6 +37,7 @@ public class SecurityConfig {
                             .authenticated();
                     authorize.anyRequest().permitAll();
                 })
+                .exceptionHandling((exceptions) -> exceptions.accessDeniedPage("/access-denied"))
                 .httpBasic(Customizer.withDefaults())
                 .formLogin((form) -> form.loginPage("/login").permitAll());
 
