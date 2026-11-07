@@ -4,6 +4,7 @@ import com.app.subly.dto.PasswordRules;
 import com.app.subly.exception.user.UserAlreadyExistsException;
 import com.app.subly.model.User;
 import com.app.subly.service.UserService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,12 +13,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
+@RequiredArgsConstructor
 public class PageController {
     private final UserService userService;
-
-    public PageController(UserService userService) {
-        this.userService = userService;
-    }
 
     @GetMapping("/login")
     public String login() {

@@ -5,6 +5,7 @@ import com.app.subly.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -15,14 +16,11 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/users")
+@RequiredArgsConstructor
 public class UserController {
 
     private final UserService service;
     private final SecurityContextLogoutHandler logoutHandler = new SecurityContextLogoutHandler();
-
-    public UserController(UserService service) {
-        this.service = service;
-    }
 
     @DeleteMapping("/delete/me")
     public OperationResponse deleteUser(

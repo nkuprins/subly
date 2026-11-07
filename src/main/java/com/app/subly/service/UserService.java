@@ -10,20 +10,17 @@ import jakarta.transaction.Transactional;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.function.Consumer;
+import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository repository;
     private final PasswordEncoder encoder;
-
-    public UserService(UserRepository repository, PasswordEncoder encoder) {
-        this.repository = repository;
-        this.encoder = encoder;
-    }
 
     public void addNewUser(String username, String name, String password, String email, ZoneId timeZone) {
         // Adds a new user into db from raw data. Throws UserAlreadyExistsException if
