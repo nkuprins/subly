@@ -1,14 +1,12 @@
 package com.app.subly.service;
 
 import com.app.subly.dto.UpdateUserInformationRequest;
-import com.app.subly.dto.UserResponse;
 import com.app.subly.exception.user.*;
 import com.app.subly.model.User;
 import com.app.subly.model.UserRole;
 import com.app.subly.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import java.time.ZoneId;
-import java.util.List;
 import java.util.function.Consumer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -32,40 +30,6 @@ public class UserService {
         } catch (DataIntegrityViolationException exception) {
             throw new UserAlreadyExistsException("A user with the username or the email already exists");
         }
-    }
-
-    public UserResponse getUserById(Long id) {
-        // Returns user with the corresponding id. If the user
-        // doesn't exist, UserDoesNotExistException will be occurred
-        // If an invalid id was passed, IllegalArgumentException will be raised
-
-        if (id == null || id < 0) {
-            throw new IllegalArgumentException("Id must be positive");
-        }
-
-        User user = repository
-                .findById(id)
-                .orElseThrow(() -> new UserDoesNotExistException("The user with the id doesn't exist"));
-
-        return mapToDTO(user);
-    }
-
-    public List<UserResponse> listUsersByIds(List<Long> ids) {
-        // Returns list of users with the corresponding ids.
-        // If the length of the list with given ids differs from the found users,
-        // IllegalArgumentException will be raised.
-
-        if (ids == null) {
-            throw new IllegalArgumentException("The list of ids is null");
-        }
-
-        List<User> result = repository.findAllById(ids);
-
-        if (result.isEmpty() || result.size() != ids.size()) {
-            throw new UserDoesNotExistException("No found all the users with those ids");
-        }
-
-        return result.stream().map(this::mapToDTO).toList();
     }
 
     @Transactional
@@ -165,9 +129,5 @@ public class UserService {
             return true;
         }
         return originalCredential.equals(providedCredential);
-    }
-
-    private UserResponse mapToDTO(User user) {
-        return new UserResponse(user.getUsername(), user.getEmail(), user.getRole());
     }
 }
