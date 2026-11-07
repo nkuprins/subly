@@ -1,5 +1,6 @@
 package com.app.subly.dto.subscription;
 
+import com.app.subly.model.subscription.Category;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -16,6 +17,6 @@ public class UpdateCategoryRequest {
     private Long id;
 
     @NotBlank
-    @Size(max = 100)
+    @Size(max = Category.NAME_MAX_LENGTH)
     private String newName;
 }

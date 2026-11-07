@@ -3,7 +3,7 @@ package com.app.subly.dashboard;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.app.subly.model.subscription.Currency;
-import com.app.subly.service.CurrencyConverter;
+import com.app.subly.util.CurrencyConverter;
 import java.math.BigDecimal;
 import org.junit.jupiter.api.Test;
 

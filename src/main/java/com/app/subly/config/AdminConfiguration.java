@@ -1,5 +1,6 @@
 package com.app.subly.config;
 
+import com.app.subly.dto.PasswordRules;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -27,6 +28,6 @@ public class AdminConfiguration {
     private String adminEmail;
 
     @NotBlank
-    @Size(min = 15, max = 64)
+    @Size(min = PasswordRules.MIN_LENGTH, max = PasswordRules.MAX_LENGTH)
     private String adminPassword;
 }

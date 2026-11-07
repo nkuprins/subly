@@ -10,11 +10,11 @@ import lombok.Getter;
 @AllArgsConstructor
 public class ChangePasswordRequest {
     @NotBlank
-    @Size(min = 15, max = 64)
+    @Size(min = PasswordRules.MIN_LENGTH, max = PasswordRules.MAX_LENGTH)
     private String oldPassword;
 
     @NotBlank
-    @Size(min = 15, max = 64)
+    @Size(min = PasswordRules.MIN_LENGTH, max = PasswordRules.MAX_LENGTH)
     private String newPassword;
 
     @AssertTrue(message = "New password and old password must be different")

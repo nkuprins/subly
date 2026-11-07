@@ -9,6 +9,7 @@ import com.app.subly.model.subscription.SubscriptionMembership;
 import com.app.subly.model.subscription.SubscriptionStatus;
 import com.app.subly.repository.SubscriptionMembershipRepository;
 import com.app.subly.repository.UserRepository;
+import com.app.subly.util.CurrencyConverter;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Clock;
@@ -29,6 +30,8 @@ public class DashboardService {
     private static final BigDecimal MONTHS_IN_YEAR = BigDecimal.valueOf(12);
 
     private static final int UPCOMING_DAYS = 30;
+
+    private static final int MONEY_SCALE = 2;
 
     private final SubscriptionMembershipRepository membershipRepository;
     private final UserRepository userRepository;
@@ -53,9 +56,10 @@ public class DashboardService {
             yearlyTotal = yearlyTotal.add(amountEur.multiply(paymentsPerYear));
         }
 
-        BigDecimal monthlyTotal = yearlyTotal.divide(MONTHS_IN_YEAR, 2, RoundingMode.HALF_UP);
+        BigDecimal monthlyTotal = yearlyTotal.divide(MONTHS_IN_YEAR, MONEY_SCALE, RoundingMode.HALF_UP);
 
-        return new DashboardSummaryDto(monthlyTotal, yearlyTotal.setScale(2, RoundingMode.HALF_UP), Currency.EUR);
+        return new DashboardSummaryDto(
+                monthlyTotal, yearlyTotal.setScale(MONEY_SCALE, RoundingMode.HALF_UP), Currency.EUR);
     }
 
     @Transactional(readOnly = true)
@@ -123,7 +127,7 @@ public class DashboardService {
 
         BigDecimal price = membership.getSubscription().getPrice();
 
-        BigDecimal baseShare = price.divide(BigDecimal.valueOf(memberCount), 2, RoundingMode.DOWN);
+        BigDecimal baseShare = price.divide(BigDecimal.valueOf(memberCount), MONEY_SCALE, RoundingMode.DOWN);
 
         if (membership.getRole() == MembershipRole.OWNER) {
             BigDecimal otherMembersTotal = baseShare.multiply(BigDecimal.valueOf(memberCount - 1));

@@ -1,4 +1,4 @@
-package com.app.subly.service;
+package com.app.subly.util;
 
 import com.app.subly.model.subscription.Currency;
 import java.math.BigDecimal;

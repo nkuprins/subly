@@ -1,6 +1,8 @@
 package com.app.subly.controller;
 
+import com.app.subly.dto.PasswordRules;
 import com.app.subly.exception.user.UserAlreadyExistsException;
+import com.app.subly.model.User;
 import com.app.subly.service.UserService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -39,12 +41,15 @@ public class PageController {
             model.addAttribute("registrationError", "All fields are required");
             return "register";
         }
-        if (name.length() > 100) {
-            model.addAttribute("registrationError", "Name must be 100 characters or fewer");
+        if (name.length() > User.NAME_MAX_LENGTH) {
+            model.addAttribute("registrationError", "Name must be " + User.NAME_MAX_LENGTH + " characters or fewer");
             return "register";
         }
-        if (password.length() < 15 || password.length() > 64) {
-            model.addAttribute("registrationError", "Password must be between 15 and 64 characters");
+        if (password.length() < PasswordRules.MIN_LENGTH || password.length() > PasswordRules.MAX_LENGTH) {
+            model.addAttribute(
+                    "registrationError",
+                    "Password must be between " + PasswordRules.MIN_LENGTH + " and " + PasswordRules.MAX_LENGTH
+                            + " characters");
             return "register";
         }
         if (!password.equals(confirmPassword)) {

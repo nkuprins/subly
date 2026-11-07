@@ -1,5 +1,6 @@
 package com.app.subly.dto.subscription;
 
+import com.app.subly.model.subscription.Category;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -10,6 +11,6 @@ import lombok.Getter;
 public class CreateCustomCategoryRequest {
 
     @NotBlank
-    @Size(max = 100)
+    @Size(max = Category.NAME_MAX_LENGTH)
     private String categoryName;
 }

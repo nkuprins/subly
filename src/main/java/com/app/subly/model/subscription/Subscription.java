@@ -17,6 +17,10 @@ import org.hibernate.annotations.CreationTimestamp;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Subscription {
 
+    public static final int PRICE_INTEGER_DIGITS = 8;
+
+    public static final int PRICE_FRACTION_DIGITS = 2;
+
     @Id
     @Setter
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,7 +31,7 @@ public class Subscription {
     private SubscriptionProvider provider;
 
     @Setter
-    @Column(nullable = false, precision = 10, scale = 2)
+    @Column(nullable = false, precision = PRICE_INTEGER_DIGITS + PRICE_FRACTION_DIGITS, scale = PRICE_FRACTION_DIGITS)
     private BigDecimal price;
 
     @Setter

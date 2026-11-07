@@ -19,6 +19,8 @@ public class User {
 
     public static final ZoneId DEFAULT_TIME_ZONE = ZoneId.of("Europe/Riga");
 
+    public static final int NAME_MAX_LENGTH = 100;
+
     @Id
     @Setter
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,7 +31,7 @@ public class User {
     private String username;
 
     @Setter
-    @Column(nullable = false, length = 100)
+    @Column(nullable = false, length = NAME_MAX_LENGTH)
     private String name;
 
     @Setter

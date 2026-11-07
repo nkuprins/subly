@@ -13,17 +13,21 @@ import lombok.Setter;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class SubscriptionProvider {
 
+    public static final int NAME_MAX_LENGTH = 200;
+
+    public static final int LOGO_PATH_MAX_LENGTH = 500;
+
     @Id
     @Setter
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Setter
-    @Column(nullable = false, length = 200)
+    @Column(nullable = false, length = NAME_MAX_LENGTH)
     private String name;
 
     @Setter
-    @Column(length = 500)
+    @Column(length = LOGO_PATH_MAX_LENGTH)
     private String logoPath;
 
     @ManyToOne(fetch = FetchType.LAZY)
