@@ -2,6 +2,7 @@ package com.app.subly.controller;
 
 import static org.mockito.BDDMockito.then;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.junit.jupiter.api.Test;
@@ -20,5 +21,15 @@ class SubscriptionLifecycleControllerTest extends AbstractSubscriptionController
         mockMvc.perform(patch(URL + "/" + SUBSCRIPTION_ID + "/reactivate")).andExpect(status().isNoContent());
 
         then(service).should().reactivate(USERNAME, SUBSCRIPTION_ID);
+    }
+
+    @Test
+    void cancelRejectsNonPositiveId() throws Exception {
+        mockMvc.perform(patch(URL + "/0/cancel"))
+                .andExpect(validationError())
+                .andExpect(jsonPath("$.errors[0].field").value("id"))
+                .andExpect(jsonPath("$.errors[0].message").value("must be greater than 0"));
+
+        then(service).shouldHaveNoInteractions();
     }
 }

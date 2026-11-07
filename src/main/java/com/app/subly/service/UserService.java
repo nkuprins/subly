@@ -2,7 +2,7 @@ package com.app.subly.service;
 
 import com.app.subly.dto.UpdateUserInformationRequest;
 import com.app.subly.dto.UserResponse;
-import com.app.subly.exception.*;
+import com.app.subly.exception.user.*;
 import com.app.subly.model.User;
 import com.app.subly.model.UserRole;
 import com.app.subly.repository.UserRepository;
@@ -74,7 +74,7 @@ public class UserService {
     public void deleteUserByUsername(String username, String rawPassword) {
         // Make an attempt to delete a user with the given username
         // UserDoesNotExistException is raised if the user with the username was not found
-        // UserIsConnectedError is raised in case some table's column refers to this user.
+        // UserIsConnectedException is raised in case some table's column refers to this user.
         // WrongPasswordException is raised if a raw password != password hash
 
         User user = getUserByUserName(username);
@@ -86,7 +86,8 @@ public class UserService {
         try {
             repository.deleteByUsername(username);
         } catch (DataIntegrityViolationException exception) {
-            throw new UserIsConnectedError("Cannot delete the user because it is connected with some table's field");
+            throw new UserIsConnectedException(
+                    "Cannot delete the user because it is connected with some table's field");
         }
     }
 

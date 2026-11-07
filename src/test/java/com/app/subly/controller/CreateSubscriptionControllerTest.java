@@ -8,8 +8,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.app.subly.dto.subscription.CreateCustomSubscriptionRequest;
 import com.app.subly.dto.subscription.CreateSubscriptionRequest;
+import com.app.subly.exception.category.InvalidCategoryException;
 import com.app.subly.exception.subscription.CatalogProviderNotFoundException;
-import com.app.subly.exception.subscription.CategoryNotFoundException;
 import com.app.subly.exception.subscription.PaymentDateInPastException;
 import com.app.subly.model.subscription.BillingCycle;
 import java.math.BigDecimal;
@@ -71,7 +71,7 @@ class CreateSubscriptionControllerTest extends AbstractSubscriptionControllerTes
 
         @Test
         void returns400ForUnknownCategory() throws Exception {
-            given(service.createCustom(anyString(), any())).willThrow(new CategoryNotFoundException(99L));
+            given(service.createCustom(anyString(), any())).willThrow(new InvalidCategoryException(99L));
 
             send(BodyEndpoint.CREATE_CUSTOM, BodyEndpoint.CREATE_CUSTOM.validBody())
                     .andExpect(status().isBadRequest())

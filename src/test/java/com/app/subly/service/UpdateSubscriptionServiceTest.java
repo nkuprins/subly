@@ -8,8 +8,8 @@ import static org.mockito.BDDMockito.then;
 import com.app.subly.dto.subscription.SubscriptionResponse;
 import com.app.subly.dto.subscription.UpdateCustomSubscriptionRequest;
 import com.app.subly.dto.subscription.UpdateSubscriptionRequest;
+import com.app.subly.exception.category.InvalidCategoryException;
 import com.app.subly.exception.subscription.CatalogProviderReadOnlyException;
-import com.app.subly.exception.subscription.CategoryNotFoundException;
 import com.app.subly.exception.subscription.SubscriptionAccessDeniedException;
 import com.app.subly.exception.subscription.SubscriptionNotFoundException;
 import com.app.subly.model.subscription.BillingCycle;
@@ -105,7 +105,7 @@ class UpdateSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
             UpdateCustomSubscriptionRequest request = updateCustomRequest();
 
             assertThatThrownBy(() -> subscriptionService.updateCustom(OWNER, SUBSCRIPTION_ID, request))
-                    .isInstanceOf(CategoryNotFoundException.class);
+                    .isInstanceOf(InvalidCategoryException.class);
             assertUnchanged(subscription, CUSTOM_NAME, gym);
         }
 

@@ -5,6 +5,7 @@ import com.app.subly.dto.invitation.InviteResponse;
 import com.app.subly.dto.invitation.ReceivedInvitationResponse;
 import com.app.subly.service.InvitationService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import java.security.Principal;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -27,12 +28,12 @@ public class InvitationController {
     @PostMapping("/subscriptions/{id}/invitations")
     @ResponseStatus(HttpStatus.CREATED)
     public InviteResponse invite(
-            Principal principal, @PathVariable long id, @Valid @RequestBody InviteRequest request) {
+            Principal principal, @PathVariable @Positive long id, @Valid @RequestBody InviteRequest request) {
         return service.invite(principal.getName(), id, request);
     }
 
     @GetMapping("/subscriptions/{id}/invitations")
-    public List<InviteResponse> listPending(Principal principal, @PathVariable long id) {
+    public List<InviteResponse> listPending(Principal principal, @PathVariable @Positive long id) {
         return service.findPending(principal.getName(), id);
     }
 
@@ -43,13 +44,13 @@ public class InvitationController {
 
     @PostMapping("/invitations/{id}/accept")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void accept(Principal principal, @PathVariable long id) {
+    public void accept(Principal principal, @PathVariable @Positive long id) {
         service.accept(principal.getName(), id);
     }
 
     @PostMapping("/invitations/{id}/decline")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void decline(Principal principal, @PathVariable long id) {
+    public void decline(Principal principal, @PathVariable @Positive long id) {
         service.decline(principal.getName(), id);
     }
 }

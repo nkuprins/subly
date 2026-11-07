@@ -3,6 +3,7 @@ package com.app.subly.controller;
 import com.app.subly.dto.subscription.*;
 import com.app.subly.service.SubscriptionService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import java.security.Principal;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -36,31 +37,35 @@ public class SubscriptionController {
 
     @PutMapping("/{id}")
     public SubscriptionResponse update(
-            Principal principal, @PathVariable long id, @Valid @RequestBody UpdateSubscriptionRequest request) {
+            Principal principal,
+            @PathVariable @Positive long id,
+            @Valid @RequestBody UpdateSubscriptionRequest request) {
         return service.update(principal.getName(), id, request);
     }
 
     @PutMapping("/{id}/custom")
     public SubscriptionResponse updateCustom(
-            Principal principal, @PathVariable long id, @Valid @RequestBody UpdateCustomSubscriptionRequest request) {
+            Principal principal,
+            @PathVariable @Positive long id,
+            @Valid @RequestBody UpdateCustomSubscriptionRequest request) {
         return service.updateCustom(principal.getName(), id, request);
     }
 
     @PatchMapping("/{id}/cancel")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void cancel(Principal principal, @PathVariable long id) {
+    public void cancel(Principal principal, @PathVariable @Positive long id) {
         service.cancel(principal.getName(), id);
     }
 
     @PatchMapping("/{id}/reactivate")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void reactivate(Principal principal, @PathVariable long id) {
+    public void reactivate(Principal principal, @PathVariable @Positive long id) {
         service.reactivate(principal.getName(), id);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(Principal principal, @PathVariable long id) {
+    public void delete(Principal principal, @PathVariable @Positive long id) {
         service.delete(principal.getName(), id);
     }
 }

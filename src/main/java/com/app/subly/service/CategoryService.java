@@ -1,7 +1,7 @@
 package com.app.subly.service;
 
 import com.app.subly.dto.subscription.CategoryResponse;
-import com.app.subly.exception.subscription.*;
+import com.app.subly.exception.category.*;
 import com.app.subly.model.subscription.Category;
 import com.app.subly.repository.CategoryRepository;
 import java.util.List;

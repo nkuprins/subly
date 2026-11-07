@@ -11,8 +11,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.app.subly.config.SecurityConfig;
 import com.app.subly.dto.UpdateUserInformationRequest;
-import com.app.subly.exception.UserAlreadyExistsException;
-import com.app.subly.exception.WrongPasswordException;
+import com.app.subly.exception.user.UserAlreadyExistsException;
+import com.app.subly.exception.user.WrongPasswordException;
 import com.app.subly.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,8 +44,8 @@ public class UserControllerTest {
                         }
                         """))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.error").value(false))
-                .andExpect(jsonPath("$.message").value("The user account has been deleted"));
+                .andExpect(jsonPath("$.message").value("The user account has been deleted"))
+                .andExpect(jsonPath("$.error").doesNotExist());
 
         verify(service).deleteUserByUsername("andris123", "largepassword123456");
     }
@@ -66,8 +66,8 @@ public class UserControllerTest {
                         }
                         """))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value(true))
-                .andExpect(jsonPath("$.message").value("The passwords don't match"));
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.detail").value("The passwords don't match"));
     }
 
     @Test
@@ -84,7 +84,7 @@ public class UserControllerTest {
                         }
                         """))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("New password and old password must be different"));
+                .andExpect(jsonPath("$.errors[0].message").value("New password and old password must be different"));
 
         verifyNoInteractions(service);
     }
@@ -102,7 +102,8 @@ public class UserControllerTest {
                         }
                         """))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.error").value(false));
+                .andExpect(jsonPath("$.message")
+                        .value("The password has been changed successfully. Please log in again."));
 
         verify(service).updateUserPassword("andris123", "largepassword123456", "superlargepassword123456");
     }
@@ -115,7 +116,7 @@ public class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("You must provide at least one property to change."));
+                .andExpect(jsonPath("$.errors[0].message").value("You must provide at least one property to change."));
 
         verifyNoInteractions(service);
     }
@@ -133,14 +134,15 @@ public class UserControllerTest {
                         }
                         """))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.error").value(false));
+                .andExpect(jsonPath("$.message")
+                        .value("The information has been saved. Please log in again to apply changes."));
 
         verify(service).updateUserInformation(eq("andris123"), any(UpdateUserInformationRequest.class));
     }
 
     @Test
     @WithMockUser(username = "andris123")
-    void updateInformation_ShouldReturnBadRequestWhenEmailAlreadyExists() throws Exception {
+    void updateInformation_ShouldReturnConflictWhenEmailAlreadyExists() throws Exception {
 
         doThrow(new UserAlreadyExistsException("Email already exists"))
                 .when(service)
@@ -154,8 +156,8 @@ public class UserControllerTest {
                             "newEmail": "existing@gmail.com"
                         }
                         """))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("Email already exists"));
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.detail").value("Email already exists"));
     }
 
     @Test

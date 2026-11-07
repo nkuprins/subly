@@ -1,6 +1,8 @@
 package com.app.subly.exception.subscription;
 
-public class CatalogProviderNotFoundException extends RuntimeException {
+import com.app.subly.exception.BadRequestException;
+
+public class CatalogProviderNotFoundException extends BadRequestException {
     public CatalogProviderNotFoundException(long providerId) {
         super("Catalog provider " + providerId + " does not exist");
     }
