@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 import com.app.subly.dto.UpdateUserInformationRequest;
 import com.app.subly.exception.user.*;
 import com.app.subly.model.User;
+import com.app.subly.model.UserRole;
 import com.app.subly.repository.UserRepository;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -59,9 +60,7 @@ public class UserServiceTest {
 
     @Test
     public void deleteUserShouldThrowExceptionIfPasswordsUnmatched() {
-        User user = new User();
-        user.setUsername("andris123");
-        user.setPasswordHash("some_hash");
+        User user = andris();
 
         when(repository.findByUsername("andris123")).thenReturn(Optional.of(user));
 
@@ -72,9 +71,7 @@ public class UserServiceTest {
 
     @Test
     public void deleteUserShouldThrowExceptionIfUserConnectedWithTable() {
-        User user = new User();
-        user.setUsername("andris123");
-        user.setPasswordHash("some_hash");
+        User user = andris();
 
         when(repository.findByUsername("andris123")).thenReturn(Optional.of(user));
 
@@ -87,9 +84,7 @@ public class UserServiceTest {
 
     @Test
     public void deleteUserShouldBeCompletedCorrectly() {
-        User user = new User();
-        user.setUsername("andris123");
-        user.setPasswordHash("some_hash");
+        User user = andris();
 
         when(repository.findByUsername("andris123")).thenReturn(Optional.of(user));
 
@@ -102,9 +97,7 @@ public class UserServiceTest {
 
     @Test
     public void updatePasswordShouldFailIfPasswordsUnmatched() {
-        User user = new User();
-        user.setUsername("andris123");
-        user.setPasswordHash("some_hash");
+        User user = andris();
 
         when(repository.findByUsername("andris123")).thenReturn(Optional.of(user));
 
@@ -119,9 +112,7 @@ public class UserServiceTest {
 
     @Test
     public void updatePasswordShouldBeCompletedCorrectly() {
-        User user = new User();
-        user.setUsername("andris123");
-        user.setPasswordHash("some_hash");
+        User user = andris();
 
         when(repository.findByUsername("andris123")).thenReturn(Optional.of(user));
 
@@ -135,10 +126,7 @@ public class UserServiceTest {
 
     @Test
     public void updateInformationShouldFailWithEmptyEmail() {
-        User user = new User();
-        user.setEmail("andris@gmail.com");
-        user.setName("Andris");
-        user.setUsername("andris123");
+        User user = andris();
 
         when(repository.findByUsername("andris123")).thenReturn(Optional.of(user));
 
@@ -153,10 +141,7 @@ public class UserServiceTest {
 
     @Test
     public void updateInformationShouldFailWithEmptyUsername() {
-        User user = new User();
-        user.setEmail("andris@gmail.com");
-        user.setName("Andris");
-        user.setUsername("andris123");
+        User user = andris();
 
         when(repository.findByUsername("andris123")).thenReturn(Optional.of(user));
 
@@ -171,10 +156,7 @@ public class UserServiceTest {
 
     @Test
     public void updateInformationShouldFailWithEmptyName() {
-        User user = new User();
-        user.setEmail("andris@gmail.com");
-        user.setName("Andris");
-        user.setUsername("andris123");
+        User user = andris();
 
         when(repository.findByUsername("andris123")).thenReturn(Optional.of(user));
 
@@ -189,10 +171,7 @@ public class UserServiceTest {
 
     @Test
     public void updateInformationShouldChangeUsernameCorrectly() {
-        User user = new User();
-        user.setEmail("andris@gmail.com");
-        user.setName("Andris");
-        user.setUsername("andris123");
+        User user = andris();
 
         when(repository.findByUsername("andris123")).thenReturn(Optional.of(user));
 
@@ -206,10 +185,7 @@ public class UserServiceTest {
 
     @Test
     public void updateInformationShouldChangeNameCorrectly() {
-        User user = new User();
-        user.setEmail("andris@gmail.com");
-        user.setName("Andris");
-        user.setUsername("andris123");
+        User user = andris();
 
         when(repository.findByUsername("andris123")).thenReturn(Optional.of(user));
 
@@ -223,10 +199,7 @@ public class UserServiceTest {
 
     @Test
     public void updateInformationShouldChangeEmailCorrectly() {
-        User user = new User();
-        user.setEmail("andris@gmail.com");
-        user.setName("Andris");
-        user.setUsername("andris123");
+        User user = andris();
 
         when(repository.findByUsername("andris123")).thenReturn(Optional.of(user));
 
@@ -240,10 +213,7 @@ public class UserServiceTest {
 
     @Test
     public void updateInformationShouldFailIfEmailExists() {
-        User user = new User();
-        user.setEmail("andris@gmail.com");
-        user.setName("Andris");
-        user.setUsername("andris123");
+        User user = andris();
 
         when(repository.findByUsername("andris123")).thenReturn(Optional.of(user));
 
@@ -257,10 +227,7 @@ public class UserServiceTest {
 
     @Test
     public void updateInformationShouldFailIfUsernameExists() {
-        User user = new User();
-        user.setEmail("andris@gmail.com");
-        user.setName("Andris");
-        user.setUsername("andris123");
+        User user = andris();
 
         when(repository.findByUsername("andris123")).thenReturn(Optional.of(user));
 
@@ -273,5 +240,9 @@ public class UserServiceTest {
                 .flush();
 
         assertThrows(UserAlreadyExistsException.class, () -> service.updateUserInformation("andris123", request));
+    }
+
+    private static User andris() {
+        return new User("andris123", "Andris", "some_hash", "andris@gmail.com", UserRole.USER);
     }
 }

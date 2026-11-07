@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 
 import com.app.subly.dto.PaymentDetails;
+import com.app.subly.model.TestUsers;
 import com.app.subly.model.User;
 import com.app.subly.model.subscription.BillingCycle;
 import com.app.subly.model.subscription.Category;
@@ -66,8 +67,7 @@ abstract class AbstractSubscriptionServiceTest {
                 userRepository,
                 clock);
         today = LocalDate.of(2026, 11, 4);
-        owner = new User();
-        owner.setUsername(OWNER);
+        owner = TestUsers.user(OWNER);
         gym = new Category("Test gym");
     }
 

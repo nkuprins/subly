@@ -2,8 +2,8 @@ package com.app.subly.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.app.subly.model.TestUsers;
 import com.app.subly.model.User;
-import com.app.subly.model.UserRole;
 import com.app.subly.model.subscription.Category;
 import com.app.subly.model.subscription.ProviderType;
 import com.app.subly.model.subscription.SubscriptionProvider;
@@ -61,12 +61,7 @@ class SubscriptionProviderRepositoryTest {
     }
 
     private User persistUser(String username) {
-        User user = new User();
-        user.setUsername(username);
-        user.setName("Test User");
-        user.setEmail(username + "@test.local");
-        user.setPasswordHash("not-a-real-hash");
-        user.setRole(UserRole.USER);
+        User user = TestUsers.user(username);
         return entityManager.persist(user);
     }
 }

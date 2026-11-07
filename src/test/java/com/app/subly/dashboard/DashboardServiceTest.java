@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 
 import com.app.subly.dto.dashboard.DashboardSummaryDto;
 import com.app.subly.dto.dashboard.UpcomingPaymentDto;
+import com.app.subly.model.TestUsers;
 import com.app.subly.model.User;
 import com.app.subly.model.subscription.BillingCycle;
 import com.app.subly.model.subscription.Category;
@@ -34,7 +35,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class DashboardServiceTest {
@@ -240,8 +240,7 @@ class DashboardServiceTest {
     }
 
     private void givenUserIn(ZoneId zone) {
-        User user = new User();
-        user.setUsername(USERNAME);
+        User user = TestUsers.user(USERNAME);
         user.setTimeZone(zone);
         when(userRepository.findByUsername(USERNAME)).thenReturn(Optional.of(user));
     }
@@ -266,13 +265,12 @@ class DashboardServiceTest {
         SubscriptionProvider provider = SubscriptionProvider.catalog(name, new Category("Entertainment"));
         Subscription subscription = new Subscription(provider, new BigDecimal(price), cycle, nextPayment, trial);
         subscription.setCurrency(currency);
-        ReflectionTestUtils.setField(subscription, "id", id);
+        subscription.setId(id);
         return subscription;
     }
 
     private static SubscriptionMembership membership(String username, Subscription subscription, MembershipRole role) {
-        User user = new User();
-        user.setUsername(username);
+        User user = TestUsers.user(username);
         return new SubscriptionMembership(user, subscription, role);
     }
 

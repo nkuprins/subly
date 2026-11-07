@@ -8,10 +8,12 @@ import static org.mockito.Mockito.never;
 import com.app.subly.exception.invitation.AlreadyMemberException;
 import com.app.subly.exception.invitation.InvitationCannotBeAcceptedException;
 import com.app.subly.exception.invitation.InvitationNotFoundException;
+import com.app.subly.model.TestUsers;
 import com.app.subly.model.User;
 import com.app.subly.model.subscription.*;
 import com.app.subly.repository.*;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,7 +22,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class InvitationServiceTest {
@@ -49,17 +50,15 @@ class InvitationServiceTest {
         service = new InvitationService(
                 subscriptionAccess, membershipRepository, invitationRepository, userRepository, subscriptionRepository);
 
-        User bob = new User();
+        User bob = TestUsers.user("bob");
         bob.setId(2L);
-        bob.setUsername("bob");
 
         subscription =
                 new Subscription(null, new BigDecimal("18.00"), BillingCycle.MONTHLY, LocalDate.of(2026, 12, 1), false);
 
-        ReflectionTestUtils.setField(subscription, "id", 10L);
+        subscription.setId(10L);
 
-        subscription.setSharable(true);
-        subscription.setMaxParticipants(3);
+        subscription.makeSharable(3);
 
         invitation = new PendingInvitation(bob, subscription);
     }
@@ -119,7 +118,7 @@ class InvitationServiceTest {
 
     @Test
     void cannotAcceptCancelledSubscription() {
-        subscription.setStatus(SubscriptionStatus.CANCELLED);
+        subscription.cancel(Instant.parse("2026-10-01T12:00:00Z"));
 
         given(invitationRepository.findByIdAndUserUsername(5L, "bob")).willReturn(Optional.of(invitation));
 
@@ -132,11 +131,12 @@ class InvitationServiceTest {
 
     @Test
     void cannotAcceptNonSharableSubscription() {
-        subscription.setSharable(false);
+        Subscription notSharable =
+                new Subscription(null, new BigDecimal("18.00"), BillingCycle.MONTHLY, LocalDate.of(2026, 12, 1), false);
 
         given(invitationRepository.findByIdAndUserUsername(5L, "bob")).willReturn(Optional.of(invitation));
 
-        given(subscriptionRepository.findLockedById(10L)).willReturn(Optional.of(subscription));
+        given(subscriptionRepository.findLockedById(10L)).willReturn(Optional.of(notSharable));
 
         assertThatThrownBy(() -> service.accept("bob", 5L)).isInstanceOf(InvitationCannotBeAcceptedException.class);
 

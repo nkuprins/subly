@@ -126,14 +126,7 @@ public class UserRepositoryTest {
     }
 
     private User createUser(String username, String email, String name) {
-        User user = new User();
-        user.setUsername(username);
-        user.setName(name);
-        user.setEmail(email);
-        user.setPasswordHash("test_password");
-        user.setRole(UserRole.USER);
-
-        return user;
+        return new User(username, name, "test_password", email, UserRole.USER);
     }
 
     @Test

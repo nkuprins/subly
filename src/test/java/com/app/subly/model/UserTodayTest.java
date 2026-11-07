@@ -21,7 +21,7 @@ class UserTodayTest {
     }
 
     private static User userIn(String zone) {
-        User user = new User();
+        User user = TestUsers.user("taro");
         user.setTimeZone(ZoneId.of(zone));
         return user;
     }
