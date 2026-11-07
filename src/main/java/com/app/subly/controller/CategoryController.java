@@ -20,13 +20,13 @@ public class CategoryController {
 
     @PostMapping("/create")
     public OperationResponse createCategory(@Valid @RequestBody CreateCustomCategoryRequest request) {
-        service.addNewCategory(request.getCategoryName());
-        return new OperationResponse("Successfully added new category " + request.getCategoryName());
+        service.addNewCategory(request.categoryName());
+        return new OperationResponse("Successfully added new category " + request.categoryName());
     }
 
     @PutMapping("/edit")
     public OperationResponse editCategory(@Valid @RequestBody UpdateCategoryRequest request) {
-        service.editCategoryName(request.getId(), request.getNewName());
+        service.editCategoryName(request.id(), request.newName());
         return new OperationResponse("The category name has been changed successfully");
     }
 
