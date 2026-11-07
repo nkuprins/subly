@@ -9,9 +9,7 @@ import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.app.subly.dto.subscription.UpdateCustomSubscriptionRequest;
 import com.app.subly.dto.subscription.UpdateSubscriptionRequest;
-import com.app.subly.exception.subscription.CatalogProviderReadOnlyException;
 import com.app.subly.exception.subscription.SubscriptionAccessDeniedException;
 import com.app.subly.exception.subscription.SubscriptionNotFoundException;
 import com.app.subly.model.subscription.BillingCycle;
@@ -53,30 +51,6 @@ class UpdateSubscriptionControllerTest extends AbstractSubscriptionControllerTes
             send(BodyEndpoint.UPDATE, BodyEndpoint.UPDATE.validBody())
                     .andExpect(status().isForbidden())
                     .andExpect(jsonPath("$.detail").value(startsWith("Access denied")));
-        }
-    }
-
-    @Nested
-    class UpdateCustom {
-
-        @Test
-        void returns200() throws Exception {
-            UpdateCustomSubscriptionRequest request = new UpdateCustomSubscriptionRequest(
-                    CUSTOM_NAME, CATEGORY_ID, new BigDecimal("35.00"), BillingCycle.MONTHLY, NEXT_PAYMENT, false);
-            given(service.updateCustom(USERNAME, SUBSCRIPTION_ID, request)).willReturn(gymResponse());
-
-            send(BodyEndpoint.UPDATE_CUSTOM, BodyEndpoint.UPDATE_CUSTOM.validBody())
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.id").value(SUBSCRIPTION_ID));
-        }
-
-        @Test
-        void returns400ForCatalogSubscription() throws Exception {
-            given(service.updateCustom(anyString(), anyLong(), any()))
-                    .willThrow(new CatalogProviderReadOnlyException("Netflix"));
-
-            send(BodyEndpoint.UPDATE_CUSTOM, BodyEndpoint.UPDATE_CUSTOM.validBody())
-                    .andExpect(status().isBadRequest());
         }
     }
 }

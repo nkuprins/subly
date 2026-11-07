@@ -11,7 +11,6 @@ import com.app.subly.model.subscription.MembershipRole;
 import com.app.subly.model.subscription.Subscription;
 import com.app.subly.model.subscription.SubscriptionMembership;
 import com.app.subly.model.subscription.SubscriptionProvider;
-import com.app.subly.repository.CategoryRepository;
 import com.app.subly.repository.SubscriptionMembershipRepository;
 import com.app.subly.repository.SubscriptionProviderRepository;
 import com.app.subly.repository.SubscriptionRepository;
@@ -32,7 +31,6 @@ abstract class AbstractSubscriptionServiceTest {
 
     static final long SUBSCRIPTION_ID = 7L;
     static final long PROVIDER_ID = 1L;
-    static final long GYM_ID = 4L;
     static final String CUSTOM_NAME = "My gym";
     static final String CATALOG_NAME = "Test catalog";
     static final String OWNER = "test-owner";
@@ -47,9 +45,6 @@ abstract class AbstractSubscriptionServiceTest {
 
     @Mock
     SubscriptionProviderRepository subscriptionProviderRepository;
-
-    @Mock
-    CategoryRepository categoryRepository;
 
     @Mock
     UserRepository userRepository;
@@ -68,7 +63,6 @@ abstract class AbstractSubscriptionServiceTest {
                 new SubscriptionAccess(membershipRepository),
                 membershipRepository,
                 subscriptionProviderRepository,
-                categoryRepository,
                 userRepository,
                 clock);
         today = LocalDate.of(2026, 11, 4);

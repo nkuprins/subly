@@ -1,0 +1,84 @@
+package com.app.subly.service;
+
+import com.app.subly.dto.provider.ProviderRequest;
+import com.app.subly.dto.provider.ProviderResponse;
+import com.app.subly.exception.category.InvalidCategoryException;
+import com.app.subly.exception.subscription.ProviderNotFoundException;
+import com.app.subly.model.User;
+import com.app.subly.model.UserRole;
+import com.app.subly.model.subscription.Category;
+import com.app.subly.model.subscription.ProviderType;
+import com.app.subly.model.subscription.SubscriptionProvider;
+import com.app.subly.repository.CategoryRepository;
+import com.app.subly.repository.SubscriptionProviderRepository;
+import com.app.subly.repository.UserRepository;
+import java.util.List;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@RequiredArgsConstructor
+public class ProviderService {
+
+    private final SubscriptionProviderRepository subscriptionProviderRepository;
+    private final CategoryRepository categoryRepository;
+    private final UserRepository userRepository;
+
+    @Transactional(readOnly = true)
+    public List<SubscriptionProvider> findCatalogProviders() {
+        return subscriptionProviderRepository.findAllByProviderTypeOrderByNameAsc(ProviderType.CATALOG);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Category> findCategories() {
+        return categoryRepository.findAllByOrderByNameAsc();
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProviderResponse> findVisibleTo(String username) {
+        return subscriptionProviderRepository
+                .findAllByProviderTypeOrCreatedBy_UsernameOrderByNameAsc(ProviderType.CATALOG, username)
+                .stream()
+                .map(ProviderResponse::from)
+                .toList();
+    }
+
+    @Transactional
+    public ProviderResponse create(String username, ProviderRequest request) {
+        User user = findUser(username);
+        Category category = findCategory(request.categoryId());
+        String name = request.name().strip();
+        SubscriptionProvider provider = user.getRole() == UserRole.ADMIN
+                ? SubscriptionProvider.catalog(name, category)
+                : SubscriptionProvider.custom(name, category, user);
+        provider.setLogoPath(normalizeLogoPath(request.logoPath()));
+        return ProviderResponse.from(subscriptionProviderRepository.save(provider));
+    }
+
+    @Transactional
+    public ProviderResponse updateCustomProvider(String username, long providerId, ProviderRequest request) {
+        SubscriptionProvider provider = subscriptionProviderRepository
+                .findByIdAndCreatedBy_Username(providerId, username)
+                .orElseThrow(() -> new ProviderNotFoundException(providerId));
+        provider.setCategory(findCategory(request.categoryId()));
+        provider.setName(request.name().strip());
+        provider.setLogoPath(normalizeLogoPath(request.logoPath()));
+        return ProviderResponse.from(provider);
+    }
+
+    private Category findCategory(long categoryId) {
+        return categoryRepository.findById(categoryId).orElseThrow(() -> new InvalidCategoryException(categoryId));
+    }
+
+    private User findUser(String username) {
+        return userRepository
+                .findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User " + username + " does not exist"));
+    }
+
+    private static String normalizeLogoPath(String logoPath) {
+        return logoPath == null || logoPath.isBlank() ? null : logoPath.strip();
+    }
+}

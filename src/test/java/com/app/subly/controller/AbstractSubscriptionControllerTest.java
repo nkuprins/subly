@@ -64,6 +64,7 @@ abstract class AbstractSubscriptionControllerTest {
     static SubscriptionResponse gymResponse() {
         return new SubscriptionResponse(
                 SUBSCRIPTION_ID,
+                PROVIDER_ID,
                 CUSTOM_NAME,
                 CATEGORY_ID,
                 "Gym",
@@ -77,9 +78,7 @@ abstract class AbstractSubscriptionControllerTest {
 
     enum BodyEndpoint {
         CREATE(HttpMethod.POST, URL),
-        CREATE_CUSTOM(HttpMethod.POST, URL + "/custom"),
-        UPDATE(HttpMethod.PUT, URL + "/" + SUBSCRIPTION_ID),
-        UPDATE_CUSTOM(HttpMethod.PUT, URL + "/" + SUBSCRIPTION_ID + "/custom");
+        UPDATE(HttpMethod.PUT, URL + "/" + SUBSCRIPTION_ID);
 
         private final HttpMethod method;
         private final String path;
@@ -116,10 +115,6 @@ abstract class AbstractSubscriptionControllerTest {
             fields.put("nextPaymentDate", NEXT_PAYMENT);
             switch (this) {
                 case CREATE -> fields.put("providerId", PROVIDER_ID);
-                case CREATE_CUSTOM, UPDATE_CUSTOM -> {
-                    fields.put("name", CUSTOM_NAME);
-                    fields.put("categoryId", CATEGORY_ID);
-                }
                 case UPDATE -> {}
             }
             return fields;

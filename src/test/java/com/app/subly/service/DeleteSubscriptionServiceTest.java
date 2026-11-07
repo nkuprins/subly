@@ -16,13 +16,13 @@ import org.junit.jupiter.api.Test;
 class DeleteSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
 
     @Test
-    void deletesSubscriptionAndItsCustomProvider() {
+    void deletesSubscriptionButKeepsCustomProvider() {
         Subscription subscription = givenOwnedCustomSubscription();
 
         subscriptionService.delete(OWNER, SUBSCRIPTION_ID);
 
         then(subscriptionRepository).should().delete(subscription);
-        then(subscriptionProviderRepository).should().delete(subscription.getProvider());
+        then(subscriptionProviderRepository).shouldHaveNoInteractions();
     }
 
     @Test

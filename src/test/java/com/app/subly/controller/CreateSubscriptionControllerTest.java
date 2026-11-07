@@ -6,76 +6,50 @@ import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.app.subly.dto.subscription.CreateCustomSubscriptionRequest;
 import com.app.subly.dto.subscription.CreateSubscriptionRequest;
-import com.app.subly.exception.category.InvalidCategoryException;
-import com.app.subly.exception.subscription.CatalogProviderNotFoundException;
 import com.app.subly.exception.subscription.PaymentDateInPastException;
+import com.app.subly.exception.subscription.ProviderNotFoundException;
 import com.app.subly.model.subscription.BillingCycle;
 import java.math.BigDecimal;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 class CreateSubscriptionControllerTest extends AbstractSubscriptionControllerTest {
 
-    @Nested
-    class Create {
+    @Test
+    void returns201() throws Exception {
+        CreateSubscriptionRequest request = new CreateSubscriptionRequest(
+                PROVIDER_ID, new BigDecimal("35.00"), BillingCycle.MONTHLY, NEXT_PAYMENT, false);
+        given(service.create(USERNAME, request)).willReturn(gymResponse());
 
-        @Test
-        void returns201() throws Exception {
-            CreateSubscriptionRequest request = new CreateSubscriptionRequest(
-                    PROVIDER_ID, new BigDecimal("35.00"), BillingCycle.MONTHLY, NEXT_PAYMENT, false);
-            given(service.create(USERNAME, request)).willReturn(gymResponse());
-
-            send(BodyEndpoint.CREATE, BodyEndpoint.CREATE.validBody())
-                    .andExpect(status().isCreated())
-                    .andExpect(jsonPath("$.id").value(SUBSCRIPTION_ID));
-        }
-
-        @Test
-        void returns400ForUnknownProvider() throws Exception {
-            given(service.create(anyString(), any())).willThrow(new CatalogProviderNotFoundException(99L));
-
-            send(BodyEndpoint.CREATE, BodyEndpoint.CREATE.validBody())
-                    .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.detail").value("Catalog provider 99 does not exist"));
-        }
-
-        @Test
-        void returns400ForPaymentDateInPast() throws Exception {
-            given(service.create(anyString(), any())).willThrow(new PaymentDateInPastException(TODAY.minusDays(1)));
-
-            send(BodyEndpoint.CREATE, BodyEndpoint.CREATE.validBody())
-                    .andExpect(status().isBadRequest())
-                    .andExpect(
-                            jsonPath("$.detail").value("Next payment date " + TODAY.minusDays(1) + " is in the past"));
-        }
+        send(BodyEndpoint.CREATE, BodyEndpoint.CREATE.validBody())
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(SUBSCRIPTION_ID))
+                .andExpect(jsonPath("$.providerId").value(PROVIDER_ID))
+                .andExpect(jsonPath("$.providerName").value(CUSTOM_NAME))
+                .andExpect(jsonPath("$.providerType").value("CUSTOM"))
+                .andExpect(jsonPath("$.currency").value("EUR"));
     }
 
-    @Nested
-    class CreateCustom {
+    @Test
+    void returns400ForUnknownProvider() throws Exception {
+        given(service.create(anyString(), any())).willThrow(new ProviderNotFoundException(99L));
 
-        @Test
-        void returns201() throws Exception {
-            CreateCustomSubscriptionRequest request = new CreateCustomSubscriptionRequest(
-                    CUSTOM_NAME, CATEGORY_ID, new BigDecimal("35.00"), BillingCycle.MONTHLY, NEXT_PAYMENT, false);
-            given(service.createCustom(USERNAME, request)).willReturn(gymResponse());
+        send(BodyEndpoint.CREATE, BodyEndpoint.CREATE.validBody())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.detail").value("Provider 99 does not exist"));
+    }
 
-            send(BodyEndpoint.CREATE_CUSTOM, BodyEndpoint.CREATE_CUSTOM.validBody())
-                    .andExpect(status().isCreated())
-                    .andExpect(jsonPath("$.id").value(SUBSCRIPTION_ID))
-                    .andExpect(jsonPath("$.providerName").value(CUSTOM_NAME))
-                    .andExpect(jsonPath("$.providerType").value("CUSTOM"))
-                    .andExpect(jsonPath("$.currency").value("EUR"));
-        }
+    @Test
+    void returns400ForPaymentDateInPast() throws Exception {
+        given(service.create(anyString(), any())).willThrow(new PaymentDateInPastException(TODAY.minusDays(1)));
 
-        @Test
-        void returns400ForUnknownCategory() throws Exception {
-            given(service.createCustom(anyString(), any())).willThrow(new InvalidCategoryException(99L));
+        send(BodyEndpoint.CREATE, BodyEndpoint.CREATE.validBody())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.detail").value("Next payment date " + TODAY.minusDays(1) + " is in the past"));
+    }
 
-            send(BodyEndpoint.CREATE_CUSTOM, BodyEndpoint.CREATE_CUSTOM.validBody())
-                    .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.detail").value("Category 99 does not exist"));
-        }
+    @Test
+    void returns400ForMissingProviderId() throws Exception {
+        send(BodyEndpoint.CREATE, BodyEndpoint.CREATE.bodyWithout("providerId")).andExpect(validationError());
     }
 }
