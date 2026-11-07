@@ -107,10 +107,7 @@ public class Subscription {
     }
 
     public void advancePaymentDate(LocalDate today) {
-        ChronoUnit unit = switch (billingCycle) {
-            case MONTHLY -> ChronoUnit.MONTHS;
-            case YEARLY -> ChronoUnit.YEARS;
-        };
+        ChronoUnit unit = billingCycle.getUnit();
         long cycles = Math.max(0, unit.between(billingAnchorDate, today));
         LocalDate date = billingAnchorDate.plus(cycles, unit);
         nextPaymentDate = date.isBefore(today) ? billingAnchorDate.plus(cycles + 1, unit) : date;

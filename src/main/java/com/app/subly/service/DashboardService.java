@@ -2,7 +2,6 @@ package com.app.subly.service;
 
 import com.app.subly.dto.dashboard.DashboardSummaryDto;
 import com.app.subly.dto.dashboard.UpcomingPaymentDto;
-import com.app.subly.model.subscription.BillingCycle;
 import com.app.subly.model.subscription.Currency;
 import com.app.subly.model.subscription.MembershipRole;
 import com.app.subly.model.subscription.Subscription;
@@ -40,8 +39,7 @@ public class DashboardService {
 
         List<SubscriptionShare> shares = loadSubscriptionShares(username);
 
-        BigDecimal monthlyCost = BigDecimal.ZERO;
-        BigDecimal yearlyCost = BigDecimal.ZERO;
+        BigDecimal yearlyTotal = BigDecimal.ZERO;
 
         for (SubscriptionShare share : shares) {
 
@@ -49,14 +47,11 @@ public class DashboardService {
 
             BigDecimal amountEur = CurrencyConverter.toEur(share.amount(), subscription.getCurrency());
 
-            if (subscription.getBillingCycle() == BillingCycle.MONTHLY) {
-                monthlyCost = monthlyCost.add(amountEur);
-            } else if (subscription.getBillingCycle() == BillingCycle.YEARLY) {
-                yearlyCost = yearlyCost.add(amountEur);
-            }
-        }
+            BigDecimal paymentsPerYear =
+                    BigDecimal.valueOf(subscription.getBillingCycle().getPaymentsPerYear());
 
-        BigDecimal yearlyTotal = monthlyCost.multiply(MONTHS_IN_YEAR).add(yearlyCost);
+            yearlyTotal = yearlyTotal.add(amountEur.multiply(paymentsPerYear));
+        }
 
         BigDecimal monthlyTotal = yearlyTotal.divide(MONTHS_IN_YEAR, 2, RoundingMode.HALF_UP);
 
