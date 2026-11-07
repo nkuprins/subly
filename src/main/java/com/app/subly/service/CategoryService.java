@@ -5,17 +5,16 @@ import com.app.subly.exception.category.*;
 import com.app.subly.model.subscription.Category;
 import com.app.subly.repository.CategoryRepository;
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 public class CategoryService {
     private final CategoryRepository repository;
-    private final Logger logger = LoggerFactory.getLogger(CategoryService.class);
 
     public CategoryService(CategoryRepository repository) {
         this.repository = repository;
@@ -66,16 +65,21 @@ public class CategoryService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<Category> findCategories() {
+        return repository.findAllByOrderByNameAsc();
+    }
+
     private void createDefaultCategories() {
-        logger.info("Checking default categories...");
-        String[] categories = new String[] {"Music", "Gaming", "Health", "Streaming", "Sport", "Other"};
+        log.info("Checking default categories...");
+        String[] categories = {"Music", "Gaming", "Health", "Streaming", "Sport", "Other"};
 
         for (String categoryName : categories) {
             try {
                 addNewCategory(categoryName);
-                logger.info("Category {}: CREATED", categoryName);
+                log.info("Category {}: CREATED", categoryName);
             } catch (CategoryAlreadyExistsException ex) {
-                logger.info("Category {}: OK", categoryName);
+                log.info("Category {}: OK", categoryName);
             }
         }
     }

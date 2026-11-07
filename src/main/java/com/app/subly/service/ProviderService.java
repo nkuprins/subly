@@ -31,11 +31,6 @@ public class ProviderService {
     }
 
     @Transactional(readOnly = true)
-    public List<Category> findCategories() {
-        return categoryRepository.findAllByOrderByNameAsc();
-    }
-
-    @Transactional(readOnly = true)
     public List<ProviderResponse> findVisibleTo(String username) {
         return subscriptionProviderRepository
                 .findAllByProviderTypeOrCreatedBy_UsernameOrderByNameAsc(ProviderType.CATALOG, username)
