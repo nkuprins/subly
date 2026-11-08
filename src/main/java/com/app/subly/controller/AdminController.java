@@ -6,11 +6,9 @@ import com.app.subly.model.category.Category;
 import com.app.subly.model.provider.SubscriptionProvider;
 import com.app.subly.service.CategoryService;
 import com.app.subly.service.ProviderService;
-
+import jakarta.validation.Valid;
 import java.security.Principal;
 import java.util.List;
-
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -49,19 +47,19 @@ public class AdminController {
     }
 
     @PostMapping("/admin/providers")
-    public String addNewProvider(@Valid @ModelAttribute("providerForm") CreateProviderForm form,
-                                 BindingResult bindingResult,
-                                 Model model,
-                                 Principal principal){
+    public String addNewProvider(
+            @Valid @ModelAttribute("providerForm") CreateProviderForm form,
+            BindingResult bindingResult,
+            Model model,
+            Principal principal) {
 
-        if(bindingResult.hasErrors()){
+        if (bindingResult.hasErrors()) {
             model.addAttribute("categories");
             return "admin-provider-form"; // return the user back on the page
         }
 
-        providerService.create(principal.getName(), new ProviderRequest(
-            form.getName(), form.getCategoryId(), form.getLogoPath()
-        ));
+        providerService.create(
+                principal.getName(), new ProviderRequest(form.getName(), form.getCategoryId(), form.getLogoPath()));
 
         return "redirect:/admin";
     }
