@@ -22,6 +22,11 @@ public class PageController {
         return "login";
     }
 
+    @GetMapping("/access-denied")
+    public String accessDenied() {
+        return "access-denied";
+    }
+
     @GetMapping("/register")
     public String register() {
         return "register";
