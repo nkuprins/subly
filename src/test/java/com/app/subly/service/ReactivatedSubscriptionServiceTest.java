@@ -2,12 +2,13 @@ package com.app.subly.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.BDDMockito.then;
 
 import com.app.subly.exception.subscription.SubscriptionAccessDeniedException;
 import com.app.subly.model.subscription.Subscription;
 import com.app.subly.model.subscription.SubscriptionStatus;
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import org.junit.jupiter.api.Test;
 
 class ReactivateSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
@@ -17,10 +18,7 @@ class ReactivateSubscriptionServiceTest extends AbstractSubscriptionServiceTest 
         Subscription subscription = givenOwnedCatalogSubscription();
 
         subscription.reschedule(LocalDate.of(2026, 9, 10));
-        subscription.setStatus(SubscriptionStatus.CANCELLED);
-        subscription.setCancelledAt(LocalDateTime.of(2026, 9, 5, 12, 0));
-
-        givenOwnerExists();
+        subscription.cancel(Instant.parse("2026-09-05T12:00:00Z"));
 
         subscriptionService.reactivate(OWNER, SUBSCRIPTION_ID);
 
@@ -29,6 +27,7 @@ class ReactivateSubscriptionServiceTest extends AbstractSubscriptionServiceTest 
         assertThat(subscription.getCancelledAt()).isNull();
 
         assertThat(subscription.getNextPaymentDate()).isEqualTo(LocalDate.of(2026, 11, 10));
+        then(userRepository).shouldHaveNoInteractions();
     }
 
     @Test
@@ -50,8 +49,7 @@ class ReactivateSubscriptionServiceTest extends AbstractSubscriptionServiceTest 
     void memberCannotReactivateSubscription() {
         Subscription subscription = givenSubscriptionOwnedBySomeoneElse();
 
-        subscription.setStatus(SubscriptionStatus.CANCELLED);
-        subscription.setCancelledAt(LocalDateTime.of(2026, 10, 1, 12, 0));
+        subscription.cancel(Instant.parse("2026-10-01T12:00:00Z"));
 
         assertThatThrownBy(() -> subscriptionService.reactivate(STRANGER, SUBSCRIPTION_ID))
                 .isInstanceOf(SubscriptionAccessDeniedException.class);

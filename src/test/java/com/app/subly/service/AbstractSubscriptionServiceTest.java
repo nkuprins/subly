@@ -3,14 +3,15 @@ package com.app.subly.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 
-import com.app.subly.dto.PaymentDetails;
-import com.app.subly.model.User;
+import com.app.subly.dto.subscription.PaymentDetails;
+import com.app.subly.model.TestUsers;
+import com.app.subly.model.category.Category;
+import com.app.subly.model.provider.SubscriptionProvider;
 import com.app.subly.model.subscription.BillingCycle;
-import com.app.subly.model.subscription.Category;
 import com.app.subly.model.subscription.MembershipRole;
 import com.app.subly.model.subscription.Subscription;
 import com.app.subly.model.subscription.SubscriptionMembership;
-import com.app.subly.model.subscription.SubscriptionProvider;
+import com.app.subly.model.user.User;
 import com.app.subly.repository.SubscriptionMembershipRepository;
 import com.app.subly.repository.SubscriptionProviderRepository;
 import com.app.subly.repository.SubscriptionRepository;
@@ -66,13 +67,12 @@ abstract class AbstractSubscriptionServiceTest {
                 userRepository,
                 clock);
         today = LocalDate.of(2026, 11, 4);
-        owner = new User();
-        owner.setUsername(OWNER);
+        owner = TestUsers.user(OWNER);
         gym = new Category("Test gym");
     }
 
     void givenOwnerExists() {
-        given(userRepository.findByUsername(OWNER)).willReturn(Optional.of(owner));
+        given(userRepository.getByUsername(OWNER)).willReturn(owner);
     }
 
     Subscription givenOwnedCustomSubscription() {
@@ -88,6 +88,12 @@ abstract class AbstractSubscriptionServiceTest {
         given(membershipRepository.findBySubscriptionIdAndRole(SUBSCRIPTION_ID, MembershipRole.OWNER))
                 .willReturn(Optional.of(SubscriptionMembership.owner(owner, subscription)));
         return subscription;
+    }
+
+    void givenOwnerRowWithSubscriptionDetails(Subscription subscription) {
+        given(membershipRepository.findWithSubscriptionDetailsBySubscriptionIdAndRole(
+                        SUBSCRIPTION_ID, MembershipRole.OWNER))
+                .willReturn(Optional.of(SubscriptionMembership.owner(owner, subscription)));
     }
 
     static void assertPaymentDetails(Subscription subscription, PaymentDetails request) {

@@ -2,11 +2,11 @@ package com.app.subly.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.app.subly.model.User;
-import com.app.subly.model.UserRole;
-import com.app.subly.model.subscription.Category;
-import com.app.subly.model.subscription.ProviderType;
-import com.app.subly.model.subscription.SubscriptionProvider;
+import com.app.subly.model.TestUsers;
+import com.app.subly.model.category.Category;
+import com.app.subly.model.provider.ProviderType;
+import com.app.subly.model.provider.SubscriptionProvider;
+import com.app.subly.model.user.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +44,7 @@ class SubscriptionProviderRepositoryTest {
 
     @Test
     void findsCatalogAndOwnProvidersByName() {
-        assertThat(subscriptionProviderRepository.findAllByProviderTypeOrCreatedBy_UsernameOrderByNameAsc(
+        assertThat(subscriptionProviderRepository.findAllByProviderTypeOrCreatedByUsernameOrderByNameAsc(
                         ProviderType.CATALOG, "test-owner"))
                 .extracting(SubscriptionProvider::getName)
                 .containsExactly("A own", "B catalog");
@@ -52,21 +52,16 @@ class SubscriptionProviderRepositoryTest {
 
     @Test
     void findByIdAndCreatedByUsernameSkipsCatalogAndOthersProviders() {
-        assertThat(subscriptionProviderRepository.findByIdAndCreatedBy_Username(ownCustom.getId(), "test-owner"))
+        assertThat(subscriptionProviderRepository.findByIdAndCreatedByUsername(ownCustom.getId(), "test-owner"))
                 .isPresent();
-        assertThat(subscriptionProviderRepository.findByIdAndCreatedBy_Username(catalog.getId(), "test-owner"))
+        assertThat(subscriptionProviderRepository.findByIdAndCreatedByUsername(catalog.getId(), "test-owner"))
                 .isEmpty();
-        assertThat(subscriptionProviderRepository.findByIdAndCreatedBy_Username(othersCustom.getId(), "test-owner"))
+        assertThat(subscriptionProviderRepository.findByIdAndCreatedByUsername(othersCustom.getId(), "test-owner"))
                 .isEmpty();
     }
 
     private User persistUser(String username) {
-        User user = new User();
-        user.setUsername(username);
-        user.setName("Test User");
-        user.setEmail(username + "@test.local");
-        user.setPasswordHash("not-a-real-hash");
-        user.setRole(UserRole.USER);
+        User user = TestUsers.user(username);
         return entityManager.persist(user);
     }
 }

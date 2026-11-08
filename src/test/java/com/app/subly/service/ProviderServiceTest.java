@@ -10,12 +10,13 @@ import static org.mockito.BDDMockito.then;
 import com.app.subly.dto.provider.ProviderRequest;
 import com.app.subly.dto.provider.ProviderResponse;
 import com.app.subly.exception.category.InvalidCategoryException;
-import com.app.subly.exception.subscription.ProviderNotFoundException;
-import com.app.subly.model.User;
-import com.app.subly.model.UserRole;
-import com.app.subly.model.subscription.Category;
-import com.app.subly.model.subscription.ProviderType;
-import com.app.subly.model.subscription.SubscriptionProvider;
+import com.app.subly.exception.provider.ProviderNotFoundException;
+import com.app.subly.model.TestUsers;
+import com.app.subly.model.category.Category;
+import com.app.subly.model.provider.ProviderType;
+import com.app.subly.model.provider.SubscriptionProvider;
+import com.app.subly.model.user.User;
+import com.app.subly.model.user.UserRole;
 import com.app.subly.repository.CategoryRepository;
 import com.app.subly.repository.SubscriptionProviderRepository;
 import com.app.subly.repository.UserRepository;
@@ -56,8 +57,7 @@ class ProviderServiceTest {
     @BeforeEach
     void setUp() {
         providerService = new ProviderService(subscriptionProviderRepository, categoryRepository, userRepository);
-        owner = new User();
-        owner.setUsername(OWNER);
+        owner = TestUsers.user(OWNER);
         gym = new Category("Test gym");
     }
 
@@ -119,10 +119,8 @@ class ProviderServiceTest {
     }
 
     private User givenUser(String username, UserRole role) {
-        User user = new User();
-        user.setUsername(username);
-        user.setRole(role);
-        given(userRepository.findByUsername(username)).willReturn(Optional.of(user));
+        User user = TestUsers.user(username, role);
+        given(userRepository.getByUsername(username)).willReturn(user);
         return user;
     }
 
@@ -135,7 +133,7 @@ class ProviderServiceTest {
         @Test
         void changesNameCategoryAndLogo() {
             SubscriptionProvider provider = SubscriptionProvider.custom("My gym", gym, owner);
-            given(subscriptionProviderRepository.findByIdAndCreatedBy_Username(PROVIDER_ID, OWNER))
+            given(subscriptionProviderRepository.findByIdAndCreatedByUsername(PROVIDER_ID, OWNER))
                     .willReturn(Optional.of(provider));
             given(categoryRepository.findById(MUSIC_ID)).willReturn(Optional.of(music));
 
@@ -149,7 +147,7 @@ class ProviderServiceTest {
 
         @Test
         void rejectsProviderTheUserDoesNotOwn() {
-            given(subscriptionProviderRepository.findByIdAndCreatedBy_Username(PROVIDER_ID, OWNER))
+            given(subscriptionProviderRepository.findByIdAndCreatedByUsername(PROVIDER_ID, OWNER))
                     .willReturn(Optional.empty());
 
             assertThatThrownBy(() -> providerService.updateCustomProvider(OWNER, PROVIDER_ID, request))
@@ -161,7 +159,7 @@ class ProviderServiceTest {
         @Test
         void rejectsUnknownCategoryWithoutChangingTheProvider() {
             SubscriptionProvider provider = SubscriptionProvider.custom("My gym", gym, owner);
-            given(subscriptionProviderRepository.findByIdAndCreatedBy_Username(PROVIDER_ID, OWNER))
+            given(subscriptionProviderRepository.findByIdAndCreatedByUsername(PROVIDER_ID, OWNER))
                     .willReturn(Optional.of(provider));
             given(categoryRepository.findById(MUSIC_ID)).willReturn(Optional.empty());
 

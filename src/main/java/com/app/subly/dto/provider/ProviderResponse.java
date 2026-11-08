@@ -1,7 +1,7 @@
 package com.app.subly.dto.provider;
 
-import com.app.subly.model.subscription.ProviderType;
-import com.app.subly.model.subscription.SubscriptionProvider;
+import com.app.subly.model.provider.ProviderType;
+import com.app.subly.model.provider.SubscriptionProvider;
 
 public record ProviderResponse(Long id, String name, String categoryName, String logoPath, ProviderType providerType) {
 

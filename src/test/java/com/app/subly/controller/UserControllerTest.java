@@ -10,9 +10,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.app.subly.config.SecurityConfig;
-import com.app.subly.dto.UpdateUserInformationRequest;
+import com.app.subly.dto.user.UpdateUserInformationRequest;
 import com.app.subly.exception.user.UserAlreadyExistsException;
 import com.app.subly.exception.user.WrongPasswordException;
+import com.app.subly.model.user.User;
 import com.app.subly.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -119,6 +120,35 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$.errors[0].message").value("You must provide at least one property to change."));
 
         verifyNoInteractions(service);
+    }
+
+    @Test
+    @WithMockUser(username = "andris123")
+    void updateInformation_ShouldReturnBadRequestWhenUsernameIsTooLong() throws Exception {
+        String tooLong = "a".repeat(User.USERNAME_MAX_LENGTH + 1);
+
+        mockMvc.perform(patch("/users/update/info/me")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"newUsername\": \"" + tooLong + "\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors[0].field").value("newUsername"));
+
+        verifyNoInteractions(service);
+    }
+
+    @Test
+    @WithMockUser(username = "andris123")
+    void updateInformation_ShouldAcceptUsernameOfMaxLength() throws Exception {
+        String maxLength = "a".repeat(User.USERNAME_MAX_LENGTH);
+
+        mockMvc.perform(patch("/users/update/info/me")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"newUsername\": \"" + maxLength + "\"}"))
+                .andExpect(status().isOk());
+
+        verify(service).updateUserInformation(eq("andris123"), any(UpdateUserInformationRequest.class));
     }
 
     @Test

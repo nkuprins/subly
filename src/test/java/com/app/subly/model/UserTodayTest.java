@@ -2,6 +2,7 @@ package com.app.subly.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.app.subly.model.user.User;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -21,7 +22,7 @@ class UserTodayTest {
     }
 
     private static User userIn(String zone) {
-        User user = new User();
+        User user = TestUsers.user("taro");
         user.setTimeZone(ZoneId.of(zone));
         return user;
     }

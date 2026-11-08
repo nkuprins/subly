@@ -8,8 +8,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.app.subly.config.SecurityConfig;
 import com.app.subly.controller.DashboardController;
-import com.app.subly.dto.dashboard.DashboardSummaryDto;
-import com.app.subly.dto.dashboard.UpcomingPaymentDto;
+import com.app.subly.dto.dashboard.DashboardSummaryResponse;
+import com.app.subly.dto.dashboard.UpcomingPaymentResponse;
 import com.app.subly.model.subscription.Currency;
 import com.app.subly.service.DashboardService;
 import java.math.BigDecimal;
@@ -38,7 +38,8 @@ class DashboardControllerTest {
     @Test
     void returnsSummaryOfAuthenticatedUser() throws Exception {
         given(dashboardService.getSummary("alice"))
-                .willReturn(new DashboardSummaryDto(new BigDecimal("30.65"), new BigDecimal("367.80"), Currency.EUR));
+                .willReturn(
+                        new DashboardSummaryResponse(new BigDecimal("30.65"), new BigDecimal("367.80"), Currency.EUR));
 
         mockMvc.perform(get("/api/dashboard/summary"))
                 .andExpect(status().isOk())
@@ -54,7 +55,7 @@ class DashboardControllerTest {
         LocalDate date = LocalDate.now().plusDays(10);
         given(dashboardService.getUpcomingPayments("alice"))
                 .willReturn(List.of(
-                        new UpcomingPaymentDto(5L, "Netflix", new BigDecimal("9.99"), Currency.USD, date, 10L)));
+                        new UpcomingPaymentResponse(5L, "Netflix", new BigDecimal("9.99"), Currency.USD, date, 10L)));
 
         mockMvc.perform(get("/api/dashboard/upcoming-payments"))
                 .andExpect(status().isOk())

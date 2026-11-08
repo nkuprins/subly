@@ -1,7 +1,7 @@
 package com.app.subly.controller;
 
-import com.app.subly.dto.dashboard.DashboardSummaryDto;
-import com.app.subly.dto.dashboard.UpcomingPaymentDto;
+import com.app.subly.dto.dashboard.DashboardSummaryResponse;
+import com.app.subly.dto.dashboard.UpcomingPaymentResponse;
 import com.app.subly.service.DashboardService;
 import java.security.Principal;
 import java.util.List;
@@ -18,12 +18,12 @@ public class DashboardController {
     private final DashboardService dashboardService;
 
     @GetMapping("/summary")
-    public DashboardSummaryDto getSummary(Principal principal) {
+    public DashboardSummaryResponse getSummary(Principal principal) {
         return dashboardService.getSummary(principal.getName());
     }
 
     @GetMapping("/upcoming-payments")
-    public List<UpcomingPaymentDto> getUpcomingPayments(Principal principal) {
+    public List<UpcomingPaymentResponse> getUpcomingPayments(Principal principal) {
         return dashboardService.getUpcomingPayments(principal.getName());
     }
 }

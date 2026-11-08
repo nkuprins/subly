@@ -1,4 +1,4 @@
-package com.app.subly.dto;
+package com.app.subly.dto.subscription;
 
 import com.app.subly.model.subscription.BillingCycle;
 import java.math.BigDecimal;

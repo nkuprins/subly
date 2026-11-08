@@ -1,28 +1,24 @@
 package com.app.subly.service;
 
-import com.app.subly.dto.UpdateUserInformationRequest;
-import com.app.subly.dto.UserResponse;
+import com.app.subly.dto.user.UpdateUserInformationRequest;
 import com.app.subly.exception.user.*;
-import com.app.subly.model.User;
-import com.app.subly.model.UserRole;
+import com.app.subly.model.user.User;
+import com.app.subly.model.user.UserRole;
 import com.app.subly.repository.UserRepository;
-import jakarta.transaction.Transactional;
 import java.time.ZoneId;
-import java.util.List;
+import java.util.function.Consumer;
+import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository repository;
     private final PasswordEncoder encoder;
-
-    public UserService(UserRepository repository, PasswordEncoder encoder) {
-        this.repository = repository;
-        this.encoder = encoder;
-    }
 
     public void addNewUser(String username, String name, String password, String email, ZoneId timeZone) {
         // Adds a new user into db from raw data. Throws UserAlreadyExistsException if
@@ -30,44 +26,10 @@ public class UserService {
         // before calling this method.
 
         try {
-            repository.save(createUserFromRawData(username, name, password, email, timeZone));
+            repository.save(createUserFromRawData(username.strip(), name.strip(), password, email.strip(), timeZone));
         } catch (DataIntegrityViolationException exception) {
             throw new UserAlreadyExistsException("A user with the username or the email already exists");
         }
-    }
-
-    public UserResponse getUserById(Long id) {
-        // Returns user with the corresponding id. If the user
-        // doesn't exist, UserDoesNotExistException will be occurred
-        // If an invalid id was passed, IllegalArgumentException will be raised
-
-        if (id == null || id < 0) {
-            throw new IllegalArgumentException("Id must be positive");
-        }
-
-        User user = repository
-                .findById(id)
-                .orElseThrow(() -> new UserDoesNotExistException("The user with the id doesn't exist"));
-
-        return mapToDTO(user);
-    }
-
-    public List<UserResponse> listUsersByIds(List<Long> ids) {
-        // Returns list of users with the corresponding ids.
-        // If the length of the list with given ids differs from the found users,
-        // IllegalArgumentException will be raised.
-
-        if (ids == null) {
-            throw new IllegalArgumentException("The list of ids is null");
-        }
-
-        List<User> result = repository.findAllById(ids);
-
-        if (result.isEmpty() || result.size() != ids.size()) {
-            throw new UserDoesNotExistException("No found all the users with those ids");
-        }
-
-        return result.stream().map(this::mapToDTO).toList();
     }
 
     @Transactional
@@ -77,7 +39,7 @@ public class UserService {
         // UserIsConnectedException is raised in case some table's column refers to this user.
         // WrongPasswordException is raised if a raw password != password hash
 
-        User user = getUserByUserName(username);
+        User user = getUserByUsername(username);
 
         if (!encoder.matches(rawPassword, user.getPasswordHash())) {
             throw new WrongPasswordException("The passwords don't match");
@@ -93,7 +55,7 @@ public class UserService {
 
     @Transactional
     public void updateUserPassword(String username, String rawOldPassword, String rawNewPassword) {
-        User user = getUserByUserName(username);
+        User user = getUserByUsername(username);
 
         if (!encoder.matches(rawOldPassword, user.getPasswordHash())) {
             throw new WrongPasswordException("The passwords don't match");
@@ -104,31 +66,19 @@ public class UserService {
 
     @Transactional
     public void updateUserInformation(String oldUsername, UpdateUserInformationRequest newUserInfo) {
-        User user = getUserByUserName(oldUsername);
+        User user = getUserByUsername(oldUsername);
 
         try {
             if (newUserInfo.isEmailProvided()) {
-                if (isNotValidForUpdating(user.getEmail(), newUserInfo.getNewEmail())) {
-                    throw new UserInfoUpdateException(
-                            "You must provide a non-empty email that differs from your current");
-                }
-                user.setEmail(newUserInfo.getNewEmail());
+                updateField("email", user.getEmail(), newUserInfo.getNewEmail(), user::setEmail);
             }
 
             if (newUserInfo.isUsernameProvided()) {
-                if (isNotValidForUpdating(user.getUsername(), newUserInfo.getNewUsername())) {
-                    throw new UserInfoUpdateException(
-                            "You must provide a non-empty username that differs from your current");
-                }
-                user.setUsername(newUserInfo.getNewUsername());
+                updateField("username", user.getUsername(), newUserInfo.getNewUsername(), user::setUsername);
             }
 
             if (newUserInfo.isNameProvided()) {
-                if (isNotValidForUpdating(user.getName(), newUserInfo.getNewName())) {
-                    throw new UserInfoUpdateException(
-                            "You must provide a non-empty name that differs from your current");
-                }
-                user.setName(newUserInfo.getNewName());
+                updateField("name", user.getName(), newUserInfo.getNewName(), user::setName);
             }
 
             if (newUserInfo.isTimeZoneProvided()) {
@@ -144,23 +94,27 @@ public class UserService {
         }
     }
 
-    public User getUserByUserName(String username) {
+    public User getUserByUsername(String username) {
         return repository
                 .findByUsername(username)
                 .orElseThrow(() -> new UserDoesNotExistException("No found user with the username"));
     }
 
     private User createUserFromRawData(String username, String name, String password, String email, ZoneId timeZone) {
-        User user = new User();
-        user.setUsername(username);
-        user.setName(name);
-        user.setPasswordHash(encoder.encode(password));
-        user.setEmail(email);
-        user.setRole(UserRole.USER);
+        User user = new User(username, name, encoder.encode(password), email, UserRole.USER);
         if (timeZone != null) {
             user.setTimeZone(timeZone);
         }
         return user;
+    }
+
+    private void updateField(String label, String current, String provided, Consumer<String> setter) {
+        String value = provided == null ? null : provided.strip();
+        if (isNotValidForUpdating(current, value)) {
+            throw new UserInfoUpdateException(
+                    "You must provide a non-empty " + label + " that differs from your current");
+        }
+        setter.accept(value);
     }
 
     private boolean isNotValidForUpdating(String originalCredential, String providedCredential) {
@@ -176,9 +130,5 @@ public class UserService {
             return true;
         }
         return originalCredential.equals(providedCredential);
-    }
-
-    private UserResponse mapToDTO(User user) {
-        return new UserResponse(user.getUsername(), user.getEmail(), user.getRole());
     }
 }

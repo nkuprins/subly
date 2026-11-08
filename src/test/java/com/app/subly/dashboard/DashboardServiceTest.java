@@ -6,17 +6,18 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.app.subly.dto.dashboard.DashboardSummaryDto;
-import com.app.subly.dto.dashboard.UpcomingPaymentDto;
-import com.app.subly.model.User;
+import com.app.subly.dto.dashboard.DashboardSummaryResponse;
+import com.app.subly.dto.dashboard.UpcomingPaymentResponse;
+import com.app.subly.model.TestUsers;
+import com.app.subly.model.category.Category;
+import com.app.subly.model.provider.SubscriptionProvider;
 import com.app.subly.model.subscription.BillingCycle;
-import com.app.subly.model.subscription.Category;
 import com.app.subly.model.subscription.Currency;
 import com.app.subly.model.subscription.MembershipRole;
 import com.app.subly.model.subscription.Subscription;
 import com.app.subly.model.subscription.SubscriptionMembership;
-import com.app.subly.model.subscription.SubscriptionProvider;
 import com.app.subly.model.subscription.SubscriptionStatus;
+import com.app.subly.model.user.User;
 import com.app.subly.repository.SubscriptionMembershipRepository;
 import com.app.subly.repository.UserRepository;
 import com.app.subly.service.DashboardService;
@@ -28,13 +29,11 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class DashboardServiceTest {
@@ -58,16 +57,16 @@ class DashboardServiceTest {
 
     @Test
     void returnsZeroWhenUserHasNoSubscriptions() {
-        when(repository.findByUser_UsernameAndSubscription_StatusOrderBySubscription_NextPaymentDateAsc(
+        when(repository.findByUserUsernameAndSubscriptionStatusOrderBySubscriptionNextPaymentDateAsc(
                         USERNAME, SubscriptionStatus.ACTIVE))
                 .thenReturn(List.of());
 
-        DashboardSummaryDto result = dashboardService.getSummary(USERNAME);
+        DashboardSummaryResponse result = dashboardService.getSummary(USERNAME);
 
         assertMoney("0.00", result.monthlyTotal());
         assertMoney("0.00", result.yearlyTotal());
         assertEquals(Currency.EUR, result.currency());
-        verify(repository, never()).findBySubscription_IdIn(anyCollection());
+        verify(repository, never()).findBySubscriptionIdIn(anyCollection());
     }
 
     @Test
@@ -84,7 +83,7 @@ class DashboardServiceTest {
         SubscriptionMembership third = membership("alice", gym, MembershipRole.OWNER);
         stubMemberships(List.of(first, second, third), List.of(first, second, third));
 
-        DashboardSummaryDto result = dashboardService.getSummary(USERNAME);
+        DashboardSummaryResponse result = dashboardService.getSummary(USERNAME);
 
         assertMoney("30.90", result.monthlyTotal());
         assertMoney("370.80", result.yearlyTotal());
@@ -98,7 +97,7 @@ class DashboardServiceTest {
         SubscriptionMembership owner = membership("alice", trial, MembershipRole.OWNER);
         stubMemberships(List.of(owner), List.of(owner));
 
-        DashboardSummaryDto result = dashboardService.getSummary(USERNAME);
+        DashboardSummaryResponse result = dashboardService.getSummary(USERNAME);
 
         assertMoney("20.00", result.monthlyTotal());
         assertMoney("240.00", result.yearlyTotal());
@@ -111,7 +110,7 @@ class DashboardServiceTest {
         SubscriptionMembership owner = membership("alice", yearly, MembershipRole.OWNER);
         stubMemberships(List.of(owner), List.of(owner));
 
-        DashboardSummaryDto result = dashboardService.getSummary(USERNAME);
+        DashboardSummaryResponse result = dashboardService.getSummary(USERNAME);
 
         assertMoney("8.33", result.monthlyTotal());
         assertMoney("100.00", result.yearlyTotal());
@@ -126,7 +125,7 @@ class DashboardServiceTest {
         SubscriptionMembership carol = membership("carol", shared, MembershipRole.MEMBER);
         stubMemberships(List.of(owner), List.of(owner, bob, carol));
 
-        DashboardSummaryDto result = dashboardService.getSummary(USERNAME);
+        DashboardSummaryResponse result = dashboardService.getSummary(USERNAME);
 
         assertMoney("3.34", result.monthlyTotal());
         assertMoney("40.08", result.yearlyTotal());
@@ -141,7 +140,7 @@ class DashboardServiceTest {
         SubscriptionMembership third = membership("carol", shared, MembershipRole.MEMBER);
         stubMemberships(List.of(member), List.of(owner, member, third));
 
-        DashboardSummaryDto result = dashboardService.getSummary(USERNAME);
+        DashboardSummaryResponse result = dashboardService.getSummary(USERNAME);
 
         assertMoney("3.33", result.monthlyTotal());
         assertMoney("39.96", result.yearlyTotal());
@@ -149,14 +148,14 @@ class DashboardServiceTest {
 
     @Test
     void requestsOnlyActiveSubscriptionsFromRepository() {
-        when(repository.findByUser_UsernameAndSubscription_StatusOrderBySubscription_NextPaymentDateAsc(
+        when(repository.findByUserUsernameAndSubscriptionStatusOrderBySubscriptionNextPaymentDateAsc(
                         USERNAME, SubscriptionStatus.ACTIVE))
                 .thenReturn(List.of());
 
         dashboardService.getSummary(USERNAME);
 
         verify(repository)
-                .findByUser_UsernameAndSubscription_StatusOrderBySubscription_NextPaymentDateAsc(
+                .findByUserUsernameAndSubscriptionStatusOrderBySubscriptionNextPaymentDateAsc(
                         USERNAME, SubscriptionStatus.ACTIVE);
     }
 
@@ -177,7 +176,7 @@ class DashboardServiceTest {
         stubMemberships(mine, mine);
         givenUserIn(User.DEFAULT_TIME_ZONE);
 
-        List<UpcomingPaymentDto> result = dashboardService.getUpcomingPayments(USERNAME);
+        List<UpcomingPaymentResponse> result = dashboardService.getUpcomingPayments(USERNAME);
 
         assertEquals(2, result.size());
         assertEquals("Today", result.get(0).providerName());
@@ -195,7 +194,7 @@ class DashboardServiceTest {
         stubMemberships(List.of(member), List.of(owner, member));
         givenUserIn(User.DEFAULT_TIME_ZONE);
 
-        List<UpcomingPaymentDto> result = dashboardService.getUpcomingPayments(USERNAME);
+        List<UpcomingPaymentResponse> result = dashboardService.getUpcomingPayments(USERNAME);
 
         assertEquals(1, result.size());
         assertEquals(12L, result.get(0).subscriptionId());
@@ -222,7 +221,7 @@ class DashboardServiceTest {
         givenMySubscriptionsDueOn(TODAY, tokyoToday);
 
         List<LocalDate> shown = dashboardService.getUpcomingPayments(USERNAME).stream()
-                .map(UpcomingPaymentDto::nextPaymentDate)
+                .map(UpcomingPaymentResponse::nextPaymentDate)
                 .toList();
 
         assertEquals(List.of(tokyoToday), shown);
@@ -240,18 +239,17 @@ class DashboardServiceTest {
     }
 
     private void givenUserIn(ZoneId zone) {
-        User user = new User();
-        user.setUsername(USERNAME);
+        User user = TestUsers.user(USERNAME);
         user.setTimeZone(zone);
-        when(userRepository.findByUsername(USERNAME)).thenReturn(Optional.of(user));
+        when(userRepository.getByUsername(USERNAME)).thenReturn(user);
     }
 
     private void stubMemberships(List<SubscriptionMembership> mine, List<SubscriptionMembership> all) {
-        when(repository.findByUser_UsernameAndSubscription_StatusOrderBySubscription_NextPaymentDateAsc(
+        when(repository.findByUserUsernameAndSubscriptionStatusOrderBySubscriptionNextPaymentDateAsc(
                         USERNAME, SubscriptionStatus.ACTIVE))
                 .thenReturn(mine);
         if (!mine.isEmpty()) {
-            when(repository.findBySubscription_IdIn(anyCollection())).thenReturn(all);
+            when(repository.findBySubscriptionIdIn(anyCollection())).thenReturn(all);
         }
     }
 
@@ -266,13 +264,12 @@ class DashboardServiceTest {
         SubscriptionProvider provider = SubscriptionProvider.catalog(name, new Category("Entertainment"));
         Subscription subscription = new Subscription(provider, new BigDecimal(price), cycle, nextPayment, trial);
         subscription.setCurrency(currency);
-        ReflectionTestUtils.setField(subscription, "id", id);
+        subscription.setId(id);
         return subscription;
     }
 
     private static SubscriptionMembership membership(String username, Subscription subscription, MembershipRole role) {
-        User user = new User();
-        user.setUsername(username);
+        User user = TestUsers.user(username);
         return new SubscriptionMembership(user, subscription, role);
     }
 

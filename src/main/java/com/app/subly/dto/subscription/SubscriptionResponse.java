@@ -1,11 +1,11 @@
 package com.app.subly.dto.subscription;
 
+import com.app.subly.model.category.Category;
+import com.app.subly.model.provider.ProviderType;
+import com.app.subly.model.provider.SubscriptionProvider;
 import com.app.subly.model.subscription.BillingCycle;
-import com.app.subly.model.subscription.Category;
 import com.app.subly.model.subscription.Currency;
-import com.app.subly.model.subscription.ProviderType;
 import com.app.subly.model.subscription.Subscription;
-import com.app.subly.model.subscription.SubscriptionProvider;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 

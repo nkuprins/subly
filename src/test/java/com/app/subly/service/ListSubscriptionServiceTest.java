@@ -22,7 +22,7 @@ class ListSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
 
         SubscriptionMembership memberMembership = new SubscriptionMembership(owner, shared, MembershipRole.MEMBER);
 
-        given(membershipRepository.findByUser_UsernameAndSubscription_StatusOrderBySubscription_NextPaymentDateAsc(
+        given(membershipRepository.findByUserUsernameAndSubscriptionStatusOrderBySubscriptionNextPaymentDateAsc(
                         OWNER, SubscriptionStatus.ACTIVE))
                 .willReturn(List.of(ownerMembership, memberMembership));
 

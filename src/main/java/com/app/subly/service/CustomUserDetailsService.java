@@ -1,8 +1,8 @@
 package com.app.subly.service;
 
 import com.app.subly.config.AdminConfiguration;
-import com.app.subly.model.User;
-import com.app.subly.model.UserRole;
+import com.app.subly.model.user.User;
+import com.app.subly.model.user.UserRole;
 import com.app.subly.repository.UserRepository;
 import org.jspecify.annotations.NonNull;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -42,12 +42,12 @@ public class CustomUserDetailsService implements UserDetailsService {
             return;
         }
 
-        User user = new User();
-        user.setUsername(adminConfiguration.getAdminUsername());
-        user.setName(adminConfiguration.getAdminName());
-        user.setPasswordHash(encoder.encode(adminConfiguration.getAdminPassword()));
-        user.setEmail(adminConfiguration.getAdminEmail());
-        user.setRole(UserRole.ADMIN);
+        User user = new User(
+                adminConfiguration.getAdminUsername(),
+                adminConfiguration.getAdminName(),
+                encoder.encode(adminConfiguration.getAdminPassword()),
+                adminConfiguration.getAdminEmail(),
+                UserRole.ADMIN);
 
         repository.save(user);
     }
