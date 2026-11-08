@@ -1,6 +1,7 @@
 package com.app.subly.repository;
 
-import com.app.subly.model.subscription.PendingInvitation;
+import com.app.subly.exception.invitation.InvitationNotFoundException;
+import com.app.subly.model.invitation.PendingInvitation;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -18,4 +19,8 @@ public interface PendingInvitationRepository extends JpaRepository<PendingInvita
 
     @EntityGraph(attributePaths = {"user", "subscription"})
     Optional<PendingInvitation> findByIdAndUserUsername(Long id, String username);
+
+    default PendingInvitation getByIdAndUserUsername(long id, String username) {
+        return findByIdAndUserUsername(id, username).orElseThrow(() -> new InvitationNotFoundException(id));
+    }
 }

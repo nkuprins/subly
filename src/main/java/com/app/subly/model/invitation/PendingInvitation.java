@@ -1,11 +1,13 @@
-package com.app.subly.model.subscription;
+package com.app.subly.model.invitation;
 
-import com.app.subly.model.User;
+import com.app.subly.model.subscription.Subscription;
+import com.app.subly.model.user.User;
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
@@ -17,6 +19,7 @@ import org.hibernate.annotations.OnDeleteAction;
 public class PendingInvitation {
 
     @Id
+    @Setter
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -31,7 +34,7 @@ public class PendingInvitation {
 
     @CreationTimestamp
     @Column(updatable = false, nullable = false)
-    private LocalDateTime invitedAt;
+    private Instant invitedAt;
 
     public PendingInvitation(User user, Subscription subscription) {
         this.user = user;

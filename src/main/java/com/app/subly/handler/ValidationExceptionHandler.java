@@ -25,8 +25,10 @@ public class ValidationExceptionHandler {
         List<InvalidField> fields = new ArrayList<>();
         for (ParameterValidationResult result : ex.getParameterValidationResults()) {
             if (result instanceof ParameterErrors errors) {
+                // @Valid body
                 fields.addAll(invalidFields(errors));
             } else {
+                // @PathVariable, @RequestParam
                 String name = result.getMethodParameter().getParameterName();
                 result.getResolvableErrors()
                         .forEach(error -> fields.add(new InvalidField(name, error.getDefaultMessage())));

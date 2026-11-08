@@ -1,6 +1,7 @@
-package com.app.subly.model.subscription;
+package com.app.subly.model.provider;
 
-import com.app.subly.model.User;
+import com.app.subly.model.category.Category;
+import com.app.subly.model.user.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -10,25 +11,31 @@ import lombok.Setter;
 @Entity
 @Table(name = "subscription_providers")
 @Getter
-@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class SubscriptionProvider {
 
+    public static final int NAME_MAX_LENGTH = 200;
+
+    public static final int LOGO_PATH_MAX_LENGTH = 500;
+
     @Id
-    @Setter(AccessLevel.NONE)
+    @Setter
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 200)
+    @Setter
+    @Column(nullable = false, length = NAME_MAX_LENGTH)
     private String name;
 
-    @Column(length = 500)
+    @Setter
+    @Column(length = LOGO_PATH_MAX_LENGTH)
     private String logoPath;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by")
     private User createdBy;
 
+    @Setter
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;

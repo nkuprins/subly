@@ -1,7 +1,10 @@
 package com.app.subly.controller;
 
+import com.app.subly.dto.user.PasswordRules;
 import com.app.subly.exception.user.UserAlreadyExistsException;
+import com.app.subly.model.user.User;
 import com.app.subly.service.UserService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,12 +13,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
+@RequiredArgsConstructor
 public class PageController {
     private final UserService userService;
-
-    public PageController(UserService userService) {
-        this.userService = userService;
-    }
 
     @GetMapping("/login")
     public String login() {
@@ -44,12 +44,20 @@ public class PageController {
             model.addAttribute("registrationError", "All fields are required");
             return "register";
         }
-        if (name.length() > 100) {
-            model.addAttribute("registrationError", "Name must be 100 characters or fewer");
+        if (username.length() > User.USERNAME_MAX_LENGTH) {
+            model.addAttribute(
+                    "registrationError", "Username must be " + User.USERNAME_MAX_LENGTH + " characters or fewer");
             return "register";
         }
-        if (password.length() < 15 || password.length() > 64) {
-            model.addAttribute("registrationError", "Password must be between 15 and 64 characters");
+        if (name.length() > User.NAME_MAX_LENGTH) {
+            model.addAttribute("registrationError", "Name must be " + User.NAME_MAX_LENGTH + " characters or fewer");
+            return "register";
+        }
+        if (password.length() < PasswordRules.MIN_LENGTH || password.length() > PasswordRules.MAX_LENGTH) {
+            model.addAttribute(
+                    "registrationError",
+                    "Password must be between " + PasswordRules.MIN_LENGTH + " and " + PasswordRules.MAX_LENGTH
+                            + " characters");
             return "register";
         }
         if (!password.equals(confirmPassword)) {

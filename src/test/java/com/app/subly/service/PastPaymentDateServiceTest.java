@@ -15,18 +15,13 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Optional;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class PastPaymentDateServiceTest extends AbstractSubscriptionServiceTest {
 
-    @BeforeEach
-    void ownerExists() {
-        givenOwnerExists();
-    }
-
     @Test
     void createRejectsYesterdayInOwnersZone() {
+        givenOwnerExists();
         CreateSubscriptionRequest request = catalogRequest(today.minusDays(1));
 
         assertThatThrownBy(() -> subscriptionService.create(OWNER, request))
@@ -37,6 +32,7 @@ class PastPaymentDateServiceTest extends AbstractSubscriptionServiceTest {
 
     @Test
     void createAcceptsToday() {
+        givenOwnerExists();
         given(subscriptionProviderRepository.findById(PROVIDER_ID)).willReturn(Optional.of(catalogProvider()));
 
         subscriptionService.create(OWNER, catalogRequest(today));
@@ -46,6 +42,7 @@ class PastPaymentDateServiceTest extends AbstractSubscriptionServiceTest {
 
     @Test
     void createUsesOwnersTimeZone() {
+        givenOwnerExists();
         owner.setTimeZone(ZoneId.of("Asia/Tokyo"));
         CreateSubscriptionRequest request = catalogRequest(today);
 
@@ -55,7 +52,8 @@ class PastPaymentDateServiceTest extends AbstractSubscriptionServiceTest {
 
     @Test
     void updateRejectsPastDateAndKeepsSubscription() {
-        Subscription subscription = givenOwnedCatalogSubscription();
+        Subscription subscription = subscription(catalogProvider());
+        givenOwnerRowWithSubscriptionDetails(subscription);
         LocalDate originalDate = subscription.getNextPaymentDate();
         UpdateSubscriptionRequest request = updateRequest(today.minusDays(1));
 

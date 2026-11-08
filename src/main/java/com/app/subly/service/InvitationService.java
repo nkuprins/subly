@@ -4,8 +4,9 @@ import com.app.subly.dto.invitation.InviteRequest;
 import com.app.subly.dto.invitation.InviteResponse;
 import com.app.subly.dto.invitation.ReceivedInvitationResponse;
 import com.app.subly.exception.invitation.*;
-import com.app.subly.model.User;
+import com.app.subly.model.invitation.PendingInvitation;
 import com.app.subly.model.subscription.*;
+import com.app.subly.model.user.User;
 import com.app.subly.repository.PendingInvitationRepository;
 import com.app.subly.repository.SubscriptionMembershipRepository;
 import com.app.subly.repository.SubscriptionRepository;
@@ -80,16 +81,14 @@ public class InvitationService {
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    public void accept(String username, long invtationId) {
-        PendingInvitation invitation = invitationRepository
-                .findByIdAndUserUsername(invtationId, username)
-                .orElseThrow(() -> new InvitationNotFoundException(invtationId));
+    public void accept(String username, long invitationId) {
+        PendingInvitation invitation = invitationRepository.getByIdAndUserUsername(invitationId, username);
 
         Subscription subscription = subscriptionRepository
                 .findLockedById(invitation.getSubscription().getId())
                 .orElseThrow(() -> new InvitationCannotBeAcceptedException("Subscription no longer exists"));
 
-        if (subscription.getStatus() != SubscriptionStatus.ACTIVE) {
+        if (!subscription.isActive()) {
             throw new InvitationCannotBeAcceptedException("Subscription is not active");
         }
 
@@ -121,9 +120,7 @@ public class InvitationService {
     @Transactional
     public void decline(String username, long invitationId) {
 
-        PendingInvitation invitation = invitationRepository
-                .findByIdAndUserUsername(invitationId, username)
-                .orElseThrow(() -> new InvitationNotFoundException(invitationId));
+        PendingInvitation invitation = invitationRepository.getByIdAndUserUsername(invitationId, username);
 
         invitationRepository.delete(invitation);
     }

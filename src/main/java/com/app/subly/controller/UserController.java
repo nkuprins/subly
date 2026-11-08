@@ -1,10 +1,14 @@
 package com.app.subly.controller;
 
 import com.app.subly.dto.*;
+import com.app.subly.dto.user.ChangePasswordRequest;
+import com.app.subly.dto.user.DeleteCurrentUserRequest;
+import com.app.subly.dto.user.UpdateUserInformationRequest;
 import com.app.subly.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -15,14 +19,11 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/users")
+@RequiredArgsConstructor
 public class UserController {
 
     private final UserService service;
     private final SecurityContextLogoutHandler logoutHandler = new SecurityContextLogoutHandler();
-
-    public UserController(UserService service) {
-        this.service = service;
-    }
 
     @DeleteMapping("/delete/me")
     public OperationResponse deleteUser(
@@ -30,7 +31,7 @@ public class UserController {
             @RequestBody @Valid DeleteCurrentUserRequest deleteRequest,
             HttpServletRequest request,
             HttpServletResponse response) {
-        service.deleteUserByUsername(details.getUsername(), deleteRequest.getPassword());
+        service.deleteUserByUsername(details.getUsername(), deleteRequest.password());
         logoutCurrentSession(request, response);
         return new OperationResponse("The user account has been deleted");
     }
@@ -41,8 +42,7 @@ public class UserController {
             @Valid @RequestBody ChangePasswordRequest changeRequest,
             HttpServletRequest request,
             HttpServletResponse response) {
-        service.updateUserPassword(
-                details.getUsername(), changeRequest.getOldPassword(), changeRequest.getNewPassword());
+        service.updateUserPassword(details.getUsername(), changeRequest.oldPassword(), changeRequest.newPassword());
         logoutCurrentSession(request, response);
         return new OperationResponse("The password has been changed successfully. Please log in again.");
     }

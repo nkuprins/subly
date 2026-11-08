@@ -6,8 +6,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.app.subly.exception.subscription.SubscriptionAccessDeniedException;
 import com.app.subly.model.subscription.Subscription;
 import com.app.subly.model.subscription.SubscriptionStatus;
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import org.junit.jupiter.api.Test;
 
 class CancelSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
@@ -31,10 +31,9 @@ class CancelSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
     void cancellingAlreadyCancelledSubscriptionDoesNotChangeIt() {
         Subscription subscription = givenOwnedCatalogSubscription();
 
-        LocalDateTime originalCancelledAt = LocalDateTime.of(2026, 10, 1, 12, 0);
+        Instant originalCancelledAt = Instant.parse("2026-10-01T12:00:00Z");
 
-        subscription.setStatus(SubscriptionStatus.CANCELLED);
-        subscription.setCancelledAt(originalCancelledAt);
+        subscription.cancel(originalCancelledAt);
 
         subscriptionService.cancel(OWNER, SUBSCRIPTION_ID);
 

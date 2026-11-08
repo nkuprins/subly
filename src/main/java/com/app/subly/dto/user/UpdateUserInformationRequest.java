@@ -1,5 +1,6 @@
-package com.app.subly.dto;
+package com.app.subly.dto.user;
 
+import com.app.subly.model.user.User;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
@@ -10,7 +11,9 @@ import lombok.Getter;
 @Getter
 public class UpdateUserInformationRequest {
 
+    @Size(max = User.USERNAME_MAX_LENGTH)
     private String newUsername;
+
     private boolean usernameProvided = false;
 
     @Email
@@ -18,7 +21,7 @@ public class UpdateUserInformationRequest {
 
     private boolean emailProvided = false;
 
-    @Size(max = 100)
+    @Size(max = User.NAME_MAX_LENGTH)
     private String newName;
 
     private boolean nameProvided = false;
