@@ -1,6 +1,5 @@
 package com.app.subly.controller;
 
-import com.app.subly.dto.category.CategoryResponse;
 import com.app.subly.dto.dashboard.CategorySpendingResponse;
 import com.app.subly.dto.dashboard.DashboardSummaryResponse;
 import com.app.subly.dto.dashboard.UpcomingPaymentResponse;
