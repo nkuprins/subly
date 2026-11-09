@@ -42,6 +42,7 @@
                     <div class="actions">
                         <a
                                 th:href="@{/subscriptions/{id}/edit(id=${item.subscription.id})}" class="link">Edit</a>
+                        <a th:href="@{/subscriptions/{id}/invite(id=${item.subscription.id})}" class="link">Invite</a>
                         <form
                                 th:action="@{/subscriptions/{id}/delete(id=${item.subscription.id})}" method="post"
                                 onsubmit="return confirm('Delete this subscription?');" class="inline-form">
