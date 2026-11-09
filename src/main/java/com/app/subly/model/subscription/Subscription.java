@@ -3,6 +3,7 @@ package com.app.subly.model.subscription;
 import com.app.subly.model.provider.SubscriptionProvider;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -119,5 +120,16 @@ public class Subscription {
         long cycles = Math.max(0, unit.between(billingAnchorDate, today));
         LocalDate date = billingAnchorDate.plus(cycles, unit);
         nextPaymentDate = date.isBefore(today) ? billingAnchorDate.plus(cycles + 1, unit) : date;
+    }
+
+    public BigDecimal shareFor(MembershipRole role, long memberCount) {
+        if (memberCount <= 0) {
+            throw new IllegalStateException("Subscription " + id + " has no members");
+        }
+
+        BigDecimal baseShare = price.divide(BigDecimal.valueOf(memberCount), PRICE_FRACTION_DIGITS, RoundingMode.DOWN);
+
+        BigDecimal leftover = price.subtract(baseShare.multiply(BigDecimal.valueOf(memberCount)));
+        return role == MembershipRole.OWNER ? baseShare.add(leftover) : baseShare;
     }
 }

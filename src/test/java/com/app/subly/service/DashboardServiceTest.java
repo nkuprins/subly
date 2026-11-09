@@ -6,10 +6,7 @@ import static com.app.subly.testdata.TestClock.TOKYO;
 import static com.app.subly.testdata.TestClock.TOKYO_TODAY;
 import static com.app.subly.testdata.TestSubscriptions.aSubscription;
 import static com.app.subly.testdata.TestUsers.ALICE;
-import static com.app.subly.testdata.TestUsers.BOB;
-import static com.app.subly.testdata.TestUsers.CAROL;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 import com.app.subly.dto.dashboard.DashboardSummaryResponse;
@@ -17,17 +14,17 @@ import com.app.subly.dto.dashboard.UpcomingPaymentResponse;
 import com.app.subly.model.provider.SubscriptionProvider;
 import com.app.subly.model.subscription.BillingCycle;
 import com.app.subly.model.subscription.Currency;
-import com.app.subly.model.subscription.MembershipRole;
 import com.app.subly.model.subscription.Subscription;
 import com.app.subly.model.subscription.SubscriptionMembership;
 import com.app.subly.model.subscription.SubscriptionStatus;
 import com.app.subly.model.user.User;
-import com.app.subly.repository.SubscriptionMembershipRepository;
 import com.app.subly.repository.UserRepository;
+import com.app.subly.service.SubscriptionShares.Share;
 import com.app.subly.testdata.TestClock;
 import com.app.subly.testdata.TestProviders;
 import com.app.subly.testdata.TestSubscriptions;
 import com.app.subly.testdata.TestUsers;
+import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,7 +37,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class DashboardServiceTest {
 
     @Mock
-    SubscriptionMembershipRepository membershipRepository;
+    SubscriptionShares subscriptionShares;
 
     @Mock
     UserRepository userRepository;
@@ -49,12 +46,12 @@ class DashboardServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new DashboardService(membershipRepository, userRepository, TestClock.CLOCK);
+        service = new DashboardService(subscriptionShares, userRepository, TestClock.CLOCK);
     }
 
     @Test
     void getSummary_shouldReturnZeroWhenUserHasNoSubscriptions() {
-        stubAliceMemberships(List.of());
+        stubActiveShares(List.of());
 
         DashboardSummaryResponse result = service.getSummary(ALICE);
 
@@ -65,14 +62,13 @@ class DashboardServiceTest {
 
     @Test
     void getSummary_shouldConvertCurrenciesIntoMonthlyAndYearlyTotals() {
-        SubscriptionMembership netflix = aliceOwns(subscription(1L, "Netflix").withPrice("12.00"));
-        SubscriptionMembership youtube =
-                aliceOwns(subscription(2L, "YouTube").withPrice("10.00").withCurrency(Currency.USD));
-        SubscriptionMembership gym = aliceOwns(subscription(3L, "Gym")
-                .withPrice("100.00")
-                .withBillingCycle(BillingCycle.YEARLY)
-                .withCurrency(Currency.GBP));
-        stubAliceAsOnlyMember(List.of(netflix, youtube, gym));
+        stubActiveShares(List.of(
+                fullShare(subscription(1L, "Netflix").withPrice("12.00")),
+                fullShare(subscription(2L, "YouTube").withPrice("10.00").withCurrency(Currency.USD)),
+                fullShare(subscription(3L, "Gym")
+                        .withPrice("100.00")
+                        .withBillingCycle(BillingCycle.YEARLY)
+                        .withCurrency(Currency.GBP))));
 
         DashboardSummaryResponse result = service.getSummary(ALICE);
 
@@ -83,9 +79,8 @@ class DashboardServiceTest {
 
     @Test
     void getSummary_shouldIncludeFreeTrialAtItsFuturePrice() {
-        SubscriptionMembership trial =
-                aliceOwns(subscription(4L, "Trial").withPrice("20.00").withFreeTrial());
-        stubAliceAsOnlyMember(List.of(trial));
+        stubActiveShares(
+                List.of(fullShare(subscription(4L, "Trial").withPrice("20.00").withFreeTrial())));
 
         DashboardSummaryResponse result = service.getSummary(ALICE);
 
@@ -95,9 +90,8 @@ class DashboardServiceTest {
 
     @Test
     void getSummary_shouldRoundOnlyTheFinalMonthlyAverageOfYearlySubscription() {
-        SubscriptionMembership yearly =
-                aliceOwns(subscription(5L, "Yearly").withPrice("100.00").withBillingCycle(BillingCycle.YEARLY));
-        stubAliceAsOnlyMember(List.of(yearly));
+        stubActiveShares(List.of(
+                fullShare(subscription(5L, "Yearly").withPrice("100.00").withBillingCycle(BillingCycle.YEARLY))));
 
         DashboardSummaryResponse result = service.getSummary(ALICE);
 
@@ -106,12 +100,8 @@ class DashboardServiceTest {
     }
 
     @Test
-    void getSummary_shouldGiveOwnerTheRemainderCentOfSharedPrice() {
-        Subscription shared = subscription(6L, "Shared").withPrice("10.00").build();
-        SubscriptionMembership owner = SubscriptionMembership.owner(TestUsers.user(ALICE), shared);
-        SubscriptionMembership bob = member(BOB, shared);
-        SubscriptionMembership carol = member(CAROL, shared);
-        stubMemberships(List.of(owner), List.of(owner, bob, carol));
+    void getSummary_shouldUseTheUsersShareInsteadOfThePrice() {
+        stubActiveShares(List.of(share(subscription(6L, "Shared").withPrice("10.00"), "3.34")));
 
         DashboardSummaryResponse result = service.getSummary(ALICE);
 
@@ -120,34 +110,12 @@ class DashboardServiceTest {
     }
 
     @Test
-    void getSummary_shouldNotGiveRemainderCentToRegularMember() {
-        Subscription shared = subscription(7L, "Shared").withPrice("10.00").build();
-        SubscriptionMembership owner = SubscriptionMembership.owner(TestUsers.user(BOB), shared);
-        SubscriptionMembership member = member(ALICE, shared);
-        SubscriptionMembership third = member(CAROL, shared);
-        stubMemberships(List.of(member), List.of(owner, member, third));
-
-        DashboardSummaryResponse result = service.getSummary(ALICE);
-
-        assertThat(result.monthlyTotal()).isEqualByComparingTo("3.33");
-        assertThat(result.yearlyTotal()).isEqualByComparingTo("39.96");
-    }
-
-    @Test
-    void getSummary_shouldRejectInconsistentMembershipCount() {
-        SubscriptionMembership owner = aliceOwns(subscription(13L, "Invalid"));
-        stubMemberships(List.of(owner), List.of());
-
-        assertThatThrownBy(() -> service.getSummary(ALICE)).isInstanceOf(IllegalStateException.class);
-    }
-
-    @Test
     void getUpcomingPayments_shouldIncludeTodayAndDayThirtyButNotPastOrDayThirtyOne() {
-        stubAliceAsOnlyMember(List.of(
-                aliceOwns(subscription(10L, "Thirty").withNextPaymentDate(TODAY.plusDays(30))),
-                aliceOwns(subscription(11L, "Later").withNextPaymentDate(TODAY.plusDays(31))),
-                aliceOwns(subscription(8L, "Past").withNextPaymentDate(TODAY.minusDays(1))),
-                aliceOwns(subscription(9L, "Today").withNextPaymentDate(TODAY))));
+        stubActiveShares(List.of(
+                fullShare(subscription(10L, "Thirty").withNextPaymentDate(TODAY.plusDays(30))),
+                fullShare(subscription(11L, "Later").withNextPaymentDate(TODAY.plusDays(31))),
+                fullShare(subscription(8L, "Past").withNextPaymentDate(TODAY.minusDays(1))),
+                fullShare(subscription(9L, "Today").withNextPaymentDate(TODAY))));
         stubUserIn(DEFAULT_ZONE);
 
         List<UpcomingPaymentResponse> result = service.getUpcomingPayments(ALICE);
@@ -160,14 +128,14 @@ class DashboardServiceTest {
     @Test
     void getUpcomingPayments_shouldKeepOriginalCurrencyAndUsersShare() {
         long daysLeft = 2;
-        Subscription shared = subscription(12L, "British TV")
-                .withPrice("10.00")
-                .withCurrency(Currency.GBP)
-                .withNextPaymentDate(TODAY.plusDays(daysLeft))
-                .build();
-        SubscriptionMembership owner = SubscriptionMembership.owner(TestUsers.user(BOB), shared);
-        SubscriptionMembership member = member(ALICE, shared);
-        stubMemberships(List.of(member), List.of(owner, member));
+        Share share = share(
+                subscription(12L, "British TV")
+                        .withPrice("10.00")
+                        .withCurrency(Currency.GBP)
+                        .withNextPaymentDate(TODAY.plusDays(daysLeft)),
+                "5.00");
+        Subscription shared = share.subscription();
+        stubActiveShares(List.of(share));
         stubUserIn(DEFAULT_ZONE);
 
         List<UpcomingPaymentResponse> result = service.getUpcomingPayments(ALICE);
@@ -184,9 +152,9 @@ class DashboardServiceTest {
 
     @Test
     void getUpcomingPayments_shouldStartFromUsersToday() {
-        stubAliceAsOnlyMember(List.of(
-                aliceOwns(subscription(1L, "Due today").withNextPaymentDate(TODAY)),
-                aliceOwns(subscription(2L, "Due Tokyo today").withNextPaymentDate(TOKYO_TODAY))));
+        stubActiveShares(List.of(
+                fullShare(subscription(1L, "Due today").withNextPaymentDate(TODAY)),
+                fullShare(subscription(2L, "Due Tokyo today").withNextPaymentDate(TOKYO_TODAY))));
         stubUserIn(TOKYO);
 
         assertThat(service.getUpcomingPayments(ALICE))
@@ -200,23 +168,8 @@ class DashboardServiceTest {
         when(userRepository.getByUsername(ALICE)).thenReturn(user);
     }
 
-    private void stubAliceMemberships(List<SubscriptionMembership> aliceMemberships) {
-        when(membershipRepository.findByUserUsernameAndSubscriptionStatusOrderBySubscriptionNextPaymentDateAsc(
-                        ALICE, SubscriptionStatus.ACTIVE))
-                .thenReturn(aliceMemberships);
-    }
-
-    private void stubAliceAsOnlyMember(List<SubscriptionMembership> aliceMemberships) {
-        stubMemberships(aliceMemberships, aliceMemberships);
-    }
-
-    private void stubMemberships(
-            List<SubscriptionMembership> aliceMemberships, List<SubscriptionMembership> allMemberships) {
-        stubAliceMemberships(aliceMemberships);
-        List<Long> subscriptionIds = aliceMemberships.stream()
-                .map(membership -> membership.getSubscription().getId())
-                .toList();
-        when(membershipRepository.findBySubscriptionIdIn(subscriptionIds)).thenReturn(allMemberships);
+    private void stubActiveShares(List<Share> shares) {
+        when(subscriptionShares.load(ALICE, SubscriptionStatus.ACTIVE)).thenReturn(shares);
     }
 
     private static TestSubscriptions.Builder subscription(long id, String providerName) {
@@ -225,11 +178,13 @@ class DashboardServiceTest {
                 .withProvider(SubscriptionProvider.catalog(providerName, TestProviders.category()));
     }
 
-    private static SubscriptionMembership aliceOwns(TestSubscriptions.Builder subscription) {
-        return SubscriptionMembership.owner(TestUsers.user(ALICE), subscription.build());
+    private static Share fullShare(TestSubscriptions.Builder subscription) {
+        Subscription built = subscription.build();
+        return new Share(SubscriptionMembership.owner(TestUsers.user(ALICE), built), built.getPrice());
     }
 
-    private static SubscriptionMembership member(String username, Subscription subscription) {
-        return new SubscriptionMembership(TestUsers.user(username), subscription, MembershipRole.MEMBER);
+    private static Share share(TestSubscriptions.Builder subscription, String amount) {
+        return new Share(
+                SubscriptionMembership.owner(TestUsers.user(ALICE), subscription.build()), new BigDecimal(amount));
     }
 }
