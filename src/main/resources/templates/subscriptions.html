@@ -29,7 +29,7 @@
             </thead>
             <tbody>
             <tr th:each="item : ${subscriptions}">
-                <td th:text="${item.subscription.serviceName}"></td>
+                <td th:text="${item.subscription.providerName()}"></td>
                 <td th:text="${item.subscription.price}"></td>
                 <td th:text="${item.subscription.currency}"></td>
                 <td>

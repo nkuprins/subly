@@ -29,7 +29,7 @@
     <section class="panel">
         <h2>Upcoming payments</h2>
         <div th:each="p : ${upcoming}" class="upcoming-row">
-            <span class="upcoming-name" th:text="${p.serviceName}"></span>
+            <span class="upcoming-name" th:text="${p.providerName()}"></span>
             <span class="upcoming-date" th:text="|${p.nextPaymentDate} · in ${p.daysLeft} days|"></span>
             <span class="upcoming-amount" th:text="|${p.amount} ${p.currency}|"></span>
         </div>
