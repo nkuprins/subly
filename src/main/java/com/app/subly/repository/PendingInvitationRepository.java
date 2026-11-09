@@ -23,4 +23,6 @@ public interface PendingInvitationRepository extends JpaRepository<PendingInvita
     default PendingInvitation getByIdAndUserUsername(long id, String username) {
         return findByIdAndUserUsername(id, username).orElseThrow(() -> new InvitationNotFoundException(id));
     }
+
+    void deleteBySubscriptionId(Long subscriptionId);
 }
