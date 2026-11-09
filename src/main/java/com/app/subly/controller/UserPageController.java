@@ -5,14 +5,13 @@ import com.app.subly.exception.user.UserAlreadyExistsException;
 import com.app.subly.model.user.User;
 import com.app.subly.service.UserService;
 import com.app.subly.util.TimeZoneGenerator;
+import java.security.Principal;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-
-import java.security.Principal;
 
 @Controller
 @AllArgsConstructor
@@ -76,7 +75,7 @@ public class UserPageController {
     }
 
     @GetMapping("/edit/me")
-    public String returnEditPage(Principal principal, Model model){
+    public String returnEditPage(Principal principal, Model model) {
         User user = userService.getUserByUsername(principal.getName());
         model.addAttribute("user", user);
         model.addAttribute("timeZones", TimeZoneGenerator.getAllFilteredTimeZone());
