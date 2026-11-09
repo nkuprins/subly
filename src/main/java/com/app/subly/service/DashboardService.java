@@ -1,7 +1,9 @@
 package com.app.subly.service;
 
+import com.app.subly.dto.dashboard.CategorySpendingResponse;
 import com.app.subly.dto.dashboard.DashboardSummaryResponse;
 import com.app.subly.dto.dashboard.UpcomingPaymentResponse;
+import com.app.subly.model.category.Category;
 import com.app.subly.model.subscription.Currency;
 import com.app.subly.model.subscription.MembershipRole;
 import com.app.subly.model.subscription.Subscription;
@@ -16,6 +18,7 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -89,6 +92,39 @@ public class DashboardService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<CategorySpendingResponse> getSpendingByCategory(String username) {
+
+        Map<CategoryKey, BigDecimal> yearlyByCategory = new HashMap<>();
+
+        for (SubscriptionShare share : loadSubscriptionShares(username)) {
+            Subscription subscription = share.subscription();
+            Category category = subscription.getProvider().getCategory();
+
+            CategoryKey key = new CategoryKey(category.getId(), category.getName());
+
+            BigDecimal amountEur = CurrencyConverter.toEur(share.amount(), subscription.getCurrency());
+
+            BigDecimal paymentsPerYear =
+                    BigDecimal.valueOf(subscription.getBillingCycle().getPaymentsPerYear());
+
+            BigDecimal yearlyAmount = amountEur.multiply(paymentsPerYear);
+
+            yearlyByCategory.merge(key, yearlyAmount, BigDecimal::add);
+        }
+
+        return yearlyByCategory.entrySet().stream()
+                .map(entry -> new CategorySpendingResponse(
+                        entry.getKey().id(),
+                        entry.getKey().name(),
+                        entry.getValue().divide(MONTHS_IN_YEAR, MONEY_SCALE, RoundingMode.HALF_UP),
+                        entry.getValue().setScale(MONEY_SCALE, RoundingMode.HALF_UP),
+                        Currency.EUR))
+                .sorted(Comparator.comparing(CategorySpendingResponse::yearlyTotal)
+                        .reversed())
+                .toList();
+    }
+
     private List<SubscriptionShare> loadSubscriptionShares(String username) {
         List<SubscriptionMembership> memberships =
                 membershipRepository.findByUserUsernameAndSubscriptionStatusOrderBySubscriptionNextPaymentDateAsc(
@@ -139,4 +175,6 @@ public class DashboardService {
     }
 
     private record SubscriptionShare(Subscription subscription, BigDecimal amount) {}
+
+    private record CategoryKey(Long id, String name) {}
 }
