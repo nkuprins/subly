@@ -40,7 +40,15 @@ public class PageController {
         String username = principal.getName();
         model.addAttribute("summary", dashboardService.getSummary(username));
         model.addAttribute("upcoming", dashboardService.getUpcomingPayments(username));
+        model.addAttribute("savings", dashboardService.getSavings(username));
         return "dashboard";
+    }
+
+    @GetMapping("/history")
+    public String history(Principal principal, Model model) {
+        if (principal == null) return "redirect:/login";
+        model.addAttribute("history", subscriptionService.findHistory(principal.getName()));
+        return "history";
     }
 
     @GetMapping("/subscriptions")
