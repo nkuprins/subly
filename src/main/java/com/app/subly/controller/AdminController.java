@@ -3,6 +3,7 @@ package com.app.subly.controller;
 import com.app.subly.dto.form.CreateProviderForm;
 import com.app.subly.dto.provider.ProviderRequest;
 import com.app.subly.model.category.Category;
+import com.app.subly.model.provider.ProviderType;
 import com.app.subly.model.provider.SubscriptionProvider;
 import com.app.subly.service.CategoryService;
 import com.app.subly.service.ProviderService;
@@ -59,7 +60,9 @@ public class AdminController {
         }
 
         providerService.create(
-                principal.getName(), new ProviderRequest(form.getName(), form.getCategoryId(), form.getLogoPath()));
+                principal.getName(),
+                new ProviderRequest(form.getName(), form.getCategoryId(), form.getLogoPath()),
+                ProviderType.CATALOG);
 
         return "redirect:/admin";
     }

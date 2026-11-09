@@ -2,6 +2,7 @@ package com.app.subly.controller;
 
 import com.app.subly.dto.provider.ProviderRequest;
 import com.app.subly.dto.provider.ProviderResponse;
+import com.app.subly.model.provider.ProviderType;
 import com.app.subly.service.ProviderService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
@@ -21,7 +22,7 @@ public class ProviderController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ProviderResponse create(Principal principal, @Valid @RequestBody ProviderRequest request) {
-        return service.create(principal.getName(), request);
+        return service.create(principal.getName(), request, ProviderType.CUSTOM);
     }
 
     @GetMapping

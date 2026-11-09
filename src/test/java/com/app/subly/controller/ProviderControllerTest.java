@@ -58,7 +58,7 @@ class ProviderControllerTest extends AbstractWebMvcTest {
 
     @Test
     void create_shouldReturn201WithTheCustomProvider() throws Exception {
-        when(service.create(ALICE, REQUEST)).thenReturn(providerResponse());
+        when(service.create(ALICE, REQUEST, ProviderType.CUSTOM)).thenReturn(providerResponse());
 
         sendJson(post(URL), VALID_BODY)
                 .andExpect(status().isCreated())
@@ -72,7 +72,7 @@ class ProviderControllerTest extends AbstractWebMvcTest {
     @Test
     void create_shouldReturn400ForUnknownCategory() throws Exception {
         InvalidCategoryException exception = new InvalidCategoryException(CATEGORY_ID);
-        when(service.create(anyString(), any())).thenThrow(exception);
+        when(service.create(anyString(), any(), any())).thenThrow(exception);
 
         sendJson(post(URL), VALID_BODY).andExpect(problem(HttpStatus.BAD_REQUEST, exception));
     }
