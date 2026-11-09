@@ -33,7 +33,8 @@ public class SecurityConfig {
                                     "/dashboard",
                                     "/",
                                     "/api/invitations",
-                                    "/api/invitations/**")
+                                    "/api/invitations/**",
+                                    "/edit/me")
                             .authenticated();
                     authorize.anyRequest().permitAll();
                 })
