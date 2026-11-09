@@ -4,35 +4,38 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Subly - Dashboard</title>
-    <link rel="stylesheet"  th:href="@{/css/style.css}"/>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
 </head>
 <body>
 <div th:replace="~{fragments/header :: header}"></div>
 <main class="container page">
     <h1>Dashboard</h1>
     <p class="muted">Your subscriptions at a glance</p>
+
     <section class="cards">
         <div class="card">
             <span class="card-label">Monthly</span>
-            <span class="card-value" id="monthly-total">€0.00</span>
+            <span class="card-value" th:text="|${summary.monthlyTotal} ${summary.currency}|"></span>
         </div>
         <div class="card">
             <span class="card-label">Yearly</span>
-            <span class="card-value" id="yearly-total">€0.00</span>
+            <span class="card-value" th:text="|${summary.yearlyTotal} ${summary.currency}|"></span>
         </div>
         <div class="card">
             <span class="card-label">Active subscription</span>
-            <span class="card-value" id="active-count">0</span>
+            <span class="card-value" th:text="${activeCount}">0</span>
         </div>
     </section>
     <section class="panel">
         <h2>Upcoming payments</h2>
-        <div id="upcoming-payments">
-        <p class="muted">Loading...</p>
+        <div th:each="p : ${upcoming}" class="upcoming-row">
+            <span class="upcoming-name" th:text="${p.providerName()}"></span>
+            <span class="upcoming-date" th:text="|${p.nextPaymentDate} · in ${p.daysLeft} days|"></span>
+            <span class="upcoming-amount" th:text="|${p.amount} ${p.currency}|"></span>
         </div>
+        <p class="muted" th:if="${#lists.isEmpty(upcoming)}">No payments in the next 30 days</p>
     </section>
 </main>
 <div th:replace="~{fragments/footer :: footer}"></div>
-<script th:src="@{/js/dashboard.js}"></script>
 </body>
 </html>
