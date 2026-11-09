@@ -33,7 +33,8 @@ public class SecurityConfig {
                                     "/api/invitations/**")
                             .authenticated();
                     authorize.anyRequest().permitAll();
-                }).httpBasic(Customizer.withDefaults())
+                }).exceptionHandling((ex) -> ex.accessDeniedPage("/access-denied"))
+                .httpBasic(Customizer.withDefaults())
                 .formLogin((form) -> form.loginPage("/login").permitAll());
 
         return http.build();

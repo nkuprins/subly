@@ -10,47 +10,60 @@
 <div th:replace="~{fragments/header :: header}"></div>
 
 <main class="container page">
+
     <div class="page-head">
-        <h1 th:text="${editId != null} ? 'Edit subscription' : 'Add subscription'">Add subscription</h1>
+        <h1 th:text="${editId != null} ? 'Edit subscription' : 'Add subscription'"></h1>
     </div>
     <div class="form-card">
-        <form class="form">
+        <form th:action="${editId != null} ? @{/subscriptions/{id}(id=${editId})} : @{/subscriptions}" method="post"
+              class="form">
             <div class="field">
                 <label for="name">Service</label>
-                <input type="text" id="name" name="name" placeholder="Netflix" required/>
+                <input type="text" id="name" name="name" required
+                       th:value="${sub != null ? sub.serviceName : ''}"
+                       th:readonly="${editId != null}"/>
             </div>
             <div class="field-row">
                 <div class="field">
                     <label for="price">Price</label>
-                    <input type="number" id="price" name="price" step="0.01" min="0" placeholder="0.00" required/>
+                    <input type="number" id="price" name="price" step="0.01" min="0" required
+                           th:value="${sub != null ? sub.price : ''}"/>
                 </div>
-                <div class="field">
+                <div class="field" th:if="${editId == null}">
                     <label for="categoryId">Category</label>
                     <select id="categoryId" name="categoryId" required>
                         <option value="">Choose a category</option>
+                        <option th:each="c : ${categories}" th:value="${c.id}" th:text="${c.name}"></option>
                     </select>
                 </div>
             </div>
             <div class="field-row">
                 <div class="field">
-                    <label for="cycle">Billing cycle</label>
-                    <select id="cycle" name="cycle">
-                        <option value="MONTHLY">Monthly</option>
-                        <option value="YEARLY">Yearly</option>
+                    <label for="billingCycle">Billing cycle</label>
+                    <select id="billingCycle" name="billingCycle">
+                        <option value="MONTHLY" th:selected="${sub != null and sub.billingCycle.name() == 'MONTHLY'}">
+                            Monthly
+                        </option>
+                        <option value="YEARLY" th:selected="${sub != null and sub.billingCycle.name() == 'YEARLY'}">
+                            Yearly
+                        </option>
                     </select>
                 </div>
                 <div class="field">
-                    <label for="nextPayment">Next payment</label>
-                    <input type="date" id="nextPayment" name="nextPayment" required/>
+                    <label for="nextPaymentDate">Next payment</label>
+                    <input type="date" id="nextPaymentDate" name="nextPaymentDate" required
+                           th:value="${sub != null ? sub.nextPaymentDate : ''}"/>
                 </div>
             </div>
 
             <div class="field">
                 <label class="checkbox-label">
-                    <input type="checkbox" id="freeTrial" name="freeTrial"/>
+                    <input type="checkbox" id="freeTrial" name="freeTrial" value="true"
+                           th:checked="${sub != null and sub.freeTrial}"/>
                     <span>Free trial</span>
                 </label>
             </div>
+
 
             <div class="form-actions">
                 <a th:href="@{/subscriptions}" class="link">Cancel</a>
@@ -60,6 +73,5 @@
     </div>
 </main>
 <div th:replace="~{fragments/footer :: footer}"></div>
-<script th:src="@{/js/subscription-form.js}"></script>
 </body>
 </html>

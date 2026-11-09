@@ -27,12 +27,39 @@
                 <th></th>
             </tr>
             </thead>
-            <tbody id="subs-body">
+            <tbody>
+            <tr th:each="item : ${subscriptions}">
+                <td th:text="${item.subscription.serviceName}"></td>
+                <td th:text="${item.subscription.price}"></td>
+                <td th:text="${item.subscription.currency}"></td>
+                <td>
+            <span class="pill"
+                  th:classappend="${item.subscription.billingCycle.name() == 'YEARLY'} ? ' pill-year'"
+                  th:text="${item.subscription.billingCycle}"></span>
+                </td>
+                <td th:text="${item.subscription.nextPaymentDate}"></td>
+                <td>
+                    <div class="actions">
+                        <a
+                                th:href="@{/subscriptions/{id}/edit(id=${item.subscription.id})}" class="link">Edit</a>
+                        <form
+                                th:action="@{/subscriptions/{id}/delete(id=${item.subscription.id})}" method="post"
+                                onsubmit="return confirm('Delete this subscription?');" class="inline-form">
+                            <button type="submit" class="link link-danger btn-link">Delete</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+
+            <tr th:if="${#lists.isEmpty(subscriptions)}">
+                <td colspan="6" class="empty-row">
+                    No subscriptions yet. <a th:href="@{/subscriptions/new}" class="link">Add one</a>
+                </td>
+            </tr>
             </tbody>
         </table>
     </div>
 </main>
 <div th:replace="~{fragments/footer :: footer}"></div>
-<script th:src="@{/js/subscriptions.js}"></script>
 </body>
 </html>
