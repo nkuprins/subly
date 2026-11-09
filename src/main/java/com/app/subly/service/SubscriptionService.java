@@ -103,11 +103,12 @@ public class SubscriptionService {
         subscription.reactivate(today);
     }
 
-    private SubscriptionResponse subscribe(User owner, SubscriptionProvider provider, PaymentDetails request, int maxParticipants) {
+    private SubscriptionResponse subscribe(
+            User owner, SubscriptionProvider provider, PaymentDetails request, int maxParticipants) {
         Subscription subscription = new Subscription(
                 provider, request.price(), request.billingCycle(), request.nextPaymentDate(), request.freeTrial());
 
-        if (maxParticipants > 1){
+        if (maxParticipants > 1) {
             subscription.makeSharable(maxParticipants);
         }
         subscriptionRepository.save(subscription);

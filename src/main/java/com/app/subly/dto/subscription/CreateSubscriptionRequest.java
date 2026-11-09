@@ -34,12 +34,6 @@ public record CreateSubscriptionRequest(
             BillingCycle billingCycle,
             LocalDate nextPaymentDate,
             Boolean freeTrial) {
-        this(
-                providerId,
-                price,
-                billingCycle,
-                nextPaymentDate,
-                freeTrial,
-                1);
+        this(providerId, price, billingCycle, nextPaymentDate, freeTrial, 1);
     }
 }
