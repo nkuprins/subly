@@ -21,6 +21,12 @@ public final class TestUsers {
         return new User(username, username, PASSWORD_HASH, email(username), role);
     }
 
+    public static User userWithId(String username, long id) {
+        User user = user(username);
+        user.setId(id);
+        return user;
+    }
+
     public static String email(String username) {
         return username + "@example.com";
     }

@@ -1,5 +1,6 @@
 package com.app.subly.service;
 
+import static com.app.subly.testdata.TestClock.NOW;
 import static com.app.subly.testdata.TestSubscriptions.aSubscription;
 import static com.app.subly.testdata.TestUsers.ALICE;
 import static com.app.subly.testdata.TestUsers.BOB;
@@ -22,9 +23,7 @@ import com.app.subly.model.user.User;
 import com.app.subly.repository.PendingInvitationRepository;
 import com.app.subly.repository.SubscriptionMembershipRepository;
 import com.app.subly.repository.SubscriptionRepository;
-import com.app.subly.repository.UserRepository;
 import com.app.subly.testdata.TestUsers;
-import java.time.Instant;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -44,9 +43,6 @@ class InvitationServiceTest {
     private static final int MAX_PARTICIPANTS = 3;
 
     @Mock
-    SubscriptionAccess subscriptionAccess;
-
-    @Mock
     SubscriptionMembershipRepository membershipRepository;
 
     @Mock
@@ -54,9 +50,6 @@ class InvitationServiceTest {
 
     @Mock
     PendingInvitationRepository invitationRepository;
-
-    @Mock
-    UserRepository userRepository;
 
     @InjectMocks
     InvitationService service;
@@ -69,8 +62,7 @@ class InvitationServiceTest {
 
     @BeforeEach
     void setUp() {
-        User invitee = TestUsers.user(ALICE);
-        invitee.setId(INVITEE_ID);
+        User invitee = TestUsers.userWithId(ALICE, INVITEE_ID);
         subscription = aSubscription()
                 .withId(SUBSCRIPTION_ID)
                 .withMaxParticipants(MAX_PARTICIPANTS)
@@ -81,7 +73,7 @@ class InvitationServiceTest {
     @Test
     void accept_shouldCreateMembershipAndDeleteInvitation() {
         stubInvitationTo(subscription);
-        when(membershipRepository.countBySubscriptionId(SUBSCRIPTION_ID)).thenReturn(1L);
+        when(membershipRepository.countBySubscriptionId(SUBSCRIPTION_ID)).thenReturn(MAX_PARTICIPANTS - 1L);
 
         service.accept(ALICE, INVITATION_ID);
 
@@ -131,7 +123,7 @@ class InvitationServiceTest {
 
     @Test
     void accept_shouldRejectCancelledSubscription() {
-        subscription.cancel(Instant.parse("2026-10-01T12:00:00Z"));
+        subscription.cancel(NOW);
         stubInvitationTo(subscription);
 
         assertAcceptRejectedWith(InvitationCannotBeAcceptedException.class);
