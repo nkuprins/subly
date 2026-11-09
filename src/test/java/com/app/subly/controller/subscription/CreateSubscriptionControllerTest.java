@@ -38,7 +38,8 @@ class CreateSubscriptionControllerTest extends AbstractSubscriptionControllerTes
                 .andExpect(jsonPath("$.currency").value("EUR"))
                 .andExpect(jsonPath("$.billingCycle").value("MONTHLY"))
                 .andExpect(jsonPath("$.nextPaymentDate").value(DEFAULT_NEXT_PAYMENT_DATE.toString()))
-                .andExpect(jsonPath("$.freeTrial").value(false));
+                .andExpect(jsonPath("$.freeTrial").value(false))
+                .andExpect(jsonPath("$.status").value("ACTIVE"));
     }
 
     @Test

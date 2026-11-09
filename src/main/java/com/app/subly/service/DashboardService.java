@@ -1,5 +1,6 @@
 package com.app.subly.service;
 
+import com.app.subly.dto.MoneyResponse;
 import com.app.subly.dto.dashboard.CategorySpendingResponse;
 import com.app.subly.dto.dashboard.DashboardSummaryResponse;
 import com.app.subly.dto.dashboard.UpcomingPaymentResponse;
@@ -16,6 +17,7 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,7 +61,7 @@ public class DashboardService {
         BigDecimal monthlyTotal = yearlyTotal.divide(MONTHS_IN_YEAR, MONEY_SCALE, RoundingMode.HALF_UP);
 
         return new DashboardSummaryResponse(
-                monthlyTotal, yearlyTotal.setScale(MONEY_SCALE, RoundingMode.HALF_UP), Currency.EUR);
+                monthlyTotal, yearlyTotal.setScale(MONEY_SCALE, RoundingMode.HALF_UP), Currency.EUR, shares.size());
     }
 
     @Transactional(readOnly = true)
@@ -119,6 +121,23 @@ public class DashboardService {
                         Currency.EUR))
                 .sorted(Comparator.comparing(CategorySpendingResponse::yearlyTotal)
                         .reversed())
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<MoneyResponse> getSavings(String username) {
+        LocalDate today = userRepository.getByUsername(username).today(clock);
+
+        Map<Currency, BigDecimal> totals = new EnumMap<>(Currency.class);
+        for (Share share : subscriptionShares.load(username, SubscriptionStatus.CANCELLED)) {
+            BigDecimal saved = share.savedUntil(today);
+            if (saved.signum() > 0) {
+                totals.merge(share.subscription().getCurrency(), saved, BigDecimal::add);
+            }
+        }
+
+        return totals.entrySet().stream()
+                .map(total -> new MoneyResponse(total.getValue(), total.getKey()))
                 .toList();
     }
 

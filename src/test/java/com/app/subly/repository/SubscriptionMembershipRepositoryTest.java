@@ -3,6 +3,7 @@ package com.app.subly.repository;
 import static com.app.subly.testdata.TestClock.DEFAULT_ZONE;
 import static com.app.subly.testdata.TestClock.NOW;
 import static com.app.subly.testdata.TestClock.TOKYO;
+import static com.app.subly.testdata.TestSubscriptions.aSubscription;
 import static com.app.subly.testdata.TestUsers.ALICE;
 import static com.app.subly.testdata.TestUsers.BOB;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -27,16 +28,17 @@ class SubscriptionMembershipRepositoryTest extends AbstractRepositoryTest {
     @Autowired
     SubscriptionRepository subscriptionRepository;
 
+    User alice;
     Subscription subscription;
     SubscriptionMembership ownerRow;
     SubscriptionMembership memberRow;
 
     @BeforeEach
     void setUp() {
-        User owner = persistUser(ALICE);
+        alice = persistUser(ALICE);
         User member = persistUser(BOB);
-        subscription = persistSubscription(owner);
-        ownerRow = entityManager.persist(SubscriptionMembership.owner(owner, subscription));
+        subscription = persistSubscription(alice);
+        ownerRow = entityManager.persist(SubscriptionMembership.owner(alice, subscription));
         memberRow = entityManager.persist(new SubscriptionMembership(member, subscription, MembershipRole.MEMBER));
         entityManager.flush();
     }
@@ -82,6 +84,22 @@ class SubscriptionMembershipRepositoryTest extends AbstractRepositoryTest {
         LocalDate dayAfterPayment = subscription.getNextPaymentDate().plusDays(1);
 
         assertThat(findOwnersDueBefore(TOKYO, dayAfterPayment)).isEmpty();
+    }
+
+    @Test
+    void findAllOf_shouldReturnActiveAndCancelledRowsOfTheUserByNextPaymentDate() {
+        Subscription cancelledEarlier = entityManager.persist(aSubscription()
+                .withProvider(subscription.getProvider())
+                .withNextPaymentDate(subscription.getNextPaymentDate().minusDays(1))
+                .cancelled()
+                .build());
+        SubscriptionMembership cancelledRow =
+                entityManager.persist(SubscriptionMembership.owner(alice, cancelledEarlier));
+        entityManager.flush();
+
+        assertThat(repository.findByUserUsernameOrderBySubscriptionNextPaymentDateAsc(ALICE))
+                .extracting(SubscriptionMembership::getId)
+                .containsExactly(cancelledRow.getId(), ownerRow.getId());
     }
 
     @Test

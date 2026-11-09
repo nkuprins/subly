@@ -34,6 +34,7 @@ public class SubscriptionService {
     private final SubscriptionMembershipRepository membershipRepository;
     private final SubscriptionProviderRepository subscriptionProviderRepository;
     private final UserRepository userRepository;
+    private final SubscriptionShares subscriptionShares;
     private final Clock clock;
 
     @Transactional
@@ -45,13 +46,22 @@ public class SubscriptionService {
         return subscribe(owner, provider, request, request.maxParticipants());
     }
 
+    // A canceled subscription stays here until its end date, then it moves to the history.
     @Transactional(readOnly = true)
-    public List<VisibleSubscriptionResponse> findVisibleTo(String username) {
-        return membershipRepository
-                .findByUserUsernameAndSubscriptionStatusOrderBySubscriptionNextPaymentDateAsc(
-                        username, SubscriptionStatus.ACTIVE)
-                .stream()
+    public List<VisibleSubscriptionResponse> findCurrent(String username) {
+        LocalDate today = userRepository.getByUsername(username).today(clock);
+        return membershipRepository.findByUserUsernameOrderBySubscriptionNextPaymentDateAsc(username).stream()
+                .filter(membership -> !membership.getSubscription().hasEndedBy(today))
                 .map(VisibleSubscriptionResponse::from)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<HistorySubscriptionResponse> findHistory(String username) {
+        LocalDate today = userRepository.getByUsername(username).today(clock);
+        return subscriptionShares.load(username, SubscriptionStatus.CANCELLED).stream()
+                .filter(share -> share.subscription().hasEndedBy(today))
+                .map(share -> HistorySubscriptionResponse.from(share.membership(), share.savedUntil(today)))
                 .toList();
     }
 

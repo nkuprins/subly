@@ -50,6 +50,9 @@ abstract class AbstractSubscriptionServiceTest {
     @Mock
     SubscriptionAccess subscriptionAccess;
 
+    @Mock
+    SubscriptionShares subscriptionShares;
+
     SubscriptionService service;
     final User alice = TestUsers.userWithId(ALICE, ALICE_ID);
 
@@ -61,6 +64,7 @@ abstract class AbstractSubscriptionServiceTest {
                 membershipRepository,
                 subscriptionProviderRepository,
                 userRepository,
+                subscriptionShares,
                 TestClock.CLOCK);
     }
 

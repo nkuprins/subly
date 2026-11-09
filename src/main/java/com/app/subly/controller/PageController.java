@@ -2,6 +2,7 @@ package com.app.subly.controller;
 
 import com.app.subly.dto.subscription.CreateSubscriptionRequest;
 import com.app.subly.dto.subscription.UpdateSubscriptionRequest;
+import com.app.subly.dto.subscription.VisibleSubscriptionResponse;
 import com.app.subly.model.subscription.BillingCycle;
 import com.app.subly.service.DashboardService;
 import com.app.subly.service.ProviderService;
@@ -39,15 +40,13 @@ public class PageController {
         String username = principal.getName();
         model.addAttribute("summary", dashboardService.getSummary(username));
         model.addAttribute("upcoming", dashboardService.getUpcomingPayments(username));
-        model.addAttribute(
-                "activeCount", subscriptionService.findVisibleTo(username).size());
         return "dashboard";
     }
 
     @GetMapping("/subscriptions")
     public String subscriptions(Principal principal, Model model) {
         if (principal == null) return "redirect:/login";
-        model.addAttribute("subscriptions", subscriptionService.findVisibleTo(principal.getName()));
+        model.addAttribute("subscriptions", subscriptionService.findCurrent(principal.getName()));
         return "subscriptions";
     }
 
@@ -77,8 +76,8 @@ public class PageController {
     @GetMapping("/subscriptions/{id}/edit")
     public String editSubscriptions(@PathVariable Long id, Principal principal, Model model) {
         if (principal == null) return "redirect:/login";
-        var sub = subscriptionService.findVisibleTo(principal.getName()).stream()
-                .map(v -> v.subscription())
+        var sub = subscriptionService.findCurrent(principal.getName()).stream()
+                .map(VisibleSubscriptionResponse::subscription)
                 .filter(s -> s.id().equals(id))
                 .findFirst()
                 .orElse(null);

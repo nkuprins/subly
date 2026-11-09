@@ -25,7 +25,12 @@ public class SubscriptionController {
 
     @GetMapping
     public List<VisibleSubscriptionResponse> listMine(Principal principal) {
-        return service.findVisibleTo(principal.getName());
+        return service.findCurrent(principal.getName());
+    }
+
+    @GetMapping("/history")
+    public List<HistorySubscriptionResponse> listHistory(Principal principal) {
+        return service.findHistory(principal.getName());
     }
 
     @PutMapping("/{id}")

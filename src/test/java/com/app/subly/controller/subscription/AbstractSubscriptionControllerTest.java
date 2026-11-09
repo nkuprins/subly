@@ -12,6 +12,7 @@ import com.app.subly.dto.subscription.SubscriptionResponse;
 import com.app.subly.model.provider.ProviderType;
 import com.app.subly.model.subscription.BillingCycle;
 import com.app.subly.model.subscription.Currency;
+import com.app.subly.model.subscription.SubscriptionStatus;
 import com.app.subly.service.SubscriptionService;
 import com.app.subly.testutil.JsonBody;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -49,6 +50,7 @@ abstract class AbstractSubscriptionControllerTest extends AbstractWebMvcTest {
                 BillingCycle.MONTHLY,
                 DEFAULT_NEXT_PAYMENT_DATE,
                 false,
-                1);
+                1,
+                SubscriptionStatus.ACTIVE);
     }
 }

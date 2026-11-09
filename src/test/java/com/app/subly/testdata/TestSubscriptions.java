@@ -28,6 +28,7 @@ public final class TestSubscriptions {
         private boolean freeTrial;
         private Currency currency = Currency.EUR;
         private Integer maxParticipants;
+        private boolean cancelled;
 
         private Builder() {}
 
@@ -71,12 +72,20 @@ public final class TestSubscriptions {
             return this;
         }
 
+        public Builder cancelled() {
+            cancelled = true;
+            return this;
+        }
+
         public Subscription build() {
             Subscription subscription = new Subscription(provider, price, billingCycle, nextPaymentDate, freeTrial);
             subscription.setId(id);
             subscription.setCurrency(currency);
             if (maxParticipants != null) {
                 subscription.makeSharable(maxParticipants);
+            }
+            if (cancelled) {
+                subscription.cancel(TestClock.NOW);
             }
             return subscription;
         }

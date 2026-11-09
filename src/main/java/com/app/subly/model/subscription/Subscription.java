@@ -122,6 +122,17 @@ public class Subscription {
         nextPaymentDate = date.isBefore(today) ? billingAnchorDate.plus(cycles + 1, unit) : date;
     }
 
+    public boolean hasEndedBy(LocalDate today) {
+        return !isActive() && nextPaymentDate.isBefore(today);
+    }
+
+    public long skippedPaymentsUntil(LocalDate today) {
+        if (nextPaymentDate.isAfter(today)) {
+            return 0;
+        }
+        return billingCycle.getUnit().between(nextPaymentDate, today) + 1;
+    }
+
     public BigDecimal shareFor(MembershipRole role, long memberCount) {
         if (memberCount <= 0) {
             throw new IllegalStateException("Subscription " + id + " has no members");

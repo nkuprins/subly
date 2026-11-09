@@ -28,6 +28,9 @@ public interface SubscriptionMembershipRepository extends JpaRepository<Subscrip
     List<SubscriptionMembership> findBySubscriptionIdIn(Collection<Long> subscriptionIds);
 
     @EntityGraph(attributePaths = {"subscription", "subscription.provider"})
+    List<SubscriptionMembership> findByUserUsernameOrderBySubscriptionNextPaymentDateAsc(String username);
+
+    @EntityGraph(attributePaths = {"subscription", "subscription.provider"})
     List<SubscriptionMembership> findByUserUsernameAndSubscriptionStatusOrderBySubscriptionNextPaymentDateAsc(
             String username, SubscriptionStatus status);
 

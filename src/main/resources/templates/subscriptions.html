@@ -37,7 +37,10 @@
                   th:classappend="${item.subscription.billingCycle.name() == 'YEARLY'} ? ' pill-year'"
                   th:text="${item.subscription.billingCycle}"></span>
                 </td>
-                <td th:text="${item.subscription.nextPaymentDate}"></td>
+                <td>
+                    <span th:text="${item.subscription.nextPaymentDate}"></span>
+                    <span th:if="${item.subscription.status.name() == 'CANCELLED'}" class="pill pill-cancelled">Cancelled</span>
+                </td>
                 <td>
                     <div class="actions">
                         <a

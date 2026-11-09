@@ -9,6 +9,7 @@ import static com.app.subly.testdata.TestUsers.ALICE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
+import com.app.subly.dto.MoneyResponse;
 import com.app.subly.dto.dashboard.DashboardSummaryResponse;
 import com.app.subly.dto.dashboard.UpcomingPaymentResponse;
 import com.app.subly.model.provider.SubscriptionProvider;
@@ -25,6 +26,7 @@ import com.app.subly.testdata.TestProviders;
 import com.app.subly.testdata.TestSubscriptions;
 import com.app.subly.testdata.TestUsers;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -162,6 +164,32 @@ class DashboardServiceTest {
                 .containsExactly(TOKYO_TODAY);
     }
 
+    @Test
+    void getSavings_shouldSumCancelledSubscriptionsFromTheEndDatePerCurrency() {
+        stubCancelledShares(List.of(
+                cancelledShare("10.00", Currency.EUR, TODAY.minusDays(1)),
+                cancelledShare("5.00", Currency.EUR, TODAY.minusMonths(1)),
+                cancelledShare("7.00", Currency.USD, TODAY.minusDays(1))));
+        stubUserIn(DEFAULT_ZONE);
+
+        assertThat(service.getSavings(ALICE))
+                .containsExactly(
+                        new MoneyResponse(new BigDecimal("20.00"), Currency.EUR),
+                        new MoneyResponse(new BigDecimal("7.00"), Currency.USD));
+    }
+
+    @Test
+    void getSavings_shouldBeEmptyBeforeTheEndDate() {
+        stubCancelledShares(List.of(cancelledShare("10.00", Currency.EUR, TODAY.plusDays(3))));
+        stubUserIn(DEFAULT_ZONE);
+
+        assertThat(service.getSavings(ALICE)).isEmpty();
+    }
+
+    private void stubCancelledShares(List<Share> shares) {
+        when(subscriptionShares.load(ALICE, SubscriptionStatus.CANCELLED)).thenReturn(shares);
+    }
+
     private void stubUserIn(ZoneId zone) {
         User user = TestUsers.user(ALICE);
         user.setTimeZone(zone);
@@ -186,5 +214,14 @@ class DashboardServiceTest {
     private static Share share(TestSubscriptions.Builder subscription, String amount) {
         return new Share(
                 SubscriptionMembership.owner(TestUsers.user(ALICE), subscription.build()), new BigDecimal(amount));
+    }
+
+    private static Share cancelledShare(String amount, Currency currency, LocalDate endDate) {
+        return share(
+                aSubscription()
+                        .withCurrency(currency)
+                        .withNextPaymentDate(endDate)
+                        .cancelled(),
+                amount);
     }
 }

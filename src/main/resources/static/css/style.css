@@ -71,6 +71,7 @@ tbody tr { border-top: 1px solid #eee; }
 
 .pill { background: var(--primary-100); color: var(--primary); padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
 .pill-year { background: #fde68a; color: #92400e; }
+.pill-cancelled { background: #fee2e2; color: #991b1b; }
 
 .actions { display: flex; gap: 12px; }
 .link { color: var(--primary); text-decoration: none; font-weight: 600; font-size: 14px; }

@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.app.subly.dto.MoneyResponse;
 import com.app.subly.dto.dashboard.DashboardSummaryResponse;
 import com.app.subly.dto.dashboard.UpcomingPaymentResponse;
 import com.app.subly.model.subscription.Currency;
@@ -28,6 +29,7 @@ class DashboardControllerTest extends AbstractWebMvcTest {
 
     static final String SUMMARY_URL = "/api/dashboard/summary";
     static final String UPCOMING_PAYMENTS_URL = "/api/dashboard/upcoming-payments";
+    static final String SAVINGS_URL = "/api/dashboard/savings";
 
     @MockitoBean
     DashboardService dashboardService;
@@ -35,7 +37,7 @@ class DashboardControllerTest extends AbstractWebMvcTest {
     @Test
     void getSummary_shouldReturnSummaryOfAuthenticatedUser() throws Exception {
         DashboardSummaryResponse summary =
-                new DashboardSummaryResponse(new BigDecimal("30.65"), new BigDecimal("367.80"), Currency.EUR);
+                new DashboardSummaryResponse(new BigDecimal("30.65"), new BigDecimal("367.80"), Currency.EUR, 2);
         when(dashboardService.getSummary(ALICE)).thenReturn(summary);
 
         mockMvc.perform(get(SUMMARY_URL))
@@ -62,6 +64,18 @@ class DashboardControllerTest extends AbstractWebMvcTest {
                 .andExpect(jsonPath("$[0].nextPaymentDate")
                         .value(payment.nextPaymentDate().toString()))
                 .andExpect(jsonPath("$[0].daysLeft").value(payment.daysLeft()));
+    }
+
+    @Test
+    void getSavings_shouldReturnSavingsOfAuthenticatedUser() throws Exception {
+        when(dashboardService.getSavings(ALICE))
+                .thenReturn(List.of(new MoneyResponse(new BigDecimal("20.00"), Currency.EUR)));
+
+        mockMvc.perform(get(SAVINGS_URL))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].amount").value(20.00))
+                .andExpect(jsonPath("$[0].currency").value("EUR"));
     }
 
     @Test
