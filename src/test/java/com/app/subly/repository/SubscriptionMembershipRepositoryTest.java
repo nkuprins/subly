@@ -3,6 +3,7 @@ package com.app.subly.repository;
 import static com.app.subly.testdata.TestClock.DEFAULT_ZONE;
 import static com.app.subly.testdata.TestClock.NOW;
 import static com.app.subly.testdata.TestClock.TOKYO;
+import static com.app.subly.testdata.TestSubscriptions.aSubscription;
 import static com.app.subly.testdata.TestUsers.ALICE;
 import static com.app.subly.testdata.TestUsers.BOB;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -12,6 +13,7 @@ import com.app.subly.model.subscription.Subscription;
 import com.app.subly.model.subscription.SubscriptionMembership;
 import com.app.subly.model.subscription.SubscriptionStatus;
 import com.app.subly.model.user.User;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
@@ -91,6 +93,36 @@ class SubscriptionMembershipRepositoryTest extends AbstractRepositoryTest {
 
         assertThat(repository.existsById(ownerRow.getId())).isFalse();
         assertThat(repository.existsById(memberRow.getId())).isFalse();
+    }
+
+    @Test
+    void findCancelled_shouldReturnOnlyCancelledSubscriptionsNewestFirst() {
+        User alice = ownerRow.getUser();
+        Subscription older = entityManager.persist(
+                aSubscription().withProvider(subscription.getProvider()).build());
+        Subscription newer = entityManager.persist(
+                aSubscription().withProvider(subscription.getProvider()).build());
+        SubscriptionMembership olderRow = entityManager.persist(SubscriptionMembership.owner(alice, older));
+        SubscriptionMembership newerRow = entityManager.persist(SubscriptionMembership.owner(alice, newer));
+        older.cancel(NOW.minus(Duration.ofDays(3)));
+        newer.cancel(NOW);
+        entityManager.flush();
+
+        assertThat(repository.findByUserUsernameAndSubscriptionStatusOrderBySubscriptionCancelledAtDesc(
+                        ALICE, SubscriptionStatus.CANCELLED))
+                .extracting(SubscriptionMembership::getId)
+                .containsExactly(newerRow.getId(), olderRow.getId());
+    }
+
+    @Test
+    void findCancelled_shouldIncludeMembersOfCancelledSharedSubscriptions() {
+        subscription.cancel(NOW);
+        entityManager.flush();
+
+        assertThat(repository.findByUserUsernameAndSubscriptionStatusOrderBySubscriptionCancelledAtDesc(
+                        BOB, SubscriptionStatus.CANCELLED))
+                .extracting(SubscriptionMembership::getId)
+                .containsExactly(memberRow.getId());
     }
 
     private List<SubscriptionMembership> findOwnersDueBefore(LocalDate date) {

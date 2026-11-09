@@ -52,6 +52,16 @@ public class SubscriptionService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<VisibleSubscriptionResponse> findCancelledVisibleTo(String username) {
+        return membershipRepository
+                .findByUserUsernameAndSubscriptionStatusOrderBySubscriptionCancelledAtDesc(
+                        username, SubscriptionStatus.CANCELLED)
+                .stream()
+                .map(VisibleSubscriptionResponse::from)
+                .toList();
+    }
+
     @Transactional
     public SubscriptionResponse update(String username, long subscriptionId, UpdateSubscriptionRequest request) {
         SubscriptionMembership owner =

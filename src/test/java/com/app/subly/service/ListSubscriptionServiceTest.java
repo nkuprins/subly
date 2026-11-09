@@ -9,6 +9,7 @@ import com.app.subly.model.subscription.MembershipRole;
 import com.app.subly.model.subscription.Subscription;
 import com.app.subly.model.subscription.SubscriptionMembership;
 import com.app.subly.model.subscription.SubscriptionStatus;
+import com.app.subly.testdata.TestClock;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -28,5 +29,21 @@ class ListSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
                 .containsExactly(
                         VisibleSubscriptionResponse.from(ownerMembership),
                         VisibleSubscriptionResponse.from(memberMembership));
+    }
+
+    @Test
+    void findCancelledVisibleTo_shouldReturnCancelledSubscriptionsWithMembershipRoles() {
+        Subscription cancelled = subscription(customProvider());
+        cancelled.cancel(TestClock.NOW);
+        SubscriptionMembership ownerMembership = SubscriptionMembership.owner(alice, cancelled);
+        when(membershipRepository.findByUserUsernameAndSubscriptionStatusOrderBySubscriptionCancelledAtDesc(
+                        ALICE, SubscriptionStatus.CANCELLED))
+                .thenReturn(List.of(ownerMembership));
+
+        assertThat(service.findCancelledVisibleTo(ALICE)).singleElement().satisfies(response -> {
+            assertThat(response.role()).isEqualTo(MembershipRole.OWNER);
+            assertThat(response.subscription().status()).isEqualTo(SubscriptionStatus.CANCELLED);
+            assertThat(response.subscription().cancelledAt()).isEqualTo(TestClock.NOW);
+        });
     }
 }

@@ -6,6 +6,7 @@ import com.app.subly.model.subscription.BillingCycle;
 import com.app.subly.service.DashboardService;
 import com.app.subly.service.ProviderService;
 import com.app.subly.service.SubscriptionService;
+import com.app.subly.service.UserService;
 import java.math.BigDecimal;
 import java.security.Principal;
 import java.time.LocalDate;
@@ -16,21 +17,27 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 public class PageController {
 
+    private static final String CANCELLED_TAB = "cancelled";
+
     private final SubscriptionService subscriptionService;
     private final DashboardService dashboardService;
     private final ProviderService providerService;
+    private final UserService userService;
 
     public PageController(
             SubscriptionService subscriptionService,
             DashboardService dashboardService,
-            ProviderService providerService) {
+            ProviderService providerService,
+            UserService userService) {
         this.subscriptionService = subscriptionService;
         this.dashboardService = dashboardService;
         this.providerService = providerService;
+        this.userService = userService;
     }
 
     @GetMapping({"/", "/dashboard"})
@@ -45,10 +52,35 @@ public class PageController {
     }
 
     @GetMapping("/subscriptions")
-    public String subscriptions(Principal principal, Model model) {
+    public String subscriptions(Principal principal, Model model, @RequestParam(defaultValue = "active") String tab) {
         if (principal == null) return "redirect:/login";
-        model.addAttribute("subscriptions", subscriptionService.findVisibleTo(principal.getName()));
+        String username = principal.getName();
+        var active = subscriptionService.findVisibleTo(username);
+        var cancelled = subscriptionService.findCancelledVisibleTo(username);
+        boolean showCancelled = CANCELLED_TAB.equals(tab);
+
+        model.addAttribute("tab", showCancelled ? CANCELLED_TAB : "active");
+        model.addAttribute("subscriptions", showCancelled ? cancelled : active);
+        model.addAttribute("activeCount", active.size());
+        model.addAttribute("cancelledCount", cancelled.size());
+        model.addAttribute("zone", userService.getUserByUsername(username).getTimeZone());
         return "subscriptions";
+    }
+
+    @PostMapping("/subscriptions/{id}/cancel")
+    public String cancelSubscription(@PathVariable Long id, Principal principal, RedirectAttributes redirect) {
+        if (principal == null) return "redirect:/login";
+        subscriptionService.cancel(principal.getName(), id);
+        redirect.addFlashAttribute("notice", "Subscription cancelled. You can find it under the Cancelled tab.");
+        return "redirect:/subscriptions";
+    }
+
+    @PostMapping("/subscriptions/{id}/reactivate")
+    public String reactivateSubscription(@PathVariable Long id, Principal principal, RedirectAttributes redirect) {
+        if (principal == null) return "redirect:/login";
+        subscriptionService.reactivate(principal.getName(), id);
+        redirect.addFlashAttribute("notice", "Subscription reactivated. It's back in your active list.");
+        return "redirect:/subscriptions";
     }
 
     @GetMapping("/subscriptions/new")
@@ -104,8 +136,9 @@ public class PageController {
     }
 
     @PostMapping("/subscriptions/{id}/delete")
-    public String deleteSubscription(@PathVariable Long id, Principal principal) {
+    public String deleteSubscription(
+            @PathVariable Long id, Principal principal, @RequestParam(defaultValue = "active") String tab) {
         subscriptionService.delete(principal.getName(), id);
-        return "redirect:/subscriptions";
+        return CANCELLED_TAB.equals(tab) ? "redirect:/subscriptions?tab=" + CANCELLED_TAB : "redirect:/subscriptions";
     }
 }
