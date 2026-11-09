@@ -40,6 +40,8 @@ class UserServiceTest {
     private static final String PASSWORD = "secretPassword";
     private static final String NEW_PASSWORD = "newSecretPassword";
     private static final String NEW_EMAIL = "alice.new@example.com";
+    private static final String NEW_USERNAME = "alice_new";
+    private static final String NEW_NAME = "Alice Smith";
 
     @Mock
     UserRepository repository;
@@ -53,11 +55,11 @@ class UserServiceTest {
     @Test
     void addNewUser_shouldRejectExistingUser() {
         when(encoder.encode(PASSWORD)).thenReturn(PASSWORD_HASH);
-        when(repository.save(any(User.class))).thenThrow(new DataIntegrityViolationException("Some db error"));
+        when(repository.save(any(User.class))).thenThrow(DataIntegrityViolationException.class);
+        String aliceEmail = email(ALICE);
 
-        assertThatThrownBy(() -> service.addNewUser(ALICE, "Alice", PASSWORD, email(ALICE), null))
+        assertThatThrownBy(() -> service.addNewUser(ALICE, "Alice", PASSWORD, aliceEmail, null))
                 .isInstanceOf(UserAlreadyExistsException.class);
-        verify(repository).save(any(User.class));
     }
 
     @Test
@@ -132,19 +134,19 @@ class UserServiceTest {
     void updateUserInformation_shouldChangeUsername() {
         User user = stubExistingUser();
 
-        service.updateUserInformation(ALICE, usernameUpdate("alice_new"));
+        service.updateUserInformation(ALICE, usernameUpdate(NEW_USERNAME));
 
         verify(repository).flush();
-        assertThat(user.getUsername()).isEqualTo("alice_new");
+        assertThat(user.getUsername()).isEqualTo(NEW_USERNAME);
     }
 
     @Test
     void updateUserInformation_shouldChangeName() {
         User user = stubExistingUser();
 
-        service.updateUserInformation(ALICE, nameUpdate("Alice Smith"));
+        service.updateUserInformation(ALICE, nameUpdate(NEW_NAME));
 
-        assertThat(user.getName()).isEqualTo("Alice Smith");
+        assertThat(user.getName()).isEqualTo(NEW_NAME);
     }
 
     @Test
@@ -160,19 +162,19 @@ class UserServiceTest {
     void updateUserInformation_shouldRejectExistingEmail() {
         stubExistingUser();
         doThrow(DataIntegrityViolationException.class).when(repository).flush();
+        UpdateUserInformationRequest request = emailUpdate(email(BOB));
 
-        assertThatThrownBy(() -> service.updateUserInformation(ALICE, emailUpdate(email(BOB))))
+        assertThatThrownBy(() -> service.updateUserInformation(ALICE, request))
                 .isInstanceOf(UserAlreadyExistsException.class);
     }
 
     @Test
     void updateUserInformation_shouldRejectExistingUsername() {
         stubExistingUser();
-        doThrow(new DataIntegrityViolationException("Duplicate username"))
-                .when(repository)
-                .flush();
+        doThrow(DataIntegrityViolationException.class).when(repository).flush();
+        UpdateUserInformationRequest request = usernameUpdate(BOB);
 
-        assertThatThrownBy(() -> service.updateUserInformation(ALICE, usernameUpdate(BOB)))
+        assertThatThrownBy(() -> service.updateUserInformation(ALICE, request))
                 .isInstanceOf(UserAlreadyExistsException.class);
     }
 

@@ -67,7 +67,7 @@ class UserControllerTest extends AbstractWebMvcTest {
 
     @Test
     void updateCurrentUserPassword_shouldReturn400WhenPasswordsAreEqual() throws Exception {
-        sendJson(put(PASSWORD_URL).with(csrf()), passwordChange(PASSWORD, PASSWORD))
+        sendJson(put(PASSWORD_URL).with(csrf()), passwordChange(PASSWORD))
                 .andExpect(validationError())
                 .andExpect(jsonPath("$.errors[0].message").value("New password and old password must be different"));
 
@@ -76,7 +76,7 @@ class UserControllerTest extends AbstractWebMvcTest {
 
     @Test
     void updateCurrentUserPassword_shouldReturn200WhenPasswordIsChanged() throws Exception {
-        sendJson(put(PASSWORD_URL).with(csrf()), passwordChange(PASSWORD, NEW_PASSWORD))
+        sendJson(put(PASSWORD_URL).with(csrf()), passwordChange(NEW_PASSWORD))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message")
                         .value("The password has been changed successfully. Please log in again."));
@@ -145,8 +145,7 @@ class UserControllerTest extends AbstractWebMvcTest {
     @Test
     @WithAnonymousUser
     void updateCurrentUserPassword_shouldReturn401ForAnonymousUser() throws Exception {
-        sendJson(put(PASSWORD_URL).with(csrf()), passwordChange(PASSWORD, NEW_PASSWORD))
-                .andExpect(status().isUnauthorized());
+        sendJson(put(PASSWORD_URL).with(csrf()), passwordChange(NEW_PASSWORD)).andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -165,8 +164,8 @@ class UserControllerTest extends AbstractWebMvcTest {
         return JsonBody.empty().with("password", PASSWORD);
     }
 
-    private static JsonBody passwordChange(String oldPassword, String newPassword) {
-        return JsonBody.empty().with("oldPassword", oldPassword).with("newPassword", newPassword);
+    private static JsonBody passwordChange(String newPassword) {
+        return JsonBody.empty().with("oldPassword", PASSWORD).with("newPassword", newPassword);
     }
 
     private static JsonBody usernameChange(String username) {
