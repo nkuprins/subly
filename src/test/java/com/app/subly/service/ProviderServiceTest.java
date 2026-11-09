@@ -65,12 +65,14 @@ class ProviderServiceTest {
     final Category otherCategory = new Category("Test otherCategory");
 
     @Test
-    void create_shouldSaveAdminProviderAsCatalogProviderWithoutCreator() {
+    void create_shouldSaveCatalogProviderWithoutCreator() {
         stubUser(UserRole.ADMIN);
         stubCategoryAndSave();
 
         ProviderResponse response = service.create(
-                ALICE, new ProviderRequest(padded(CATALOG_PROVIDER_NAME), CATEGORY_ID, padded(LOGO_PATH)));
+                ALICE,
+                new ProviderRequest(padded(CATALOG_PROVIDER_NAME), CATEGORY_ID, padded(LOGO_PATH)),
+                ProviderType.CATALOG);
 
         SubscriptionProvider saved = savedProvider();
         assertThat(saved.getProviderType()).isEqualTo(ProviderType.CATALOG);
@@ -82,12 +84,12 @@ class ProviderServiceTest {
     }
 
     @Test
-    void create_shouldSaveUserProviderAsCustomProviderOwnedByTheUser() {
+    void create_shouldSaveCustomProviderOwnedByTheUser() {
         User user = stubUser(UserRole.USER);
         stubCategoryAndSave();
 
-        ProviderResponse response =
-                service.create(ALICE, new ProviderRequest(padded(CUSTOM_PROVIDER_NAME), CATEGORY_ID, "   "));
+        ProviderResponse response = service.create(
+                ALICE, new ProviderRequest(padded(CUSTOM_PROVIDER_NAME), CATEGORY_ID, "   "), ProviderType.CUSTOM);
 
         SubscriptionProvider saved = savedProvider();
         assertThat(saved.getProviderType()).isEqualTo(ProviderType.CUSTOM);
@@ -99,12 +101,24 @@ class ProviderServiceTest {
     }
 
     @Test
+    void create_shouldSaveCustomProviderOwnedByTheAdmin() {
+        User admin = stubUser(UserRole.ADMIN);
+        stubCategoryAndSave();
+
+        service.create(ALICE, new ProviderRequest(CUSTOM_PROVIDER_NAME, CATEGORY_ID, null), ProviderType.CUSTOM);
+
+        SubscriptionProvider saved = savedProvider();
+        assertThat(saved.getProviderType()).isEqualTo(ProviderType.CUSTOM);
+        assertThat(saved.getCreatedBy()).isSameAs(admin);
+    }
+
+    @Test
     void create_shouldRejectUnknownCategory() {
         stubUser(UserRole.USER);
         when(categoryRepository.findById(CATEGORY_ID)).thenReturn(Optional.empty());
         ProviderRequest request = new ProviderRequest(CUSTOM_PROVIDER_NAME, CATEGORY_ID, null);
 
-        assertThatThrownBy(() -> service.create(ALICE, request))
+        assertThatThrownBy(() -> service.create(ALICE, request, ProviderType.CUSTOM))
                 .isInstanceOf(InvalidCategoryException.class)
                 .hasMessageContaining(String.valueOf(CATEGORY_ID));
         verifyNoInteractions(subscriptionProviderRepository);
