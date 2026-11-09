@@ -1,73 +1,77 @@
 package com.app.subly.service;
 
+import static com.app.subly.testdata.TestClock.TODAY;
+import static com.app.subly.testdata.TestUsers.ALICE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 import com.app.subly.dto.subscription.CreateSubscriptionRequest;
 import com.app.subly.dto.subscription.UpdateSubscriptionRequest;
 import com.app.subly.exception.subscription.PaymentDateInPastException;
 import com.app.subly.model.subscription.BillingCycle;
 import com.app.subly.model.subscription.Subscription;
+import com.app.subly.testdata.TestClock;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
 class PastPaymentDateServiceTest extends AbstractSubscriptionServiceTest {
 
-    @Test
-    void createRejectsYesterdayInOwnersZone() {
-        givenOwnerExists();
-        CreateSubscriptionRequest request = catalogRequest(today.minusDays(1));
+    private static final BigDecimal PRICE = new BigDecimal("17.99");
 
-        assertThatThrownBy(() -> subscriptionService.create(OWNER, request))
+    @Test
+    void create_shouldRejectYesterdayInOwnersZone() {
+        stubOwnerExists();
+        CreateSubscriptionRequest request = createRequest(TODAY.minusDays(1));
+
+        assertThatThrownBy(() -> subscriptionService.create(ALICE, request))
                 .isInstanceOf(PaymentDateInPastException.class)
-                .hasMessageContaining(today.minusDays(1).toString());
-        then(subscriptionRepository).shouldHaveNoInteractions();
+                .hasMessageContaining(TODAY.minusDays(1).toString());
+        verifyNoInteractions(subscriptionRepository);
     }
 
     @Test
-    void createAcceptsToday() {
-        givenOwnerExists();
-        given(subscriptionProviderRepository.findById(PROVIDER_ID)).willReturn(Optional.of(catalogProvider()));
+    void create_shouldAcceptToday() {
+        stubOwnerExists();
+        when(subscriptionProviderRepository.findById(PROVIDER_ID)).thenReturn(Optional.of(catalogProvider()));
 
-        subscriptionService.create(OWNER, catalogRequest(today));
+        subscriptionService.create(ALICE, createRequest(TODAY));
 
-        then(subscriptionRepository).should().save(any(Subscription.class));
+        verify(subscriptionRepository).save(any(Subscription.class));
     }
 
     @Test
-    void createUsesOwnersTimeZone() {
-        givenOwnerExists();
-        owner.setTimeZone(ZoneId.of("Asia/Tokyo"));
-        CreateSubscriptionRequest request = catalogRequest(today);
+    void create_shouldUseOwnersTimeZone() {
+        stubOwnerExists();
+        owner.setTimeZone(TestClock.TOKYO);
+        CreateSubscriptionRequest request = createRequest(TODAY);
 
-        assertThatThrownBy(() -> subscriptionService.create(OWNER, request))
+        assertThatThrownBy(() -> subscriptionService.create(ALICE, request))
                 .isInstanceOf(PaymentDateInPastException.class);
     }
 
     @Test
-    void updateRejectsPastDateAndKeepsSubscription() {
+    void update_shouldRejectPastDateAndKeepSubscription() {
         Subscription subscription = subscription(catalogProvider());
-        givenOwnerRowWithSubscriptionDetails(subscription);
+        stubOwnerRowWithSubscriptionDetails(subscription);
         LocalDate originalDate = subscription.getNextPaymentDate();
-        UpdateSubscriptionRequest request = updateRequest(today.minusDays(1));
+        UpdateSubscriptionRequest request = updateRequest(TODAY.minusDays(1));
 
-        assertThatThrownBy(() -> subscriptionService.update(OWNER, SUBSCRIPTION_ID, request))
+        assertThatThrownBy(() -> subscriptionService.update(ALICE, SUBSCRIPTION_ID, request))
                 .isInstanceOf(PaymentDateInPastException.class);
         assertThat(subscription.getNextPaymentDate()).isEqualTo(originalDate);
     }
 
-    private UpdateSubscriptionRequest updateRequest(LocalDate nextPaymentDate) {
-        return new UpdateSubscriptionRequest(new BigDecimal("17.99"), BillingCycle.MONTHLY, nextPaymentDate, false);
+    private static UpdateSubscriptionRequest updateRequest(LocalDate nextPaymentDate) {
+        return new UpdateSubscriptionRequest(PRICE, BillingCycle.MONTHLY, nextPaymentDate, false);
     }
 
-    private CreateSubscriptionRequest catalogRequest(LocalDate nextPaymentDate) {
-        return new CreateSubscriptionRequest(
-                PROVIDER_ID, new BigDecimal("17.99"), BillingCycle.MONTHLY, nextPaymentDate, false);
+    private static CreateSubscriptionRequest createRequest(LocalDate nextPaymentDate) {
+        return new CreateSubscriptionRequest(PROVIDER_ID, PRICE, BillingCycle.MONTHLY, nextPaymentDate, false);
     }
 }

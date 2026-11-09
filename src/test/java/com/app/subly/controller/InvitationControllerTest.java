@@ -1,53 +1,57 @@
 package com.app.subly.controller;
 
-import static org.mockito.BDDMockito.then;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static com.app.subly.testdata.TestUsers.ALICE;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.app.subly.config.SecurityConfig;
 import com.app.subly.service.InvitationService;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithAnonymousUser;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(InvitationController.class)
-@Import(SecurityConfig.class)
-class InvitationControllerTest {
+@WithMockUser(username = ALICE)
+class InvitationControllerTest extends AbstractWebMvcTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+    static final long INVITATION_ID = 5L;
+    static final String ACCEPT_URL = "/api/invitations/" + INVITATION_ID + "/accept";
+    static final String DECLINE_URL = "/api/invitations/" + INVITATION_ID + "/decline";
 
     @MockitoBean
-    private InvitationService invitationService;
+    InvitationService invitationService;
 
     @Test
-    void authenticatedUserCanAcceptInvitation() throws Exception {
-        mockMvc.perform(post("/api/invitations/5/accept").with(user("bob"))).andExpect(status().isNoContent());
+    void accept_shouldReturn204ForAuthenticatedUser() throws Exception {
+        mockMvc.perform(post(ACCEPT_URL)).andExpect(status().isNoContent());
 
-        then(invitationService).should().accept("bob", 5L);
+        verify(invitationService).accept(ALICE, INVITATION_ID);
     }
 
     @Test
-    void authenticatedUserCanDeclineInvitation() throws Exception {
-        mockMvc.perform(post("/api/invitations/5/decline").with(user("bob"))).andExpect(status().isNoContent());
+    void decline_shouldReturn204ForAuthenticatedUser() throws Exception {
+        mockMvc.perform(post(DECLINE_URL)).andExpect(status().isNoContent());
 
-        then(invitationService).should().decline("bob", 5L);
+        verify(invitationService).decline(ALICE, INVITATION_ID);
     }
 
     @Test
-    void anonymousUserCannotAcceptInvitation() throws Exception {
-        mockMvc.perform(post("/api/invitations/5/accept").accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnauthorized());
+    @WithAnonymousUser
+    void accept_shouldReturn401ForAnonymousUser() throws Exception {
+        mockMvc.perform(post(ACCEPT_URL).accept(MediaType.APPLICATION_JSON)).andExpect(status().isUnauthorized());
+
+        verifyNoInteractions(invitationService);
     }
 
     @Test
-    void anonymousUserCannotDeclineInvitation() throws Exception {
-        mockMvc.perform(post("/api/invitations/5/decline").accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnauthorized());
+    @WithAnonymousUser
+    void decline_shouldReturn401ForAnonymousUser() throws Exception {
+        mockMvc.perform(post(DECLINE_URL).accept(MediaType.APPLICATION_JSON)).andExpect(status().isUnauthorized());
+
+        verifyNoInteractions(invitationService);
     }
 }

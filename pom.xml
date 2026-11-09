@@ -28,6 +28,7 @@
     </scm>
     <properties>
         <java.version>21</java.version>
+        <pit.target>com.app.subly.*</pit.target>
     </properties>
     <dependencies>
         <dependency>
@@ -153,11 +154,10 @@
                 </dependencies>
                 <configuration>
                     <targetClasses>
-                        <param>com.app.subly.service.*</param>
+                        <param>${pit.target}</param>
                     </targetClasses>
                     <targetTests>
-                        <param>com.app.subly.service.*</param>
-                        <param>com.app.subly.dashboard.*</param>
+                        <param>${pit.target}</param>
                     </targetTests>
                 </configuration>
             </plugin>

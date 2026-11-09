@@ -1,10 +1,8 @@
 package com.app.subly.model.subscription;
 
+import static com.app.subly.testdata.TestSubscriptions.aSubscription;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.app.subly.model.category.Category;
-import com.app.subly.model.provider.SubscriptionProvider;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -24,7 +22,7 @@ class SubscriptionNextPaymentDateTest {
         "YEARLY,  2025-11-04, 2026-11-04, 2026-11-04",
         "YEARLY,  2020-06-10, 2026-11-04, 2027-06-10",
     })
-    void movesForwardByWholeCyclesToTodayOrLater(
+    void advancePaymentDate_shouldMoveForwardByWholeCyclesToTodayOrLater(
             BillingCycle cycle, LocalDate firstPayment, LocalDate today, LocalDate expected) {
         Subscription subscription = subscription(cycle, firstPayment);
 
@@ -43,7 +41,8 @@ class SubscriptionNextPaymentDateTest {
         "YEARLY,  2028-02-29, 2028-03-01, 2029-02-28",
         "YEARLY,  2028-02-29, 2031-03-01, 2032-02-29",
     })
-    void keepsOriginalDayOfMonth(BillingCycle cycle, LocalDate firstPayment, LocalDate today, LocalDate expected) {
+    void advancePaymentDate_shouldKeepOriginalDayOfMonth(
+            BillingCycle cycle, LocalDate firstPayment, LocalDate today, LocalDate expected) {
         Subscription subscription = subscription(cycle, firstPayment);
 
         subscription.advancePaymentDate(today);
@@ -52,7 +51,7 @@ class SubscriptionNextPaymentDateTest {
     }
 
     @Test
-    void keepsOriginalDayAcrossDailyRuns() {
+    void advancePaymentDate_shouldKeepOriginalDayAcrossDailyRuns() {
         Subscription subscription = subscription(BillingCycle.MONTHLY, LocalDate.of(2027, 1, 31));
 
         subscription.advancePaymentDate(LocalDate.of(2027, 2, 1));
@@ -66,7 +65,7 @@ class SubscriptionNextPaymentDateTest {
     }
 
     @Test
-    void rescheduleMovesTheAnchor() {
+    void reschedule_shouldMoveTheAnchor() {
         Subscription subscription = subscription(BillingCycle.MONTHLY, LocalDate.of(2027, 1, 31));
 
         subscription.reschedule(LocalDate.of(2027, 3, 15));
@@ -77,11 +76,9 @@ class SubscriptionNextPaymentDateTest {
     }
 
     private static Subscription subscription(BillingCycle cycle, LocalDate firstPayment) {
-        return new Subscription(
-                SubscriptionProvider.catalog("Netflix", new Category("Streaming")),
-                new BigDecimal("9.99"),
-                cycle,
-                firstPayment,
-                false);
+        return aSubscription()
+                .withBillingCycle(cycle)
+                .withNextPaymentDate(firstPayment)
+                .build();
     }
 }

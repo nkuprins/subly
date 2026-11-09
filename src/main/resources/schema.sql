@@ -54,7 +54,6 @@ CREATE TABLE IF NOT EXISTS subscriptions (
     cancelled_at TIMESTAMP NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     currency ENUM('EUR', 'USD', 'GBP') NOT NULL DEFAULT 'EUR',
-    is_sharable BOOLEAN NOT NULL DEFAULT FALSE,
     max_participants INT NOT NULL DEFAULT 1,
     PRIMARY KEY (id),
     INDEX idx_subscriptions_provider_id (provider_id),
@@ -62,7 +61,6 @@ CREATE TABLE IF NOT EXISTS subscriptions (
     CONSTRAINT chk_subscriptions_price CHECK (price > 0),
     CONSTRAINT chk_subscriptions_max_participants CHECK (max_participants >= 1),
     CONSTRAINT chk_subscriptions_cancelled_at CHECK ((status = 'CANCELLED') = (cancelled_at IS NOT NULL)),
-    CONSTRAINT chk_subscriptions_sharable CHECK (is_sharable OR max_participants = 1),
     CONSTRAINT chk_subscriptions_payment_date CHECK (next_payment_date >= billing_anchor_date),
     CONSTRAINT fk_subscriptions_provider_id
         FOREIGN KEY (provider_id) REFERENCES subscription_providers (id)

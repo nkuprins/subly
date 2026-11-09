@@ -66,10 +66,6 @@ public class Subscription {
     @Column(nullable = false)
     private Currency currency = Currency.EUR;
 
-    // Placeholders: not sharable, one participant, until shared plans exist.
-    @Column(name = "is_sharable", nullable = false)
-    private boolean sharable = false;
-
     @Column(nullable = false)
     private int maxParticipants = 1;
 
@@ -93,11 +89,14 @@ public class Subscription {
     }
 
     public void makeSharable(int maxParticipants) {
-        if (maxParticipants < 1) {
-            throw new IllegalArgumentException("maxParticipants must be at least 1, got " + maxParticipants);
+        if (maxParticipants < 2) {
+            throw new IllegalArgumentException("maxParticipants must be at least 2, got " + maxParticipants);
         }
-        sharable = true;
         this.maxParticipants = maxParticipants;
+    }
+
+    public boolean isSharable() {
+        return maxParticipants > 1;
     }
 
     public boolean isActive() {

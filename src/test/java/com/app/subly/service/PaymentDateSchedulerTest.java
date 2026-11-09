@@ -1,13 +1,18 @@
 package com.app.subly.service;
 
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
+import static com.app.subly.testdata.TestClock.DEFAULT_ZONE;
+import static com.app.subly.testdata.TestClock.TODAY;
+import static com.app.subly.testdata.TestClock.TOKYO;
+import static com.app.subly.testdata.TestClock.TOKYO_TODAY;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 import com.app.subly.repository.UserRepository;
+import com.app.subly.testdata.TestClock;
 import java.time.Clock;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.List;
@@ -20,8 +25,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class PaymentDateSchedulerTest {
 
-    private static final ZoneId RIGA = ZoneId.of("Europe/Riga");
-    private static final ZoneId TOKYO = ZoneId.of("Asia/Tokyo");
+    private static final Instant FIFTEEN_MINUTES_LATER = Instant.parse("2026-11-04T16:15:00Z");
+    private static final Instant MIDNIGHT_IN_DEFAULT_ZONE = Instant.parse("2026-11-04T22:00:00Z");
 
     @Mock
     UserRepository userRepository;
@@ -29,37 +34,35 @@ class PaymentDateSchedulerTest {
     @Mock
     SubscriptionService subscriptionService;
 
-    // Starts at 16:00 UTC on 4 Nov: still 4 Nov in Riga, but already 5 Nov in Tokyo.
-    final MovableClock clock = new MovableClock(Instant.parse("2026-11-04T16:00:00Z"));
+    final MovableClock clock = new MovableClock(TestClock.NOW);
     PaymentDateScheduler scheduler;
 
     @BeforeEach
     void setUp() {
         scheduler = new PaymentDateScheduler(userRepository, subscriptionService, clock);
-        given(userRepository.findDistinctTimeZones()).willReturn(List.of(RIGA, TOKYO));
+        when(userRepository.findDistinctTimeZones()).thenReturn(List.of(DEFAULT_ZONE, TOKYO));
     }
 
     @Test
-    void advancesEachZoneWithThatZonesToday() {
+    void advancePastPaymentDates_shouldUseTheTodayOfEachZone() {
         scheduler.advancePastPaymentDates();
 
-        then(subscriptionService).should().advancePaymentDates(RIGA, LocalDate.of(2026, 11, 4));
-        then(subscriptionService).should().advancePaymentDates(TOKYO, LocalDate.of(2026, 11, 5));
+        verify(subscriptionService).advancePaymentDates(DEFAULT_ZONE, TODAY);
+        verify(subscriptionService).advancePaymentDates(TOKYO, TOKYO_TODAY);
     }
 
     @Test
-    void skipsZoneUntilItsDateChanges() {
+    void advancePastPaymentDates_shouldSkipZoneUntilItsDateChanges() {
         scheduler.advancePastPaymentDates();
-        clock.moveTo("2026-11-04T16:15:00Z");
+        clock.moveTo(FIFTEEN_MINUTES_LATER);
         scheduler.advancePastPaymentDates();
-        // 22:00 UTC on 4 Nov is midnight of 5 Nov in Riga; Tokyo is still on 5 Nov.
-        clock.moveTo("2026-11-04T22:00:00Z");
+        clock.moveTo(MIDNIGHT_IN_DEFAULT_ZONE);
         scheduler.advancePastPaymentDates();
 
-        then(subscriptionService).should(times(1)).advancePaymentDates(RIGA, LocalDate.of(2026, 11, 4));
-        then(subscriptionService).should(times(1)).advancePaymentDates(RIGA, LocalDate.of(2026, 11, 5));
-        then(subscriptionService).should(times(1)).advancePaymentDates(TOKYO, LocalDate.of(2026, 11, 5));
-        then(subscriptionService).shouldHaveNoMoreInteractions();
+        verify(subscriptionService, times(1)).advancePaymentDates(DEFAULT_ZONE, TODAY);
+        verify(subscriptionService, times(1)).advancePaymentDates(DEFAULT_ZONE, TODAY.plusDays(1));
+        verify(subscriptionService, times(1)).advancePaymentDates(TOKYO, TOKYO_TODAY);
+        verifyNoMoreInteractions(subscriptionService);
     }
 
     private static final class MovableClock extends Clock {
@@ -70,8 +73,8 @@ class PaymentDateSchedulerTest {
             this.now = now;
         }
 
-        void moveTo(String instant) {
-            now = Instant.parse(instant);
+        void moveTo(Instant instant) {
+            now = instant;
         }
 
         @Override

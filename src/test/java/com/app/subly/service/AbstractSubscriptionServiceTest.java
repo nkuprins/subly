@@ -1,13 +1,14 @@
 package com.app.subly.service;
 
+import static com.app.subly.testdata.TestSubscriptions.aSubscription;
+import static com.app.subly.testdata.TestUsers.ALICE;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.when;
 
 import com.app.subly.dto.subscription.PaymentDetails;
-import com.app.subly.model.TestUsers;
 import com.app.subly.model.category.Category;
+import com.app.subly.model.provider.ProviderType;
 import com.app.subly.model.provider.SubscriptionProvider;
-import com.app.subly.model.subscription.BillingCycle;
 import com.app.subly.model.subscription.MembershipRole;
 import com.app.subly.model.subscription.Subscription;
 import com.app.subly.model.subscription.SubscriptionMembership;
@@ -16,11 +17,9 @@ import com.app.subly.repository.SubscriptionMembershipRepository;
 import com.app.subly.repository.SubscriptionProviderRepository;
 import com.app.subly.repository.SubscriptionRepository;
 import com.app.subly.repository.UserRepository;
-import java.math.BigDecimal;
-import java.time.Clock;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneOffset;
+import com.app.subly.testdata.TestClock;
+import com.app.subly.testdata.TestProviders;
+import com.app.subly.testdata.TestUsers;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,11 +31,6 @@ abstract class AbstractSubscriptionServiceTest {
 
     static final long SUBSCRIPTION_ID = 7L;
     static final long PROVIDER_ID = 1L;
-    static final String CUSTOM_NAME = "My gym";
-    static final String CATALOG_NAME = "Test catalog";
-    static final String OWNER = "test-owner";
-    static final String STRANGER = "test-stranger";
-    static final BigDecimal ORIGINAL_PRICE = new BigDecimal("35.00");
 
     @Mock
     SubscriptionRepository subscriptionRepository;
@@ -50,12 +44,9 @@ abstract class AbstractSubscriptionServiceTest {
     @Mock
     UserRepository userRepository;
 
-    final Clock clock = Clock.fixed(Instant.parse("2026-11-04T16:00:00Z"), ZoneOffset.UTC);
     SubscriptionService subscriptionService;
-
-    LocalDate today;
     User owner;
-    Category gym;
+    Category category;
 
     @BeforeEach
     void setUp() {
@@ -65,35 +56,31 @@ abstract class AbstractSubscriptionServiceTest {
                 membershipRepository,
                 subscriptionProviderRepository,
                 userRepository,
-                clock);
-        today = LocalDate.of(2026, 11, 4);
-        owner = TestUsers.user(OWNER);
-        gym = new Category("Test gym");
+                TestClock.CLOCK);
+        owner = TestUsers.user(ALICE);
+        category = TestProviders.category();
     }
 
-    void givenOwnerExists() {
-        given(userRepository.getByUsername(OWNER)).willReturn(owner);
+    void stubOwnerExists() {
+        when(userRepository.getByUsername(ALICE)).thenReturn(owner);
     }
 
-    Subscription givenOwnedCustomSubscription() {
-        return givenOwnedSubscription(customProvider());
-    }
-
-    Subscription givenOwnedCatalogSubscription() {
-        return givenOwnedSubscription(catalogProvider());
-    }
-
-    Subscription givenSubscriptionOwnedBySomeoneElse() {
-        Subscription subscription = subscription(customProvider());
-        given(membershipRepository.findBySubscriptionIdAndRole(SUBSCRIPTION_ID, MembershipRole.OWNER))
-                .willReturn(Optional.of(SubscriptionMembership.owner(owner, subscription)));
+    Subscription stubOwnedSubscription(ProviderType providerType) {
+        Subscription subscription =
+                subscription(providerType == ProviderType.CATALOG ? catalogProvider() : customProvider());
+        when(membershipRepository.findBySubscriptionIdAndRole(SUBSCRIPTION_ID, MembershipRole.OWNER))
+                .thenReturn(Optional.of(SubscriptionMembership.owner(owner, subscription)));
         return subscription;
     }
 
-    void givenOwnerRowWithSubscriptionDetails(Subscription subscription) {
-        given(membershipRepository.findWithSubscriptionDetailsBySubscriptionIdAndRole(
+    Subscription stubSubscriptionOwnedBySomeoneElse() {
+        return stubOwnedSubscription(ProviderType.CUSTOM);
+    }
+
+    void stubOwnerRowWithSubscriptionDetails(Subscription subscription) {
+        when(membershipRepository.findWithSubscriptionDetailsBySubscriptionIdAndRole(
                         SUBSCRIPTION_ID, MembershipRole.OWNER))
-                .willReturn(Optional.of(SubscriptionMembership.owner(owner, subscription)));
+                .thenReturn(Optional.of(SubscriptionMembership.owner(owner, subscription)));
     }
 
     static void assertPaymentDetails(Subscription subscription, PaymentDetails request) {
@@ -105,21 +92,14 @@ abstract class AbstractSubscriptionServiceTest {
     }
 
     SubscriptionProvider catalogProvider() {
-        return SubscriptionProvider.catalog(CATALOG_NAME, gym);
+        return TestProviders.catalog(category);
     }
 
     SubscriptionProvider customProvider() {
-        return SubscriptionProvider.custom(CUSTOM_NAME, gym, owner);
+        return TestProviders.custom(category, owner);
     }
 
-    Subscription subscription(SubscriptionProvider subscriptionProvider) {
-        return new Subscription(subscriptionProvider, ORIGINAL_PRICE, BillingCycle.MONTHLY, today.plusDays(10), false);
-    }
-
-    private Subscription givenOwnedSubscription(SubscriptionProvider subscriptionProvider) {
-        Subscription subscription = subscription(subscriptionProvider);
-        given(membershipRepository.findBySubscriptionIdAndRole(SUBSCRIPTION_ID, MembershipRole.OWNER))
-                .willReturn(Optional.of(SubscriptionMembership.owner(owner, subscription)));
-        return subscription;
+    Subscription subscription(SubscriptionProvider provider) {
+        return aSubscription().withProvider(provider).build();
     }
 }
