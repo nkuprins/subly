@@ -1,34 +1,27 @@
 package com.app.subly.service;
 
 import com.app.subly.dto.subscription.*;
-import com.app.subly.dto.PaymentDetails;
-import com.app.subly.exception.subscription.CatalogServiceReadOnlyException;
-import com.app.subly.exception.subscription.CategoryNotFoundException;
-import com.app.subly.exception.subscription.CatalogServiceNotFoundException;
+import com.app.subly.dto.subscription.PaymentDetails;
+import com.app.subly.exception.provider.ProviderNotFoundException;
 import com.app.subly.exception.subscription.PaymentDateInPastException;
-import com.app.subly.model.subscription.Category;
+import com.app.subly.model.provider.SubscriptionProvider;
 import com.app.subly.model.subscription.MembershipRole;
-import com.app.subly.model.subscription.ServiceProvider;
-import com.app.subly.model.subscription.ServiceType;
 import com.app.subly.model.subscription.Subscription;
 import com.app.subly.model.subscription.SubscriptionMembership;
 import com.app.subly.model.subscription.SubscriptionStatus;
-import com.app.subly.model.User;
-import com.app.subly.repository.CategoryRepository;
-import com.app.subly.repository.ServiceProviderRepository;
+import com.app.subly.model.user.User;
 import com.app.subly.repository.SubscriptionMembershipRepository;
+import com.app.subly.repository.SubscriptionProviderRepository;
 import com.app.subly.repository.SubscriptionRepository;
 import com.app.subly.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -37,35 +30,23 @@ public class SubscriptionService {
     private final SubscriptionRepository subscriptionRepository;
     private final SubscriptionAccess subscriptionAccess;
     private final SubscriptionMembershipRepository membershipRepository;
-    private final ServiceProviderRepository serviceProviderRepository;
-    private final CategoryRepository categoryRepository;
+    private final SubscriptionProviderRepository subscriptionProviderRepository;
     private final UserRepository userRepository;
     private final Clock clock;
 
     @Transactional
     public SubscriptionResponse create(String username, CreateSubscriptionRequest request) {
-        User owner = findUser(username);
+        User owner = userRepository.getByUsername(username);
         requireNotInPast(owner, request);
-        ServiceProvider service = findCatalogService(request.serviceId());
-        return subscribe(owner, service, request);
-    }
-
-    @Transactional
-    public SubscriptionResponse createCustom(String username, CreateCustomSubscriptionRequest request) {
-        User owner = findUser(username);
-        requireNotInPast(owner, request);
-        Category category = findCategory(request.categoryId());
-        ServiceProvider service = serviceProviderRepository.save(
-                ServiceProvider.custom(request.name().strip(), category, owner));
-        return subscribe(owner, service, request);
+        SubscriptionProvider provider = findVisibleProvider(request.providerId(), owner);
+        return subscribe(owner, provider, request);
     }
 
     @Transactional(readOnly = true)
     public List<VisibleSubscriptionResponse> findVisibleTo(String username) {
         return membershipRepository
-                .findByUser_UsernameAndSubscription_StatusOrderBySubscription_NextPaymentDateAsc(
-                        username,
-                        SubscriptionStatus.ACTIVE)
+                .findByUserUsernameAndSubscriptionStatusOrderBySubscriptionNextPaymentDateAsc(
+                        username, SubscriptionStatus.ACTIVE)
                 .stream()
                 .map(VisibleSubscriptionResponse::from)
                 .toList();
@@ -73,24 +54,10 @@ public class SubscriptionService {
 
     @Transactional
     public SubscriptionResponse update(String username, long subscriptionId, UpdateSubscriptionRequest request) {
-        Subscription subscription = subscriptionAccess.getOwnedSubscription(username, subscriptionId);
-        requireNotInPast(findUser(username), request);
-        applyPaymentDetails(subscription, request);
-        return SubscriptionResponse.from(subscription);
-    }
-
-    @Transactional
-    public SubscriptionResponse updateCustom(String username, long subscriptionId,
-                                             UpdateCustomSubscriptionRequest request) {
-        Subscription subscription = subscriptionAccess.getOwnedSubscription(username, subscriptionId);
-        ServiceProvider service = subscription.getService();
-        if (service.getServiceType() != ServiceType.CUSTOM) {
-            throw new CatalogServiceReadOnlyException(service.getName());
-        }
-        requireNotInPast(findUser(username), request);
-        Category category = findCategory(request.categoryId());
-        service.setName(request.name().strip());
-        service.setCategory(category);
+        SubscriptionMembership owner =
+                subscriptionAccess.getOwnerMembershipWithSubscriptionDetails(username, subscriptionId);
+        Subscription subscription = owner.getSubscription();
+        requireNotInPast(owner.getUser(), request);
         applyPaymentDetails(subscription, request);
         return SubscriptionResponse.from(subscription);
     }
@@ -106,71 +73,50 @@ public class SubscriptionService {
     @Transactional
     public void delete(String username, long subscriptionId) {
         Subscription subscription = subscriptionAccess.getOwnedSubscription(username, subscriptionId);
-        ServiceProvider service = subscription.getService();
 
         //  Decide what happens to payments when they are implemented.
         subscriptionRepository.delete(subscription);
-        if (service.getServiceType() == ServiceType.CUSTOM) {
-            serviceProviderRepository.delete(service);
-        }
     }
 
     @Transactional
     public void cancel(String username, long subscriptionId) {
-        Subscription subscription =
-                subscriptionAccess.getOwnedSubscription(username, subscriptionId);
+        Subscription subscription = subscriptionAccess.getOwnedSubscription(username, subscriptionId);
 
-        if (subscription.getStatus() == SubscriptionStatus.CANCELLED) {
+        if (!subscription.isActive()) {
             return;
         }
 
-        subscription.setStatus(SubscriptionStatus.CANCELLED);
-        subscription.setCancelledAt(LocalDateTime.now(clock));
+        subscription.cancel(Instant.now(clock));
     }
 
     @Transactional
     public void reactivate(String username, long subscriptionId) {
-        Subscription subscription =
-                subscriptionAccess.getOwnedSubscription(username, subscriptionId);
+        SubscriptionMembership owner = subscriptionAccess.getOwnerMembership(username, subscriptionId);
+        Subscription subscription = owner.getSubscription();
 
-        if (subscription.getStatus() == SubscriptionStatus.ACTIVE) {
+        if (subscription.isActive()) {
             return;
         }
 
-        LocalDate today = findUser(username).today(clock);
+        LocalDate today = owner.getUser().today(clock);
 
-        subscription.advancePaymentDate(today);
-        subscription.setStatus(SubscriptionStatus.ACTIVE);
-        subscription.setCancelledAt(null);
+        subscription.reactivate(today);
     }
 
-    private SubscriptionResponse subscribe(User owner, ServiceProvider service, PaymentDetails request) {
+    private SubscriptionResponse subscribe(User owner, SubscriptionProvider provider, PaymentDetails request) {
         Subscription subscription = new Subscription(
-                service,
-                request.price(),
-                request.billingCycle(),
-                request.nextPaymentDate(),
-                request.freeTrial());
+                provider, request.price(), request.billingCycle(), request.nextPaymentDate(), request.freeTrial());
         subscriptionRepository.save(subscription);
 
         membershipRepository.save(SubscriptionMembership.owner(owner, subscription));
         return SubscriptionResponse.from(subscription);
     }
 
-
-    private User findUser(String username) {
-        return userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User " + username + " does not exist"));
-    }
-
-    private ServiceProvider findCatalogService(long serviceId) {
-        return serviceProviderRepository.findByIdAndServiceType(serviceId, ServiceType.CATALOG)
-                .orElseThrow(() -> new CatalogServiceNotFoundException(serviceId));
-    }
-
-    private Category findCategory(long categoryId) {
-        return categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new CategoryNotFoundException(categoryId));
+    private SubscriptionProvider findVisibleProvider(long providerId, User owner) {
+        return subscriptionProviderRepository
+                .findById(providerId)
+                .filter(provider -> provider.isVisibleTo(owner))
+                .orElseThrow(() -> new ProviderNotFoundException(providerId));
     }
 
     private void requireNotInPast(User user, PaymentDetails request) {

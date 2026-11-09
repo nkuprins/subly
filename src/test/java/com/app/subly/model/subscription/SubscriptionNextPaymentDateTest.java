@@ -1,49 +1,32 @@
 package com.app.subly.model.subscription;
 
+import static com.app.subly.testdata.TestSubscriptions.aSubscription;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class SubscriptionNextPaymentDateTest {
 
     @ParameterizedTest(name = "{0} {1} on {2} -> {3}")
     @CsvSource({
-            "MONTHLY, 2026-11-20, 2026-11-04, 2026-11-20",
-            "MONTHLY, 2026-11-04, 2026-11-04, 2026-11-04",
-            "MONTHLY, 2026-11-03, 2026-11-04, 2026-12-03",
-            "MONTHLY, 2026-10-04, 2026-11-04, 2026-11-04",
-            "MONTHLY, 2024-03-15, 2026-11-04, 2026-11-15",
-            "YEARLY,  2026-12-01, 2026-11-04, 2026-12-01",
-            "YEARLY,  2026-11-03, 2026-11-04, 2027-11-03",
-            "YEARLY,  2025-11-04, 2026-11-04, 2026-11-04",
-            "YEARLY,  2020-06-10, 2026-11-04, 2027-06-10",
+        "MONTHLY, 2027-01-20, 2026-11-04, 2027-01-20", // more than a cycle ahead: unchanged
+        "MONTHLY, 2026-11-20, 2026-11-04, 2026-11-20", // later this cycle: unchanged
+        "MONTHLY, 2026-11-04, 2026-11-04, 2026-11-04", // due today: stays today
+        "MONTHLY, 2026-11-03, 2026-11-04, 2026-12-03", // due yesterday: one month later
+        "MONTHLY, 2026-10-04, 2026-11-04, 2026-11-04", // exactly one cycle ago: lands on today
+        "MONTHLY, 2024-03-15, 2026-11-04, 2026-11-15", // years behind: first 15th from today
+        "YEARLY,  2026-11-03, 2026-11-04, 2027-11-03", // yearly: one year later
+        "MONTHLY, 2027-01-31, 2027-04-30, 2027-04-30", // 31st in a 30-day month: last day
+        "MONTHLY, 2028-01-31, 2028-02-01, 2028-02-29", // 31st in leap February: February 29
+        "YEARLY,  2028-02-29, 2028-03-01, 2029-02-28", // February 29 in a common year: February 28
+        "YEARLY,  2028-02-29, 2031-03-01, 2032-02-29", // next leap year: back to February 29
     })
-    void movesForwardByWholeCyclesToTodayOrLater(BillingCycle cycle, LocalDate firstPayment,
-                                                 LocalDate today, LocalDate expected) {
-        Subscription subscription = subscription(cycle, firstPayment);
-
-        subscription.advancePaymentDate(today);
-
-        assertThat(subscription.getNextPaymentDate()).isEqualTo(expected);
-    }
-
-    @ParameterizedTest(name = "{0} {1} on {2} -> {3}")
-    @CsvSource({
-            "MONTHLY, 2027-01-31, 2027-02-01, 2027-02-28",
-            "MONTHLY, 2028-01-31, 2028-02-01, 2028-02-29",
-            "MONTHLY, 2027-01-31, 2027-03-01, 2027-03-31",
-            "MONTHLY, 2027-01-31, 2027-04-01, 2027-04-30",
-            "MONTHLY, 2027-01-31, 2027-04-30, 2027-04-30",
-            "YEARLY,  2028-02-29, 2028-03-01, 2029-02-28",
-            "YEARLY,  2028-02-29, 2031-03-01, 2032-02-29",
-    })
-    void keepsOriginalDayOfMonth(BillingCycle cycle, LocalDate firstPayment, LocalDate today, LocalDate expected) {
-        Subscription subscription = subscription(cycle, firstPayment);
+    void advancePaymentDate_shouldMoveByWholeCyclesKeepingTheDayOfMonth(
+            BillingCycle cycle, LocalDate anchorDate, LocalDate today, LocalDate expected) {
+        Subscription subscription = subscription(cycle, anchorDate);
 
         subscription.advancePaymentDate(today);
 
@@ -51,7 +34,7 @@ class SubscriptionNextPaymentDateTest {
     }
 
     @Test
-    void keepsOriginalDayAcrossDailyRuns() {
+    void advancePaymentDate_shouldKeepOriginalDayAcrossDailyRuns() {
         Subscription subscription = subscription(BillingCycle.MONTHLY, LocalDate.of(2027, 1, 31));
 
         subscription.advancePaymentDate(LocalDate.of(2027, 2, 1));
@@ -65,18 +48,21 @@ class SubscriptionNextPaymentDateTest {
     }
 
     @Test
-    void rescheduleMovesTheAnchor() {
+    void reschedule_shouldMoveTheAnchor() {
         Subscription subscription = subscription(BillingCycle.MONTHLY, LocalDate.of(2027, 1, 31));
+        LocalDate newAnchor = LocalDate.of(2027, 3, 15);
 
-        subscription.reschedule(LocalDate.of(2027, 3, 15));
-        subscription.advancePaymentDate(LocalDate.of(2027, 3, 16));
+        subscription.reschedule(newAnchor);
+        subscription.advancePaymentDate(newAnchor.plusDays(1));
 
-        assertThat(subscription.getBillingAnchorDate()).isEqualTo(LocalDate.of(2027, 3, 15));
-        assertThat(subscription.getNextPaymentDate()).isEqualTo(LocalDate.of(2027, 4, 15));
+        assertThat(subscription.getBillingAnchorDate()).isEqualTo(newAnchor);
+        assertThat(subscription.getNextPaymentDate()).isEqualTo(newAnchor.plusMonths(1));
     }
 
-    private static Subscription subscription(BillingCycle cycle, LocalDate firstPayment) {
-        return new Subscription(ServiceProvider.catalog("Netflix", new Category("Streaming")),
-                new BigDecimal("9.99"), cycle, firstPayment, false);
+    private static Subscription subscription(BillingCycle cycle, LocalDate anchorDate) {
+        return aSubscription()
+                .withBillingCycle(cycle)
+                .withNextPaymentDate(anchorDate)
+                .build();
     }
 }

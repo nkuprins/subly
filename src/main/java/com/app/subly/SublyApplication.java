@@ -11,5 +11,4 @@ public class SublyApplication {
     public static void main(String[] args) {
         SpringApplication.run(SublyApplication.class, args);
     }
-
 }

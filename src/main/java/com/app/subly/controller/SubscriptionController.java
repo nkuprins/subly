@@ -3,12 +3,12 @@ package com.app.subly.controller;
 import com.app.subly.dto.subscription.*;
 import com.app.subly.service.SubscriptionService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
+import java.security.Principal;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-
-import java.security.Principal;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/subscriptions")
@@ -23,45 +23,34 @@ public class SubscriptionController {
         return service.create(principal.getName(), request);
     }
 
-    @PostMapping("/custom")
-    @ResponseStatus(HttpStatus.CREATED)
-    public SubscriptionResponse createCustom(Principal principal,
-                                             @Valid @RequestBody CreateCustomSubscriptionRequest request) {
-        return service.createCustom(principal.getName(), request);
-    }
-
     @GetMapping
     public List<VisibleSubscriptionResponse> listMine(Principal principal) {
         return service.findVisibleTo(principal.getName());
     }
 
     @PutMapping("/{id}")
-    public SubscriptionResponse update(Principal principal, @PathVariable long id,
-                                       @Valid @RequestBody UpdateSubscriptionRequest request) {
+    public SubscriptionResponse update(
+            Principal principal,
+            @PathVariable @Positive long id,
+            @Valid @RequestBody UpdateSubscriptionRequest request) {
         return service.update(principal.getName(), id, request);
-    }
-
-    @PutMapping("/{id}/custom")
-    public SubscriptionResponse updateCustom(Principal principal, @PathVariable long id,
-                                             @Valid @RequestBody UpdateCustomSubscriptionRequest request) {
-        return service.updateCustom(principal.getName(), id, request);
     }
 
     @PatchMapping("/{id}/cancel")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void cancel(Principal principal, @PathVariable long id) {
+    public void cancel(Principal principal, @PathVariable @Positive long id) {
         service.cancel(principal.getName(), id);
     }
 
     @PatchMapping("/{id}/reactivate")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void reactivate(Principal principal, @PathVariable long id) {
+    public void reactivate(Principal principal, @PathVariable @Positive long id) {
         service.reactivate(principal.getName(), id);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(Principal principal, @PathVariable long id) {
+    public void delete(Principal principal, @PathVariable @Positive long id) {
         service.delete(principal.getName(), id);
     }
 }

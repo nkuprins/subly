@@ -1,296 +1,211 @@
 package com.app.subly.service;
 
-import com.app.subly.dto.UpdateUserInformationRequest;
-import com.app.subly.exception.*;
-import com.app.subly.model.User;
+import static com.app.subly.testdata.TestUsers.ALICE;
+import static com.app.subly.testdata.TestUsers.BOB;
+import static com.app.subly.testdata.TestUsers.PASSWORD_HASH;
+import static com.app.subly.testdata.TestUsers.email;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import com.app.subly.dto.user.UpdateUserInformationRequest;
+import com.app.subly.exception.user.UserAlreadyExistsException;
+import com.app.subly.exception.user.UserDoesNotExistException;
+import com.app.subly.exception.user.UserInfoUpdateException;
+import com.app.subly.exception.user.UserIsConnectedException;
+import com.app.subly.exception.user.WrongPasswordException;
+import com.app.subly.model.user.User;
 import com.app.subly.repository.UserRepository;
+import com.app.subly.testdata.TestUsers;
+import java.util.Optional;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.verify;
-
 @ExtendWith(MockitoExtension.class)
-public class UserServiceTest {
+class UserServiceTest {
+
+    private static final String PASSWORD = "secretPassword";
+    private static final String NEW_PASSWORD = "newSecretPassword";
+    private static final String NEW_EMAIL = "alice.new@example.com";
+    private static final String NEW_USERNAME = "alice_new";
+    private static final String NEW_NAME = "Alice Smith";
 
     @Mock
-    private UserRepository repository;
+    UserRepository repository;
 
     @Mock
-    private PasswordEncoder encoder;
+    PasswordEncoder encoder;
 
     @InjectMocks
-    private UserService service;
-
-
-    // method_shouldDoXWhenY
-    // get_ShouldReturnScore10, multiplyReserveShouldCallExternalSystemCorrectly
+    UserService service;
 
     @Test
-    public void addUserShouldThrowExceptionIfUserExists() {
-        when(this.encoder.encode("123"))
-                .thenReturn("123");
+    void addNewUser_shouldRejectExistingUser() {
+        when(encoder.encode(PASSWORD)).thenReturn(PASSWORD_HASH);
+        when(repository.save(any(User.class))).thenThrow(DataIntegrityViolationException.class);
+        String aliceEmail = email(ALICE);
 
-        doThrow(new DataIntegrityViolationException("Some db error"))
-                .when(this.repository).save(any(User.class));
-
-        assertThrows(UserAlreadyExistsException.class,
-                () -> this.service.addNewUser("andris123", "Andris", "123", "andris@gmail.com", null));
-        verify(repository).save(any(User.class));
+        assertThatThrownBy(() -> service.addNewUser(ALICE, "Alice", PASSWORD, aliceEmail, null))
+                .isInstanceOf(UserAlreadyExistsException.class);
     }
 
     @Test
-    public void getUserShouldThrowExceptionIfUserNotExist() {
-        when(this.repository.findByUsername("andris123"))
-                .thenReturn(Optional.empty());
+    void getUserByUsername_shouldRejectUnknownUser() {
+        when(repository.findByUsername(ALICE)).thenReturn(Optional.empty());
 
-        assertThrows(UserDoesNotExistException.class,
-                () -> this.service.getUserByUserName("andris123"));
+        assertThatThrownBy(() -> service.getUserByUsername(ALICE)).isInstanceOf(UserDoesNotExistException.class);
     }
 
     @Test
-    public void deleteUserShouldThrowExceptionIfPasswordsUnmatched() {
-        User user = new User();
-        user.setUsername("andris123");
-        user.setPasswordHash("some_hash");
+    void deleteUserByUsername_shouldRejectWrongPassword() {
+        stubExistingUser();
+        when(encoder.matches(PASSWORD, PASSWORD_HASH)).thenReturn(false);
 
-        when(this.repository.findByUsername("andris123"))
-                .thenReturn(Optional.of(user));
-
-        when(this.encoder.matches("secretPassword", "some_hash"))
-                .thenReturn(false);
-
-        assertThrows(WrongPasswordException.class, ()
-                -> this.service.deleteUserByUsername("andris123", "secretPassword"));
+        assertThatThrownBy(() -> service.deleteUserByUsername(ALICE, PASSWORD))
+                .isInstanceOf(WrongPasswordException.class);
     }
 
     @Test
-    public void deleteUserShouldThrowExceptionIfUserConnectedWithTable() {
-        User user = new User();
-        user.setUsername("andris123");
-        user.setPasswordHash("some_hash");
+    void deleteUserByUsername_shouldRejectUserReferencedByOtherRows() {
+        stubExistingUser();
+        when(encoder.matches(PASSWORD, PASSWORD_HASH)).thenReturn(true);
+        doThrow(DataIntegrityViolationException.class).when(repository).deleteByUsername(ALICE);
 
-        when(this.repository.findByUsername("andris123"))
-                .thenReturn(Optional.of(user));
-
-        when(this.encoder.matches("secretPassword", "some_hash"))
-                .thenReturn(true);
-
-        doThrow(DataIntegrityViolationException.class)
-                .when(this.repository).deleteByUsername("andris123");
-
-        assertThrows(UserIsConnectedError.class, ()
-                -> this.service.deleteUserByUsername("andris123", "secretPassword"));
+        assertThatThrownBy(() -> service.deleteUserByUsername(ALICE, PASSWORD))
+                .isInstanceOf(UserIsConnectedException.class);
     }
 
     @Test
-    public void deleteUserShouldBeCompletedCorrectly() {
-        User user = new User();
-        user.setUsername("andris123");
-        user.setPasswordHash("some_hash");
+    void deleteUserByUsername_shouldDeleteUserWithMatchingPassword() {
+        stubExistingUser();
+        when(encoder.matches(PASSWORD, PASSWORD_HASH)).thenReturn(true);
 
-        when(this.repository.findByUsername("andris123"))
-                .thenReturn(Optional.of(user));
+        service.deleteUserByUsername(ALICE, PASSWORD);
 
-        when(this.encoder.matches("secretPassword", "some_hash"))
-                .thenReturn(true);
-
-        assertDoesNotThrow(() -> this.service.deleteUserByUsername("andris123", "secretPassword"));
-        verify(encoder).matches("secretPassword", "some_hash");
-        verify(repository).deleteByUsername("andris123");
-    }
-
-
-    @Test
-    public void updatePasswordShouldFailIfPasswordsUnmatched() {
-        User user = new User();
-        user.setUsername("andris123");
-        user.setPasswordHash("some_hash");
-
-        when(this.repository.findByUsername("andris123")).thenReturn(Optional.of(user));
-
-        when(this.encoder.matches("realPassword", "some_hash")).thenReturn(false);
-
-        assertThrows(WrongPasswordException.class, ()
-                -> this.service.updateUserPassword("andris123", "realPassword", "newRealPassword"));
-
-        assertThat(user.getPasswordHash()).isEqualTo("some_hash");
+        verify(repository).deleteByUsername(ALICE);
     }
 
     @Test
-    public void updatePasswordShouldBeCompletedCorrectly() {
-        User user = new User();
-        user.setUsername("andris123");
-        user.setPasswordHash("some_hash");
+    void updateUserPassword_shouldRejectWrongOldPassword() {
+        User user = stubExistingUser();
+        when(encoder.matches(PASSWORD, PASSWORD_HASH)).thenReturn(false);
 
-        when(this.repository.findByUsername("andris123")).thenReturn(Optional.of(user));
-
-        when(this.encoder.matches("realPassword", "some_hash")).thenReturn(true);
-        when(this.encoder.encode("newRealPassword")).thenReturn("new_some_hash");
-
-        assertDoesNotThrow(() -> this.service.updateUserPassword(
-                "andris123", "realPassword", "newRealPassword"));
-
-        assertThat(user.getPasswordHash()).isEqualTo("new_some_hash");
+        assertThatThrownBy(() -> service.updateUserPassword(ALICE, PASSWORD, NEW_PASSWORD))
+                .isInstanceOf(WrongPasswordException.class);
+        assertThat(user.getPasswordHash()).isEqualTo(PASSWORD_HASH);
     }
 
     @Test
-    public void updateInformationShouldFailWithEmptyEmail() {
-        User user = new User();
-        user.setEmail("andris@gmail.com");
-        user.setName("Andris");
-        user.setUsername("andris123");
+    void updateUserPassword_shouldStoreTheHashOfTheNewPassword() {
+        User user = stubExistingUser();
+        String newHash = "new_hash";
+        when(encoder.matches(PASSWORD, PASSWORD_HASH)).thenReturn(true);
+        when(encoder.encode(NEW_PASSWORD)).thenReturn(newHash);
 
-        when(this.repository.findByUsername("andris123")).thenReturn(Optional.of(user));
+        service.updateUserPassword(ALICE, PASSWORD, NEW_PASSWORD);
 
-        UpdateUserInformationRequest fake_request = new UpdateUserInformationRequest();
-        fake_request.setNewEmail("");
+        assertThat(user.getPasswordHash()).isEqualTo(newHash);
+    }
 
-        UserInfoUpdateException ex = assertThrows(UserInfoUpdateException.class,
-                () -> this.service.updateUserInformation("andris123", fake_request));
+    @ParameterizedTest(name = "empty {0}")
+    @MethodSource("emptyFieldUpdates")
+    void updateUserInformation_shouldRejectEmptyValue(String field, UpdateUserInformationRequest request) {
+        stubExistingUser();
 
-        assertThat(ex.getMessage()).containsIgnoringCase("a non-empty email");
+        assertThatThrownBy(() -> service.updateUserInformation(ALICE, request))
+                .isInstanceOf(UserInfoUpdateException.class)
+                .hasMessageContaining("a non-empty " + field);
     }
 
     @Test
-    public void updateInformationShouldFailWithEmptyUsername() {
-        User user = new User();
-        user.setEmail("andris@gmail.com");
-        user.setName("Andris");
-        user.setUsername("andris123");
+    void updateUserInformation_shouldChangeUsername() {
+        User user = stubExistingUser();
 
-        when(this.repository.findByUsername("andris123")).thenReturn(Optional.of(user));
+        service.updateUserInformation(ALICE, usernameUpdate(NEW_USERNAME));
 
-        UpdateUserInformationRequest fake_request = new UpdateUserInformationRequest();
-        fake_request.setNewUsername("");
-
-        UserInfoUpdateException ex = assertThrows(UserInfoUpdateException.class,
-                () -> this.service.updateUserInformation("andris123", fake_request));
-
-        assertThat(ex.getMessage()).containsIgnoringCase("a non-empty username");
-    }
-
-    @Test
-    public void updateInformationShouldFailWithEmptyName() {
-        User user = new User();
-        user.setEmail("andris@gmail.com");
-        user.setName("Andris");
-        user.setUsername("andris123");
-
-        when(this.repository.findByUsername("andris123")).thenReturn(Optional.of(user));
-
-        UpdateUserInformationRequest fake_request = new UpdateUserInformationRequest();
-        fake_request.setNewName("");
-
-        UserInfoUpdateException ex = assertThrows(UserInfoUpdateException.class,
-                () -> this.service.updateUserInformation("andris123", fake_request));
-
-        assertThat(ex.getMessage()).containsIgnoringCase("a non-empty name");
-    }
-
-    @Test
-    public void updateInformationShouldChangeUsernameCorrectly() {
-        User user = new User();
-        user.setEmail("andris@gmail.com");
-        user.setName("Andris");
-        user.setUsername("andris123");
-
-        when(this.repository.findByUsername("andris123")).thenReturn(Optional.of(user));
-
-        UpdateUserInformationRequest fake_request = new UpdateUserInformationRequest();
-        fake_request.setNewUsername("andris_new");
-
-        assertDoesNotThrow(() -> this.service.updateUserInformation("andris123", fake_request));
         verify(repository).flush();
-        assertThat(user.getUsername()).isEqualTo("andris_new");
+        assertThat(user.getUsername()).isEqualTo(NEW_USERNAME);
     }
 
     @Test
-    public void updateInformationShouldChangeNameCorrectly() {
-        User user = new User();
-        user.setEmail("andris@gmail.com");
-        user.setName("Andris");
-        user.setUsername("andris123");
+    void updateUserInformation_shouldChangeName() {
+        User user = stubExistingUser();
 
-        when(this.repository.findByUsername("andris123")).thenReturn(Optional.of(user));
+        service.updateUserInformation(ALICE, nameUpdate(NEW_NAME));
 
-        UpdateUserInformationRequest fake_request = new UpdateUserInformationRequest();
-        fake_request.setNewName("Alexandr");
-
-        assertDoesNotThrow(() -> this.service.updateUserInformation("andris123", fake_request));
-
-        assertThat(user.getName()).isEqualTo("Alexandr");
+        assertThat(user.getName()).isEqualTo(NEW_NAME);
     }
 
     @Test
-    public void updateInformationShouldChangeEmailCorrectly() {
-        User user = new User();
-        user.setEmail("andris@gmail.com");
-        user.setName("Andris");
-        user.setUsername("andris123");
+    void updateUserInformation_shouldChangeEmail() {
+        User user = stubExistingUser();
 
-        when(this.repository.findByUsername("andris123")).thenReturn(Optional.of(user));
+        service.updateUserInformation(ALICE, emailUpdate(NEW_EMAIL));
 
-        UpdateUserInformationRequest fake_request = new UpdateUserInformationRequest();
-        fake_request.setNewEmail("my_new_email@gmail.com");
-
-        assertDoesNotThrow(() -> this.service.updateUserInformation("andris123", fake_request));
-
-        assertThat(user.getEmail()).isEqualTo("my_new_email@gmail.com");
+        assertThat(user.getEmail()).isEqualTo(NEW_EMAIL);
     }
 
     @Test
-    public void updateInformationShouldFailIfEmailExists() {
-        User user = new User();
-        user.setEmail("andris@gmail.com");
-        user.setName("Andris");
-        user.setUsername("andris123");
+    void updateUserInformation_shouldRejectExistingEmail() {
+        stubExistingUser();
+        doThrow(DataIntegrityViolationException.class).when(repository).flush();
+        UpdateUserInformationRequest request = emailUpdate(email(BOB));
 
-        when(this.repository.findByUsername("andris123")).thenReturn(Optional.of(user));
-
-        UpdateUserInformationRequest fake_request = new UpdateUserInformationRequest();
-        fake_request.setNewEmail("my_new_email@gmail.com");
-
-        doThrow(DataIntegrityViolationException.class).when(this.repository).flush();
-
-        assertThrows(UserAlreadyExistsException.class,
-                () -> this.service.updateUserInformation("andris123", fake_request));
-
+        assertThatThrownBy(() -> service.updateUserInformation(ALICE, request))
+                .isInstanceOf(UserAlreadyExistsException.class);
     }
 
     @Test
-    public void updateInformationShouldFailIfUsernameExists() {
-        User user = new User();
-        user.setEmail("andris@gmail.com");
-        user.setName("Andris");
-        user.setUsername("andris123");
+    void updateUserInformation_shouldRejectExistingUsername() {
+        stubExistingUser();
+        doThrow(DataIntegrityViolationException.class).when(repository).flush();
+        UpdateUserInformationRequest request = usernameUpdate(BOB);
 
-        when(repository.findByUsername("andris123"))
-                .thenReturn(Optional.of(user));
+        assertThatThrownBy(() -> service.updateUserInformation(ALICE, request))
+                .isInstanceOf(UserAlreadyExistsException.class);
+    }
 
-        UpdateUserInformationRequest request =
-                new UpdateUserInformationRequest();
+    static Stream<Arguments> emptyFieldUpdates() {
+        return Stream.of(
+                arguments("email", emailUpdate("")),
+                arguments("username", usernameUpdate("")),
+                arguments("name", nameUpdate("")));
+    }
 
-        request.setNewUsername("existingUsername");
+    private User stubExistingUser() {
+        User user = TestUsers.user(ALICE);
+        when(repository.findByUsername(ALICE)).thenReturn(Optional.of(user));
+        return user;
+    }
 
-        doThrow(new DataIntegrityViolationException("Duplicate username"))
-                .when(repository).flush();
+    private static UpdateUserInformationRequest emailUpdate(String email) {
+        UpdateUserInformationRequest request = new UpdateUserInformationRequest();
+        request.setNewEmail(email);
+        return request;
+    }
 
-        assertThrows(
-                UserAlreadyExistsException.class,
-                () -> service.updateUserInformation("andris123", request)
-        );
+    private static UpdateUserInformationRequest usernameUpdate(String username) {
+        UpdateUserInformationRequest request = new UpdateUserInformationRequest();
+        request.setNewUsername(username);
+        return request;
+    }
+
+    private static UpdateUserInformationRequest nameUpdate(String name) {
+        UpdateUserInformationRequest request = new UpdateUserInformationRequest();
+        request.setNewName(name);
+        return request;
     }
 }

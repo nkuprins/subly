@@ -15,14 +15,29 @@ class SubscriptionAccess {
 
     private final SubscriptionMembershipRepository membershipRepository;
 
-    // One query for the OWNER row replaces the old two (load subscription, then check owner).
     Subscription getOwnedSubscription(String username, long subscriptionId) {
+        return getOwnerMembership(username, subscriptionId).getSubscription();
+    }
+
+    SubscriptionMembership getOwnerMembership(String username, long subscriptionId) {
         SubscriptionMembership owner = membershipRepository
                 .findBySubscriptionIdAndRole(subscriptionId, MembershipRole.OWNER)
                 .orElseThrow(() -> new SubscriptionNotFoundException(subscriptionId));
+        return requireOwnedBy(owner, username, subscriptionId);
+    }
+
+    SubscriptionMembership getOwnerMembershipWithSubscriptionDetails(String username, long subscriptionId) {
+        SubscriptionMembership owner = membershipRepository
+                .findWithSubscriptionDetailsBySubscriptionIdAndRole(subscriptionId, MembershipRole.OWNER)
+                .orElseThrow(() -> new SubscriptionNotFoundException(subscriptionId));
+        return requireOwnedBy(owner, username, subscriptionId);
+    }
+
+    private static SubscriptionMembership requireOwnedBy(
+            SubscriptionMembership owner, String username, long subscriptionId) {
         if (!owner.getUser().getUsername().equals(username)) {
             throw new SubscriptionAccessDeniedException(subscriptionId);
         }
-        return owner.getSubscription();
+        return owner;
     }
 }

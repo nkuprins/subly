@@ -25,9 +25,9 @@
 .catalogue-table th { color: #888ea0; background: #fbfbfd; text-transform: uppercase; letter-spacing: .08em; font-size: 10px; font-weight: 700; padding: 12px 24px; }
 .catalogue-table td { padding: 14px 24px; border-top: 1px solid #f0f1f5; color: #52596a; font-size: 13px; }
 .catalogue-table tbody tr:hover { background: #fcfbfe; }
-.service-logo { display: block; flex: 0 0 34px; width: 34px; height: 34px; border-radius: 9px; object-fit: contain; background: #f6f4fa; }
-.service-monogram { display: grid; place-items: center; color: var(--primary); background: var(--primary-50); font-weight: 750; font-size: 14px; }
-.service-name { color: #202435; font-weight: 650; }
+.provider-logo { display: block; flex: 0 0 34px; width: 34px; height: 34px; border-radius: 9px; object-fit: contain; background: #f6f4fa; }
+.provider-monogram { display: grid; place-items: center; color: var(--primary); background: var(--primary-50); font-weight: 750; font-size: 14px; }
+.provider-name { color: #202435; font-weight: 650; }
 .category-chip { display: inline-flex; border: 1px solid #eee2fb; color: #6b21a8; background: #faf5ff; border-radius: 999px; padding: 5px 10px; font-size: 11px; font-weight: 600; white-space: nowrap; }
 .catalogue-empty { text-align: center; padding: 54px 20px 58px; }
 .empty-icon { display: grid; place-items: center; width: 46px; height: 46px; border-radius: 13px; margin: 0 auto 14px; color: var(--primary); background: var(--primary-50); font-size: 23px; }
@@ -37,7 +37,7 @@
 .back-link { color: #555d70; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; margin: 2px 0 28px; }
 .back-link:hover { color: var(--primary); }
 .form-page-heading { margin-bottom: 24px; }
-.service-form-card { max-width: 560px; padding: 28px; background: white; border: 1px solid #e9eaf1; border-radius: 14px; box-shadow: 0 5px 20px rgba(27, 31, 59, .035); }
+.provider-form-card { max-width: 560px; padding: 28px; background: white; border: 1px solid #e9eaf1; border-radius: 14px; box-shadow: 0 5px 20px rgba(27, 31, 59, .035); }
 .form-section-label { color: #303448; font-size: 13px; font-weight: 700; padding-bottom: 16px; margin-bottom: 20px; border-bottom: 1px solid #eceef4; }
 .form-field { margin-bottom: 21px; }
 .form-field label { display: flex; align-items: center; gap: 4px; color: #363b4d; font-size: 12px; font-weight: 700; margin-bottom: 8px; }
@@ -60,6 +60,6 @@
     .admin-heading { align-items: flex-start; flex-direction: column; }
     .catalogue-toolbar { align-items: flex-start; flex-direction: column; gap: 14px; padding: 18px 16px; }
     .catalogue-table th, .catalogue-table td { padding-left: 16px; padding-right: 16px; }
-    .service-form-card { padding: 21px 18px; }
+    .provider-form-card { padding: 21px 18px; }
     .catalogue-table th:first-child, .catalogue-table td:first-child { display: none; }
 }

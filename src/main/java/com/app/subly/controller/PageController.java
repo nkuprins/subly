@@ -1,5 +1,6 @@
 package com.app.subly.controller;
 
+<<<<<<< HEAD
 import com.app.subly.dto.subscription.CreateCustomSubscriptionRequest;
 import com.app.subly.dto.subscription.UpdateSubscriptionRequest;
 import com.app.subly.exception.UserAlreadyExistsException;
@@ -10,11 +11,12 @@ import com.app.subly.service.UserService;
 import com.app.subly.service.SubscriptionService;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.ui.Model;
+=======
+>>>>>>> origin/dev
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 
 import java.math.BigDecimal;
@@ -23,6 +25,7 @@ import java.time.LocalDate;
 
 @Controller
 public class PageController {
+<<<<<<< HEAD
     private final UserService userService;
     private final SubscriptionService subscriptionService;
     private final DashboardService dashboardService;
@@ -77,6 +80,8 @@ public class PageController {
             return "register";
         }
     }
+=======
+>>>>>>> origin/dev
 
     @GetMapping({"/", "/dashboard"})
     public String dashboard(Principal principal, Model model) {

@@ -1,6 +1,8 @@
 package com.app.subly.exception.invitation;
 
-public class InvitationNotFoundException extends RuntimeException {
+import com.app.subly.exception.NotFoundException;
+
+public class InvitationNotFoundException extends NotFoundException {
 
     public InvitationNotFoundException(long invitationId) {
         super("Invitation " + invitationId + " was not found");

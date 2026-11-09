@@ -63,3 +63,36 @@ To use a different database or credentials, set the variables before running:
 ```bash
 DB_URL=jdbc:mysql://myhost:3306/subly DB_USERNAME=me DB_PASSWORD=secret ./mvnw spring-boot:run
 ```
+
+## Code style
+
+Java code is formatted with [Spotless](https://github.com/diffplug/spotless) and
+[palantir-java-format](https://github.com/palantir/palantir-java-format). CI fails if the code is not formatted.
+
+Format the code before you push:
+
+```bash
+./mvnw spotless:apply
+```
+
+Check the format without changing files:
+
+```bash
+./mvnw spotless:check
+```
+
+Use `this.` only when a parameter or local variable has the same name as the field, for example `this.name = name`.
+Write `repository.save(user)`, not `this.repository.save(user)`. Spotless does not check this rule. IntelliJ shows it
+with the "Unnecessary 'this' qualifier" inspection.
+
+## Entity conventions
+
+- Create entities with a constructor or factory. It takes the fields that a new row needs, so you can't create an
+  empty entity. The no-arg constructor is `protected`, because only JPA needs it.
+- Put `@Setter` on the ID and on each editable field. Never on the class, because a new field then has no setter until you
+  manually decide it needs one preventing accidental mistakes.
+- A field can be in both the constructor and a setter: the constructor sets it when the entity is created, and the
+  setter changes it later.
+- Fields that must change together get one method, for example `cancel(now)`, so the sQL CHECKs stay true.
+- The id setter is public so that unit tests can set an ID. Don't call it in application code.
+- Future option: `@Builder` on a private `User` constructor, so the four `String` arguments can't be swapped.

@@ -1,93 +1,73 @@
 package com.app.subly.service;
 
+import static com.app.subly.testdata.TestClock.DEFAULT_ZONE;
+import static com.app.subly.testdata.TestClock.TODAY;
+import static com.app.subly.testdata.TestClock.TOKYO;
+import static com.app.subly.testdata.TestClock.TOKYO_TODAY;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
+
 import com.app.subly.repository.UserRepository;
+import com.app.subly.testdata.TestClock;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.Clock;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.util.List;
-
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
-import static org.mockito.Mockito.times;
-
 @ExtendWith(MockitoExtension.class)
 class PaymentDateSchedulerTest {
 
-    private static final ZoneId RIGA = ZoneId.of("Europe/Riga");
-    private static final ZoneId TOKYO = ZoneId.of("Asia/Tokyo");
+    private static final Instant FIFTEEN_MINUTES_LATER = TestClock.NOW.plus(Duration.ofMinutes(15));
+    private static final Instant MIDNIGHT_IN_DEFAULT_ZONE =
+            TODAY.plusDays(1).atStartOfDay(DEFAULT_ZONE).toInstant();
 
-    @Mock UserRepository userRepository;
-    @Mock SubscriptionService subscriptionService;
+    @Mock
+    UserRepository userRepository;
 
-    // Starts at 16:00 UTC on 4 Nov: still 4 Nov in Riga, but already 5 Nov in Tokyo.
-    final MovableClock clock = new MovableClock(Instant.parse("2026-11-04T16:00:00Z"));
+    @Mock
+    SubscriptionService subscriptionService;
+
+    @Mock
+    Clock clock;
+
+    Instant now = TestClock.NOW;
     PaymentDateScheduler scheduler;
 
     @BeforeEach
     void setUp() {
         scheduler = new PaymentDateScheduler(userRepository, subscriptionService, clock);
-        given(userRepository.findDistinctTimeZones()).willReturn(List.of(RIGA, TOKYO));
+        when(clock.withZone(any(ZoneId.class))).thenAnswer(call -> Clock.fixed(now, call.getArgument(0)));
+        when(userRepository.findDistinctTimeZones()).thenReturn(List.of(DEFAULT_ZONE, TOKYO));
     }
 
     @Test
-    void advancesEachZoneWithThatZonesToday() {
+    void advancePastPaymentDates_shouldUseTheTodayOfEachZone() {
         scheduler.advancePastPaymentDates();
 
-        then(subscriptionService).should().advancePaymentDates(RIGA, LocalDate.of(2026, 11, 4));
-        then(subscriptionService).should().advancePaymentDates(TOKYO, LocalDate.of(2026, 11, 5));
+        verify(subscriptionService).advancePaymentDates(DEFAULT_ZONE, TODAY);
+        verify(subscriptionService).advancePaymentDates(TOKYO, TOKYO_TODAY);
     }
 
     @Test
-    void skipsZoneUntilItsDateChanges() {
+    void advancePastPaymentDates_shouldSkipZoneUntilItsDateChanges() {
         scheduler.advancePastPaymentDates();
-        clock.moveTo("2026-11-04T16:15:00Z");
+        now = FIFTEEN_MINUTES_LATER;
         scheduler.advancePastPaymentDates();
-        // 22:00 UTC on 4 Nov is midnight of 5 Nov in Riga; Tokyo is still on 5 Nov.
-        clock.moveTo("2026-11-04T22:00:00Z");
+        now = MIDNIGHT_IN_DEFAULT_ZONE;
         scheduler.advancePastPaymentDates();
 
-        then(subscriptionService).should(times(1))
-                .advancePaymentDates(RIGA, LocalDate.of(2026, 11, 4));
-        then(subscriptionService).should(times(1))
-                .advancePaymentDates(RIGA, LocalDate.of(2026, 11, 5));
-        then(subscriptionService).should(times(1))
-                .advancePaymentDates(TOKYO, LocalDate.of(2026, 11, 5));
-        then(subscriptionService).shouldHaveNoMoreInteractions();
-    }
-
-    private static final class MovableClock extends Clock {
-
-        private Instant now;
-
-        MovableClock(Instant now) {
-            this.now = now;
-        }
-
-        void moveTo(String instant) {
-            now = Instant.parse(instant);
-        }
-
-        @Override
-        public ZoneId getZone() {
-            return ZoneOffset.UTC;
-        }
-
-        @Override
-        public Clock withZone(ZoneId zone) {
-            return Clock.fixed(now, zone);
-        }
-
-        @Override
-        public Instant instant() {
-            return now;
-        }
+        verify(subscriptionService, times(1)).advancePaymentDates(DEFAULT_ZONE, TODAY);
+        verify(subscriptionService, times(1)).advancePaymentDates(DEFAULT_ZONE, TODAY.plusDays(1));
+        verify(subscriptionService, times(1)).advancePaymentDates(TOKYO, TOKYO_TODAY);
+        verifyNoMoreInteractions(subscriptionService);
     }
 }

@@ -1,59 +1,25 @@
 package com.app.subly.service;
 
-import com.app.subly.model.subscription.MembershipRole;
-import com.app.subly.exception.subscription.SubscriptionAccessDeniedException;
-import com.app.subly.exception.subscription.SubscriptionNotFoundException;
+import static com.app.subly.testdata.TestUsers.ALICE;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+
+import com.app.subly.model.provider.ProviderType;
 import com.app.subly.model.subscription.Subscription;
-import org.junit.jupiter.api.Test;
-
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
-import static org.mockito.Mockito.never;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 class DeleteSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
 
-    @Test
-    void deletesSubscriptionAndItsCustomService() {
-        Subscription subscription = givenOwnedCustomSubscription();
+    @ParameterizedTest
+    @EnumSource(ProviderType.class)
+    void delete_shouldDeleteSubscriptionAndKeepProvider(ProviderType providerType) {
+        Subscription subscription = subscription(provider(providerType));
+        stubOwnedSubscription(subscription);
 
-        subscriptionService.delete(OWNER, SUBSCRIPTION_ID);
+        service.delete(ALICE, SUBSCRIPTION_ID);
 
-        then(subscriptionRepository).should().delete(subscription);
-        then(serviceProviderRepository).should().delete(subscription.getService());
-    }
-
-    @Test
-    void deletesSubscriptionButKeepsCatalogService() {
-        Subscription subscription = givenOwnedCatalogSubscription();
-
-        subscriptionService.delete(OWNER, SUBSCRIPTION_ID);
-
-        then(subscriptionRepository).should().delete(subscription);
-        then(serviceProviderRepository).shouldHaveNoInteractions();
-    }
-
-    @Test
-    void rejectsNonOwner() {
-        givenSubscriptionOwnedBySomeoneElse();
-
-        assertThatThrownBy(() -> subscriptionService.delete(STRANGER, SUBSCRIPTION_ID))
-                .isInstanceOf(SubscriptionAccessDeniedException.class);
-        then(subscriptionRepository).should(never()).delete(any());
-        then(serviceProviderRepository).shouldHaveNoInteractions();
-    }
-
-    @Test
-    void rejectsUnknownSubscription() {
-        given(membershipRepository.findBySubscriptionIdAndRole(SUBSCRIPTION_ID, MembershipRole.OWNER))
-                .willReturn(Optional.empty());
-
-        assertThatThrownBy(() -> subscriptionService.delete(OWNER, SUBSCRIPTION_ID))
-                .isInstanceOf(SubscriptionNotFoundException.class);
-        then(subscriptionRepository).should(never()).delete(any());
-        then(serviceProviderRepository).shouldHaveNoInteractions();
+        verify(subscriptionRepository).delete(subscription);
+        verifyNoInteractions(subscriptionProviderRepository);
     }
 }

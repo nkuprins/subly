@@ -11,8 +11,8 @@
             <a th:href="@{/admin}" sec:authorize="hasRole('ADMIN')">Admin</a>
         </nav>
         <div class="user-box">
-<span class="user-name" sec:authorize="isAuthenticated()"
-      sec:authentication="name">user</span>
+<a class="user-name" th:href="@{/edit/me}" sec:authorize="isAuthenticated()"
+   sec:authentication="name">user</a>
             <form th:action="@{/logout}" method="post" sec:authorize="isAuthenticated()">
                 <button type="submit"  class="btn btn-logout">Logout</button>
             </form>

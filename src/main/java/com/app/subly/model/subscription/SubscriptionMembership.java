@@ -1,7 +1,8 @@
 package com.app.subly.model.subscription;
 
-import com.app.subly.model.User;
+import com.app.subly.model.user.User;
 import jakarta.persistence.*;
+import java.time.Instant;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,17 +11,14 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
-import java.time.LocalDateTime;
-
 @Entity
 @Table(name = "subscription_membership")
 @Getter
-@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class SubscriptionMembership {
 
     @Id
-    @Setter(AccessLevel.NONE)
+    @Setter
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -38,9 +36,8 @@ public class SubscriptionMembership {
     private MembershipRole role;
 
     @CreationTimestamp
-    @Setter(AccessLevel.NONE)
     @Column(updatable = false, nullable = false)
-    private LocalDateTime joinedAt;
+    private Instant joinedAt;
 
     public SubscriptionMembership(User user, Subscription subscription, MembershipRole role) {
         this.user = user;

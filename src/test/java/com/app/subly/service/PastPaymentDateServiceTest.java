@@ -1,78 +1,69 @@
 package com.app.subly.service;
 
+import static com.app.subly.testdata.TestClock.TODAY;
+import static com.app.subly.testdata.TestSubscriptions.DEFAULT_PRICE;
+import static com.app.subly.testdata.TestUsers.ALICE;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+
 import com.app.subly.dto.subscription.CreateSubscriptionRequest;
 import com.app.subly.dto.subscription.UpdateSubscriptionRequest;
 import com.app.subly.exception.subscription.PaymentDateInPastException;
 import com.app.subly.model.subscription.BillingCycle;
-import com.app.subly.model.subscription.ServiceType;
 import com.app.subly.model.subscription.Subscription;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import java.math.BigDecimal;
+import com.app.subly.testdata.TestClock;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
+import org.junit.jupiter.api.Test;
 
 class PastPaymentDateServiceTest extends AbstractSubscriptionServiceTest {
 
-    @BeforeEach
-    void ownerExists() {
-        givenOwnerExists();
-    }
+    static final LocalDate YESTERDAY = TODAY.minusDays(1);
 
     @Test
-    void createRejectsYesterdayInOwnersZone() {
-        CreateSubscriptionRequest request = catalogRequest(today.minusDays(1));
+    void create_shouldRejectYesterdayInOwnersZone() {
+        stubAliceExists();
+        CreateSubscriptionRequest request = createRequest(YESTERDAY);
 
-        assertThatThrownBy(() -> subscriptionService.create(OWNER, request))
+        assertThatThrownBy(() -> service.create(ALICE, request))
                 .isInstanceOf(PaymentDateInPastException.class)
-                .hasMessageContaining(today.minusDays(1).toString());
-        then(subscriptionRepository).shouldHaveNoInteractions();
+                .hasMessageContaining(YESTERDAY.toString());
+        verifyNoInteractions(subscriptionRepository);
     }
 
     @Test
-    void createAcceptsToday() {
-        given(serviceProviderRepository.findByIdAndServiceType(SERVICE_ID, ServiceType.CATALOG))
-                .willReturn(Optional.of(catalogService()));
+    void create_shouldAcceptToday() {
+        stubAliceExists();
+        when(subscriptionProviderRepository.findById(PROVIDER_ID)).thenReturn(Optional.of(catalogProvider()));
 
-        subscriptionService.create(OWNER, catalogRequest(today));
+        service.create(ALICE, createRequest(TODAY));
 
-        then(subscriptionRepository).should().save(any(Subscription.class));
+        verify(subscriptionRepository).save(any(Subscription.class));
     }
 
     @Test
-    void createUsesOwnersTimeZone() {
-        owner.setTimeZone(ZoneId.of("Asia/Tokyo"));
-        CreateSubscriptionRequest request = catalogRequest(today);
+    void create_shouldUseOwnersTimeZone() {
+        stubAliceExists();
+        alice.setTimeZone(TestClock.TOKYO);
+        CreateSubscriptionRequest request = createRequest(TODAY);
 
-        assertThatThrownBy(() -> subscriptionService.create(OWNER, request))
-                .isInstanceOf(PaymentDateInPastException.class);
+        assertThatThrownBy(() -> service.create(ALICE, request)).isInstanceOf(PaymentDateInPastException.class);
     }
 
     @Test
-    void updateRejectsPastDateAndKeepsSubscription() {
-        Subscription subscription = givenOwnedCatalogSubscription();
+    void update_shouldRejectPastDateAndKeepSubscription() {
+        Subscription subscription = subscription(catalogProvider());
+        stubOwnerMembershipWithSubscriptionDetails(subscription);
         LocalDate originalDate = subscription.getNextPaymentDate();
-        UpdateSubscriptionRequest request = updateRequest(today.minusDays(1));
+        UpdateSubscriptionRequest request =
+                new UpdateSubscriptionRequest(DEFAULT_PRICE, BillingCycle.MONTHLY, YESTERDAY, false);
 
-        assertThatThrownBy(() -> subscriptionService.update(OWNER, SUBSCRIPTION_ID, request))
+        assertThatThrownBy(() -> service.update(ALICE, SUBSCRIPTION_ID, request))
                 .isInstanceOf(PaymentDateInPastException.class);
         assertThat(subscription.getNextPaymentDate()).isEqualTo(originalDate);
-    }
-
-    private UpdateSubscriptionRequest updateRequest(LocalDate nextPaymentDate) {
-        return new UpdateSubscriptionRequest(new BigDecimal("17.99"), BillingCycle.MONTHLY, nextPaymentDate, false);
-    }
-
-    private CreateSubscriptionRequest catalogRequest(LocalDate nextPaymentDate) {
-        return new CreateSubscriptionRequest(SERVICE_ID, new BigDecimal("17.99"), BillingCycle.MONTHLY,
-                nextPaymentDate, false);
     }
 }

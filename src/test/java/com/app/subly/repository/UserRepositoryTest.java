@@ -1,162 +1,88 @@
 package com.app.subly.repository;
 
-import com.app.subly.model.User;
-import com.app.subly.model.UserRole;
+import static com.app.subly.testdata.TestClock.DEFAULT_ZONE;
+import static com.app.subly.testdata.TestClock.TOKYO;
+import static com.app.subly.testdata.TestUsers.ALICE;
+import static com.app.subly.testdata.TestUsers.BOB;
+import static com.app.subly.testdata.TestUsers.CAROL;
+import static com.app.subly.testdata.TestUsers.email;
+import static com.app.subly.testdata.TestUsers.user;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import com.app.subly.model.user.User;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
-import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
-import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.test.context.ActiveProfiles;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
-import java.time.ZoneId;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-@ActiveProfiles("test")
-@DataJpaTest
-@AutoConfigureTestDatabase(replace= AutoConfigureTestDatabase.Replace.NONE)
-public class UserRepositoryTest {
+class UserRepositoryTest extends AbstractRepositoryTest {
 
     @Autowired
-    private UserRepository repository;
-
-    @Autowired
-    private TestEntityManager manager;
+    UserRepository repository;
 
     @Test
-    public void save_ShouldAddUserCorrectly(){
-        assertDoesNotThrow(()
-                -> repository.save(createUser("andris123", "andris@gmail.com", "Andris")));
+    void saveAndFlush_shouldRejectDuplicateUsername() {
+        repository.saveAndFlush(user(ALICE));
+        User sameUsername = user(ALICE);
+        sameUsername.setEmail(email(BOB));
 
-        Optional<User> user = repository.findByUsername("andris123");
-
-        assertTrue(user.isPresent());
-        assertThat(user.get().getUsername()).isEqualTo("andris123");
-        assertThat(user.get().getEmail()).isEqualTo("andris@gmail.com");
-        assertThat(user.get().getName()).isEqualTo("Andris");
+        assertThatThrownBy(() -> repository.saveAndFlush(sameUsername))
+                .isInstanceOf(DataIntegrityViolationException.class);
     }
 
     @Test
-    public void save_ShouldFailIfUsernameAlreadyExists(){
-        User firstUser = createUser("andris123", "andris@gmail.com", "Andris");
-        User secondUser = createUser("andris123", "alex@gmail.com", "Alex");
+    void saveAndFlush_shouldRejectDuplicateEmail() {
+        repository.saveAndFlush(user(ALICE));
+        User sameEmail = user(BOB);
+        sameEmail.setEmail(email(ALICE));
 
-        assertDoesNotThrow(()
-                -> repository.saveAndFlush(firstUser));
-
-        assertThrows(DataIntegrityViolationException.class, () -> repository.saveAndFlush(secondUser));
-
+        assertThatThrownBy(() -> repository.saveAndFlush(sameEmail))
+                .isInstanceOf(DataIntegrityViolationException.class);
     }
 
     @Test
-    public void save_ShouldFailIfEmailAlreadyExists(){
-        User firstUser = createUser("andris123", "andris@gmail.com", "Andris");
-        User secondUser = createUser("alex123", "andris@gmail.com", "Alex");
+    void flush_shouldRejectEmailOfAnotherUser() {
+        repository.saveAndFlush(user(ALICE));
+        User bob = repository.saveAndFlush(user(BOB));
 
-        assertDoesNotThrow(()
-                -> repository.saveAndFlush(firstUser));
+        bob.setEmail(email(ALICE));
 
-        assertThrows(DataIntegrityViolationException.class, () -> repository.saveAndFlush(secondUser));
-
+        assertThatThrownBy(repository::flush).isInstanceOf(DataIntegrityViolationException.class);
     }
 
     @Test
-    void shouldUpdateUserEmail() {
-        User user = createUser("andris123", "andris@gmail.com", "Andris");
+    void flush_shouldRejectUsernameOfAnotherUser() {
+        repository.saveAndFlush(user(ALICE));
+        User bob = repository.saveAndFlush(user(BOB));
 
-        repository.save(user);
+        bob.setUsername(ALICE);
 
-        user.setEmail("new_andris_email@gmail.com");
-        repository.flush();
-        manager.clear();
-
-        Optional<User> storedUser = repository.findByUsername("andris123");
-
-        assertTrue(storedUser.isPresent());
-        assertThat(storedUser.get().getEmail()).isEqualTo("new_andris_email@gmail.com");
+        assertThatThrownBy(repository::flush).isInstanceOf(DataIntegrityViolationException.class);
     }
 
     @Test
-    void shouldUpdateUsername() {
-        User user = createUser("andris123", "andris@gmail.com", "Andris");
+    void getByUsername_shouldReturnExistingUser() {
+        repository.save(user(ALICE));
 
-        repository.save(user);
-
-        user.setUsername("andris");
-        repository.flush();
-        manager.clear();
-
-        Optional<User> storedUser = repository.findByUsername("andris");
-
-        assertTrue(storedUser.isPresent());
-        assertThat(storedUser.get().getUsername()).isEqualTo("andris");
+        assertThat(repository.getByUsername(ALICE).getEmail()).isEqualTo(email(ALICE));
     }
 
     @Test
-    void update_ShouldFailIfEmailAlreadyExists() {
-        User firstUser = createUser("andris123", "andris@gmail.com", "Andris");
-        User secondUser = createUser("alex123", "alex@gmail.com", "Alex");
-
-        repository.saveAndFlush(firstUser);
-        repository.saveAndFlush(secondUser);
-
-        secondUser.setEmail("andris@gmail.com");
-
-        assertThrows(
-                DataIntegrityViolationException.class,
-                () -> repository.flush()
-        );
+    void getByUsername_shouldRejectUnknownUser() {
+        assertThatThrownBy(() -> repository.getByUsername("unknown"))
+                .isInstanceOf(UsernameNotFoundException.class)
+                .hasMessageContaining("unknown");
     }
 
     @Test
-    void update_ShouldFailIfUsernameAlreadyExists() {
-        User firstUser = createUser("andris123", "andris@gmail.com", "Andris");
-        User secondUser = createUser("alex123", "alex@gmail.com", "Alex");
+    void findDistinctTimeZones_shouldReturnEachZoneOnce() {
+        User carol = user(CAROL);
+        carol.setTimeZone(TOKYO);
+        repository.save(carol);
+        repository.save(user(ALICE));
+        repository.save(user(BOB));
 
-        repository.saveAndFlush(firstUser);
-        repository.saveAndFlush(secondUser);
-
-        secondUser.setUsername("andris123");
-
-        assertThrows(
-                DataIntegrityViolationException.class,
-                () -> repository.flush()
-        );
-    }
-
-    @Test
-    void findByUsername_ShouldReturnEmptyIfUserDoesNotExist() {
-        Optional<User> user = repository.findByUsername("unknown");
-
-        assertThat(user).isEmpty();
-    }
-
-    private User createUser(String username, String email, String name){
-        User user = new User();
-        user.setUsername(username);
-        user.setName(name);
-        user.setEmail(email);
-        user.setPasswordHash("test_password");
-        user.setRole(UserRole.USER);
-
-        return user;
-    }
-
-    @Test
-    public void findDistinctTimeZones_ShouldReturnEachZoneOnce(){
-        User tokyoUser = createUser("taro", "taro@gmail.com", "Taro");
-        tokyoUser.setTimeZone(ZoneId.of("Asia/Tokyo"));
-        repository.save(tokyoUser);
-        repository.save(createUser("andris123", "andris@gmail.com", "Andris"));
-        repository.save(createUser("janis123", "janis@gmail.com", "Janis"));
-
-        assertThat(repository.findDistinctTimeZones())
-                .containsExactlyInAnyOrder(ZoneId.of("Asia/Tokyo"), User.DEFAULT_TIME_ZONE);
+        assertThat(repository.findDistinctTimeZones()).containsExactlyInAnyOrder(TOKYO, DEFAULT_ZONE);
     }
 }
