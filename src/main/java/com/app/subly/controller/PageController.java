@@ -4,7 +4,6 @@ package com.app.subly.controller;
 import com.app.subly.dto.subscription.CreateSubscriptionRequest;
 import com.app.subly.dto.subscription.UpdateSubscriptionRequest;
 import com.app.subly.model.subscription.BillingCycle;
-import com.app.subly.service.CategoryService;
 import com.app.subly.service.DashboardService;
 import com.app.subly.service.ProviderService;
 import com.app.subly.service.SubscriptionService;
@@ -65,9 +64,10 @@ public class PageController {
                                      @RequestParam BillingCycle billingCycle,
                                      @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
                                      LocalDate nextPaymentDate,
-                                     @RequestParam(defaultValue = "false") boolean freeTrial) {
-        subscriptionService.create(principal.getName(), new CreateSubscriptionRequest(providerId, price,
-                billingCycle, nextPaymentDate, freeTrial));
+                                     @RequestParam(defaultValue = "false") boolean freeTrial,
+                                     @RequestParam(defaultValue = "1") Integer maxParticipants) {
+        subscriptionService.create(principal.getName(),
+                new CreateSubscriptionRequest(providerId, price, billingCycle, nextPaymentDate, freeTrial, maxParticipants));
         return "redirect:/subscriptions";
     }
 
