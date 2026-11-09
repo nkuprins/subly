@@ -20,7 +20,8 @@ public record SubscriptionResponse(
         Currency currency,
         BillingCycle billingCycle,
         LocalDate nextPaymentDate,
-        boolean freeTrial) {
+        boolean freeTrial,
+        int maxParticipants) {
 
     public static SubscriptionResponse from(Subscription subscription) {
         SubscriptionProvider provider = subscription.getProvider();
@@ -36,6 +37,7 @@ public record SubscriptionResponse(
                 subscription.getCurrency(),
                 subscription.getBillingCycle(),
                 subscription.getNextPaymentDate(),
-                subscription.isFreeTrial());
+                subscription.isFreeTrial(),
+                subscription.getMaxParticipants());
     }
 }

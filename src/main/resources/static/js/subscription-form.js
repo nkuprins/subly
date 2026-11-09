@@ -219,6 +219,7 @@ form.addEventListener('submit', async (e) => {
             billingCycle: byId('cycle').value,
             nextPaymentDate: byId('nextPayment').value,
             freeTrial: byId('freeTrial').checked,
+            maxParticipants: Number(byId('maxParticipants').value),
         };
         res = await fetch('/api/subscriptions', {
             method: 'POST',
