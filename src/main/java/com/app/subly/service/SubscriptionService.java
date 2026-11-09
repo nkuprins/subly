@@ -39,7 +39,7 @@ public class SubscriptionService {
         User owner = userRepository.getByUsername(username);
         requireNotInPast(owner, request);
         SubscriptionProvider provider = findVisibleProvider(request.providerId(), owner);
-        return subscribe(owner, provider, request);
+        return subscribe(owner, provider, request, request.maxParticipants());
     }
 
     @Transactional(readOnly = true)
@@ -103,9 +103,13 @@ public class SubscriptionService {
         subscription.reactivate(today);
     }
 
-    private SubscriptionResponse subscribe(User owner, SubscriptionProvider provider, PaymentDetails request) {
+    private SubscriptionResponse subscribe(User owner, SubscriptionProvider provider, PaymentDetails request, int maxParticipants) {
         Subscription subscription = new Subscription(
                 provider, request.price(), request.billingCycle(), request.nextPaymentDate(), request.freeTrial());
+
+        if (maxParticipants > 1){
+            subscription.makeSharable(maxParticipants);
+        }
         subscriptionRepository.save(subscription);
 
         membershipRepository.save(SubscriptionMembership.owner(owner, subscription));

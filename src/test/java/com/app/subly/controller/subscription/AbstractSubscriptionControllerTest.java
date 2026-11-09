@@ -48,6 +48,7 @@ abstract class AbstractSubscriptionControllerTest extends AbstractWebMvcTest {
                 Currency.EUR,
                 BillingCycle.MONTHLY,
                 DEFAULT_NEXT_PAYMENT_DATE,
-                false);
+                false,
+                1);
     }
 }
