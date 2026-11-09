@@ -1,8 +1,9 @@
 package com.app.subly.repository;
 
+import static com.app.subly.testdata.TestUsers.ALICE;
+import static com.app.subly.testdata.TestUsers.BOB;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.app.subly.model.TestUsers;
 import com.app.subly.model.category.Category;
 import com.app.subly.model.provider.ProviderType;
 import com.app.subly.model.provider.SubscriptionProvider;
@@ -10,58 +11,45 @@ import com.app.subly.model.user.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
-import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
-import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
-import org.springframework.test.context.ActiveProfiles;
 
-@ActiveProfiles("test")
-@DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-class SubscriptionProviderRepositoryTest {
+class SubscriptionProviderRepositoryTest extends AbstractRepositoryTest {
+
+    static final String OWN_CUSTOM_NAME = "A own";
+    static final String CATALOG_NAME = "B catalog";
+    static final String OTHERS_CUSTOM_NAME = "C other";
 
     @Autowired
-    SubscriptionProviderRepository subscriptionProviderRepository;
-
-    @Autowired
-    TestEntityManager entityManager;
+    SubscriptionProviderRepository repository;
 
     SubscriptionProvider catalog;
-    SubscriptionProvider ownCustom;
-    SubscriptionProvider othersCustom;
+    SubscriptionProvider aliceCustom;
+    SubscriptionProvider bobCustom;
 
     @BeforeEach
     void setUp() {
-        Category gym = entityManager.persist(new Category("Test gym"));
-        User owner = persistUser("test-owner");
-        User other = persistUser("test-other");
-        catalog = entityManager.persist(SubscriptionProvider.catalog("B catalog", gym));
-        ownCustom = entityManager.persist(SubscriptionProvider.custom("A own", gym, owner));
-        othersCustom = entityManager.persist(SubscriptionProvider.custom("C other", gym, other));
+        Category category = persistCategory();
+        User alice = persistUser(ALICE);
+        User bob = persistUser(BOB);
+        catalog = entityManager.persist(SubscriptionProvider.catalog(CATALOG_NAME, category));
+        aliceCustom = entityManager.persist(SubscriptionProvider.custom(OWN_CUSTOM_NAME, category, alice));
+        bobCustom = entityManager.persist(SubscriptionProvider.custom(OTHERS_CUSTOM_NAME, category, bob));
         entityManager.flush();
-        entityManager.clear();
     }
 
     @Test
-    void findsCatalogAndOwnProvidersByName() {
-        assertThat(subscriptionProviderRepository.findAllByProviderTypeOrCreatedByUsernameOrderByNameAsc(
-                        ProviderType.CATALOG, "test-owner"))
+    void findAllByProviderTypeOrCreatedByUsernameOrderByNameAsc_shouldReturnCatalogAndOwnProvidersByName() {
+        assertThat(repository.findAllByProviderTypeOrCreatedByUsernameOrderByNameAsc(ProviderType.CATALOG, ALICE))
                 .extracting(SubscriptionProvider::getName)
-                .containsExactly("A own", "B catalog");
+                .containsExactly(OWN_CUSTOM_NAME, CATALOG_NAME);
     }
 
     @Test
-    void findByIdAndCreatedByUsernameSkipsCatalogAndOthersProviders() {
-        assertThat(subscriptionProviderRepository.findByIdAndCreatedByUsername(ownCustom.getId(), "test-owner"))
+    void findByIdAndCreatedByUsername_shouldFindOnlyOwnCustomProvider() {
+        assertThat(repository.findByIdAndCreatedByUsername(aliceCustom.getId(), ALICE))
                 .isPresent();
-        assertThat(subscriptionProviderRepository.findByIdAndCreatedByUsername(catalog.getId(), "test-owner"))
+        assertThat(repository.findByIdAndCreatedByUsername(catalog.getId(), ALICE))
                 .isEmpty();
-        assertThat(subscriptionProviderRepository.findByIdAndCreatedByUsername(othersCustom.getId(), "test-owner"))
+        assertThat(repository.findByIdAndCreatedByUsername(bobCustom.getId(), ALICE))
                 .isEmpty();
-    }
-
-    private User persistUser(String username) {
-        User user = TestUsers.user(username);
-        return entityManager.persist(user);
     }
 }

@@ -1,78 +1,55 @@
 package com.app.subly.repository;
 
+import static com.app.subly.testdata.TestUsers.ALICE;
+import static com.app.subly.testdata.TestUsers.BOB;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.app.subly.exception.invitation.InvitationNotFoundException;
-import com.app.subly.model.TestUsers;
-import com.app.subly.model.category.Category;
 import com.app.subly.model.invitation.PendingInvitation;
-import com.app.subly.model.provider.SubscriptionProvider;
-import com.app.subly.model.subscription.BillingCycle;
 import com.app.subly.model.subscription.Subscription;
 import com.app.subly.model.user.User;
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
-import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
-import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
-import org.springframework.test.context.ActiveProfiles;
 
-@ActiveProfiles("test")
-@DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-class PendingInvitationRepositoryTest {
-
-    static final String OWNER = "test-owner";
-    static final String INVITEE = "test-invitee";
+class PendingInvitationRepositoryTest extends AbstractRepositoryTest {
 
     @Autowired
     PendingInvitationRepository invitationRepository;
-
-    @Autowired
-    TestEntityManager entityManager;
 
     PendingInvitation invitation;
 
     @BeforeEach
     void setUp() {
-        User owner = entityManager.persist(TestUsers.user(OWNER));
-        User invitee = entityManager.persist(TestUsers.user(INVITEE));
-        Category gym = entityManager.persist(new Category("Test gym"));
-        SubscriptionProvider provider = entityManager.persist(SubscriptionProvider.custom("My gym", gym, owner));
-        Subscription subscription = entityManager.persist(new Subscription(
-                provider,
-                new BigDecimal("35.00"),
-                BillingCycle.MONTHLY,
-                LocalDate.now().plusDays(10),
-                false));
-        invitation = entityManager.persist(new PendingInvitation(invitee, subscription));
+        User alice = persistUser(ALICE);
+        User bob = persistUser(BOB);
+        Subscription subscription = persistSubscription(alice);
+        invitation = entityManager.persist(new PendingInvitation(bob, subscription));
         entityManager.flush();
-        entityManager.clear();
     }
 
     @Test
-    void getsInvitationOfTheInvitedUser() {
-        PendingInvitation found = invitationRepository.getByIdAndUserUsername(invitation.getId(), INVITEE);
+    void getByIdAndUserUsername_shouldReturnInvitationOfTheInvitedUser() {
+        PendingInvitation found = invitationRepository.getByIdAndUserUsername(invitation.getId(), BOB);
 
         assertThat(found.getId()).isEqualTo(invitation.getId());
     }
 
     @Test
-    void throwsForInvitationOfAnotherUser() {
-        assertThatThrownBy(() -> invitationRepository.getByIdAndUserUsername(invitation.getId(), OWNER))
+    void getByIdAndUserUsername_shouldRejectInvitationOfAnotherUser() {
+        long invitationId = invitation.getId();
+
+        assertThatThrownBy(() -> invitationRepository.getByIdAndUserUsername(invitationId, ALICE))
                 .isInstanceOf(InvitationNotFoundException.class)
-                .hasMessageContaining(String.valueOf(invitation.getId()));
+                .hasMessageContaining(String.valueOf(invitationId));
     }
 
     @Test
-    void throwsForUnknownInvitation() {
+    void getByIdAndUserUsername_shouldRejectUnknownInvitation() {
         long unknownId = invitation.getId() + 1;
 
-        assertThatThrownBy(() -> invitationRepository.getByIdAndUserUsername(unknownId, INVITEE))
+        assertThatThrownBy(() -> invitationRepository.getByIdAndUserUsername(unknownId, BOB))
                 .isInstanceOf(InvitationNotFoundException.class)
                 .hasMessageContaining(String.valueOf(unknownId));
     }

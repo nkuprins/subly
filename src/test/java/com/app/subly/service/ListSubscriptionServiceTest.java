@@ -1,7 +1,8 @@
 package com.app.subly.service;
 
+import static com.app.subly.testdata.TestUsers.ALICE;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.when;
 
 import com.app.subly.dto.subscription.VisibleSubscriptionResponse;
 import com.app.subly.model.subscription.MembershipRole;
@@ -14,19 +15,16 @@ import org.junit.jupiter.api.Test;
 class ListSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
 
     @Test
-    void returnsVisibleSubscriptionsWithMembershipRoles() {
+    void findVisibleTo_shouldReturnSubscriptionsWithMembershipRoles() {
         Subscription owned = subscription(customProvider());
         Subscription shared = subscription(catalogProvider());
-
         SubscriptionMembership ownerMembership = SubscriptionMembership.owner(owner, owned);
-
         SubscriptionMembership memberMembership = new SubscriptionMembership(owner, shared, MembershipRole.MEMBER);
+        when(membershipRepository.findByUserUsernameAndSubscriptionStatusOrderBySubscriptionNextPaymentDateAsc(
+                        ALICE, SubscriptionStatus.ACTIVE))
+                .thenReturn(List.of(ownerMembership, memberMembership));
 
-        given(membershipRepository.findByUserUsernameAndSubscriptionStatusOrderBySubscriptionNextPaymentDateAsc(
-                        OWNER, SubscriptionStatus.ACTIVE))
-                .willReturn(List.of(ownerMembership, memberMembership));
-
-        assertThat(subscriptionService.findVisibleTo(OWNER))
+        assertThat(subscriptionService.findVisibleTo(ALICE))
                 .containsExactly(
                         VisibleSubscriptionResponse.from(ownerMembership),
                         VisibleSubscriptionResponse.from(memberMembership));
