@@ -8,8 +8,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
 @Table(name = "subscription_membership")
@@ -28,7 +26,6 @@ public class SubscriptionMembership {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "subscription_id", nullable = false)
-    @OnDelete(action = OnDeleteAction.CASCADE)
     private Subscription subscription;
 
     @Enumerated(EnumType.STRING)

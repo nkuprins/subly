@@ -10,6 +10,7 @@ import com.app.subly.model.subscription.Subscription;
 import com.app.subly.model.subscription.SubscriptionMembership;
 import com.app.subly.model.subscription.SubscriptionStatus;
 import com.app.subly.model.user.User;
+import com.app.subly.repository.PendingInvitationRepository;
 import com.app.subly.repository.SubscriptionMembershipRepository;
 import com.app.subly.repository.SubscriptionProviderRepository;
 import com.app.subly.repository.SubscriptionRepository;
@@ -30,6 +31,7 @@ public class SubscriptionService {
     private final SubscriptionRepository subscriptionRepository;
     private final SubscriptionAccess subscriptionAccess;
     private final SubscriptionMembershipRepository membershipRepository;
+    private final PendingInvitationRepository invitationRepository;
     private final SubscriptionProviderRepository subscriptionProviderRepository;
     private final UserRepository userRepository;
     private final Clock clock;
@@ -101,6 +103,28 @@ public class SubscriptionService {
         LocalDate today = owner.getUser().today(clock);
 
         subscription.reactivate(today);
+    }
+
+    @Transactional
+    public void deleteMembershipFor(Long id) {
+        this.membershipRepository.deleteByUser_Id(id);
+        this.membershipRepository.flush();
+    }
+
+    @Transactional
+    public void deleteAllSubscriptionsFor(Long userId) {
+        List<Long> subscriptionIds = membershipRepository.findByUser_IdAndRole(userId, MembershipRole.OWNER).stream()
+                .map(membership -> membership.getSubscription().getId())
+                .toList();
+        if (subscriptionIds.isEmpty()) {
+            return;
+        }
+
+        invitationRepository.deleteBySubscription_IdIn(subscriptionIds);
+        membershipRepository.deleteBySubscription_IdIn(subscriptionIds);
+        membershipRepository.flush();
+        subscriptionRepository.deleteAllById(subscriptionIds);
+        subscriptionRepository.flush();
     }
 
     private SubscriptionResponse subscribe(User owner, SubscriptionProvider provider, PaymentDetails request) {

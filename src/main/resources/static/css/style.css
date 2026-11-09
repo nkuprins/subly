@@ -128,6 +128,10 @@ tbody tr { border-top: 1px solid #eee; }
 .edit-user-dialog-card p { color: var(--muted); line-height: 1.5; }
 .edit-user-dialog-card .btn { align-self: flex-end; }
 .edit-user-dialog-close { position: absolute; top: 12px; right: 16px; border: 0; background: transparent; color: var(--muted); font-size: 25px; cursor: pointer; }
+.btn-danger { background: #dc2626; color: #fff; }
+.btn-danger:hover { background: #b91c1c; }
+.btn-danger:disabled { opacity: .55; cursor: not-allowed; }
+.delete-account-error { min-height: 20px; color: #dc2626; font-size: 14px; }
 @media (max-width: 480px) {
     .provider-picker { align-items: stretch; flex-direction: column; }
     .provider-picker .btn { align-self: flex-start; }

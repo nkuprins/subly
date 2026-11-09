@@ -27,6 +27,9 @@ public interface SubscriptionMembershipRepository extends JpaRepository<Subscrip
 
     List<SubscriptionMembership> findBySubscriptionIdIn(Collection<Long> subscriptionIds);
 
+    @EntityGraph(attributePaths = "subscription")
+    List<SubscriptionMembership> findByUser_IdAndRole(Long userId, MembershipRole role);
+
     @EntityGraph(attributePaths = {"subscription", "subscription.provider"})
     List<SubscriptionMembership> findByUserUsernameAndSubscriptionStatusOrderBySubscriptionNextPaymentDateAsc(
             String username, SubscriptionStatus status);
@@ -34,6 +37,10 @@ public interface SubscriptionMembershipRepository extends JpaRepository<Subscrip
     @EntityGraph(attributePaths = "subscription")
     List<SubscriptionMembership> findByRoleAndSubscriptionStatusAndUserTimeZoneAndSubscriptionNextPaymentDateBefore(
             MembershipRole role, SubscriptionStatus status, ZoneId timeZone, LocalDate date);
+
+    void deleteByUser_Id(Long userId);
+
+    void deleteBySubscription_IdIn(Collection<Long> subscriptionIds);
 
     long countBySubscriptionId(Long subscriptionId);
 }

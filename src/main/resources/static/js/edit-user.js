@@ -138,3 +138,46 @@ informationForm.addEventListener('submit', async (event) => {
         updateInformationButton();
     }
 });
+
+// delete account form
+const deleteAccountForm = document.getElementById('delete-account-form');
+const deleteAccountPassword = document.getElementById('delete-account-password');
+const deleteAccountSubmit = document.getElementById('delete-account-submit');
+const deleteAccountError = document.getElementById('delete-account-error');
+
+deleteAccountPassword.addEventListener('input', () => {
+    deleteAccountSubmit.disabled = !deleteAccountPassword.value.trim();
+    deleteAccountError.textContent = '';
+});
+
+deleteAccountForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (deleteAccountSubmit.disabled) return;
+
+    deleteAccountSubmit.disabled = true;
+    deleteAccountError.textContent = '';
+
+    try {
+        const response = await fetch('/users/delete/me', {
+            method: 'DELETE',
+            headers: requestHeaders,
+            body: JSON.stringify({password: deleteAccountPassword.value})
+        });
+        const result = response.status === 204 ? {} : await response.json().catch(() => ({}));
+
+        if (response.status === 400 || response.status === 409) {
+            deleteAccountError.textContent = result.detail || result.message || 'Could not delete the account.';
+            return;
+        }
+        if (!response.ok) {
+            deleteAccountError.textContent = result.detail || result.message || 'Could not delete the account. Please try again.';
+            return;
+        }
+
+        window.location.href = '/login';
+    } catch (error) {
+        deleteAccountError.textContent = 'Could not reach the server. Please try again.';
+    } finally {
+        deleteAccountSubmit.disabled = !deleteAccountPassword.value.trim();
+    }
+});
