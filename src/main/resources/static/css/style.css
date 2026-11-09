@@ -13,7 +13,7 @@
     --placeholder: #9ca3af;
     /* typography */
     --font-base: system-ui, "Segoe UI", Roboto, sans-serif;
-    --font-heading: system-ui, "Segoe UI", Roboto, sans-serif; /* swap when design is chosen */
+    --font-heading: system-ui, "Segoe UI", Roboto, sans-serif;
     /* shape */
     --radius: 12px;
     --radius-sm: 6px;
@@ -115,6 +115,19 @@ tbody tr { border-top: 1px solid #eee; }
 .provider-dialog-card > p { color: var(--muted); font-size: 14px; }
 .provider-dialog-card .field { margin-top: 4px; }
 .provider-dialog-close { position: absolute; top: 14px; right: 16px; border: 0; background: transparent; color: var(--muted); font-size: 25px; cursor: pointer; }
+.edit-user-page { max-width: 720px; }
+.edit-user-section { margin-top: 20px; }
+.edit-user-section h2 { margin-bottom: 18px; }
+.edit-user-section .form { max-width: 520px; }
+.edit-user-section .btn:disabled { opacity: .55; cursor: not-allowed; }
+.edit-user-message { min-height: 20px; color: var(--muted); font-size: 14px; }
+.edit-user-dialog { width: min(440px, calc(100% - 32px)); margin: auto; padding: 0; border: 0; border-radius: var(--radius); background: transparent; color: var(--text); box-shadow: 0 18px 48px rgba(29, 29, 31, .2); }
+.edit-user-dialog::backdrop { background: rgba(29, 29, 31, .45); }
+.edit-user-dialog-card { position: relative; display: flex; flex-direction: column; gap: 16px; padding: 28px; border-radius: var(--radius); background: var(--surface); }
+.edit-user-dialog-card h2 { margin: 0; padding-right: 24px; }
+.edit-user-dialog-card p { color: var(--muted); line-height: 1.5; }
+.edit-user-dialog-card .btn { align-self: flex-end; }
+.edit-user-dialog-close { position: absolute; top: 12px; right: 16px; border: 0; background: transparent; color: var(--muted); font-size: 25px; cursor: pointer; }
 @media (max-width: 480px) {
     .provider-picker { align-items: stretch; flex-direction: column; }
     .provider-picker .btn { align-self: flex-start; }
