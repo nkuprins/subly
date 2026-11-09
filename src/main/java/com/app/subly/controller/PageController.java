@@ -1,12 +1,14 @@
 package com.app.subly.controller;
 
-
 import com.app.subly.dto.subscription.CreateSubscriptionRequest;
 import com.app.subly.dto.subscription.UpdateSubscriptionRequest;
 import com.app.subly.model.subscription.BillingCycle;
 import com.app.subly.service.DashboardService;
 import com.app.subly.service.ProviderService;
 import com.app.subly.service.SubscriptionService;
+import java.math.BigDecimal;
+import java.security.Principal;
+import java.time.LocalDate;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,10 +17,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.math.BigDecimal;
-import java.security.Principal;
-import java.time.LocalDate;
-
 @Controller
 public class PageController {
 
@@ -26,8 +24,10 @@ public class PageController {
     private final DashboardService dashboardService;
     private final ProviderService providerService;
 
-    public PageController(SubscriptionService subscriptionService, DashboardService dashboardService,
-                          ProviderService providerService) {
+    public PageController(
+            SubscriptionService subscriptionService,
+            DashboardService dashboardService,
+            ProviderService providerService) {
         this.subscriptionService = subscriptionService;
         this.dashboardService = dashboardService;
         this.providerService = providerService;
@@ -39,7 +39,8 @@ public class PageController {
         String username = principal.getName();
         model.addAttribute("summary", dashboardService.getSummary(username));
         model.addAttribute("upcoming", dashboardService.getUpcomingPayments(username));
-        model.addAttribute("activeCount", subscriptionService.findVisibleTo(username).size());
+        model.addAttribute(
+                "activeCount", subscriptionService.findVisibleTo(username).size());
         return "dashboard";
     }
 
@@ -58,16 +59,18 @@ public class PageController {
     }
 
     @PostMapping("/subscriptions")
-    public String createSubscription(Principal principal,
-                                     @RequestParam Long providerId,
-                                     @RequestParam BigDecimal price,
-                                     @RequestParam BillingCycle billingCycle,
-                                     @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-                                     LocalDate nextPaymentDate,
-                                     @RequestParam(defaultValue = "false") boolean freeTrial,
-                                     @RequestParam(defaultValue = "1") Integer maxParticipants) {
-        subscriptionService.create(principal.getName(),
-                new CreateSubscriptionRequest(providerId, price, billingCycle, nextPaymentDate, freeTrial, maxParticipants));
+    public String createSubscription(
+            Principal principal,
+            @RequestParam Long providerId,
+            @RequestParam BigDecimal price,
+            @RequestParam BillingCycle billingCycle,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate nextPaymentDate,
+            @RequestParam(defaultValue = "false") boolean freeTrial,
+            @RequestParam(defaultValue = "1") Integer maxParticipants) {
+        subscriptionService.create(
+                principal.getName(),
+                new CreateSubscriptionRequest(
+                        providerId, price, billingCycle, nextPaymentDate, freeTrial, maxParticipants));
         return "redirect:/subscriptions";
     }
 
@@ -86,13 +89,17 @@ public class PageController {
     }
 
     @PostMapping("/subscriptions/{id}")
-    public String updateSubscription(@PathVariable Long id, Principal principal,
-                                     @RequestParam BigDecimal price,
-                                     @RequestParam BillingCycle billingCycle,
-                                     @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate nextPaymentDate,
-                                     @RequestParam(defaultValue = "false") boolean freeTrial) {
-        subscriptionService.update(principal.getName(), id, new UpdateSubscriptionRequest(price, billingCycle,
-                nextPaymentDate, freeTrial));
+    public String updateSubscription(
+            @PathVariable Long id,
+            Principal principal,
+            @RequestParam BigDecimal price,
+            @RequestParam BillingCycle billingCycle,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate nextPaymentDate,
+            @RequestParam(defaultValue = "false") boolean freeTrial) {
+        subscriptionService.update(
+                principal.getName(),
+                id,
+                new UpdateSubscriptionRequest(price, billingCycle, nextPaymentDate, freeTrial));
         return "redirect:/subscriptions";
     }
 
@@ -100,8 +107,5 @@ public class PageController {
     public String deleteSubscription(@PathVariable Long id, Principal principal) {
         subscriptionService.delete(principal.getName(), id);
         return "redirect:/subscriptions";
-
     }
-
-
 }
