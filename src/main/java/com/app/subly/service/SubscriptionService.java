@@ -62,6 +62,13 @@ public class SubscriptionService {
     }
 
     @Transactional(readOnly = true)
+    public java.util.Map<Long, java.math.BigDecimal> currentShares(String username) {
+        return subscriptionShares.load(username, SubscriptionStatus.ACTIVE).stream()
+                .collect(java.util.stream.Collectors.toMap(
+                        share -> share.subscription().getId(), share -> share.amount()));
+    }
+
+    @Transactional(readOnly = true)
     public List<CancelledSubscriptionResponse> findCancelled(String username) {
         LocalDate today = userRepository.getByUsername(username).today(clock);
         return subscriptionShares.load(username, SubscriptionStatus.CANCELLED).stream()

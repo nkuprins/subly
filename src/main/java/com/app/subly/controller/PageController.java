@@ -71,6 +71,7 @@ public class PageController {
         model.addAttribute("subscriptions", showCancelled ? cancelled : active);
         model.addAttribute("activeCount", active.size());
         model.addAttribute("cancelledCount", cancelled.size());
+        model.addAttribute("shares", subscriptionService.currentShares(username));
         return "subscriptions";
     }
 
