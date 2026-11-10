@@ -25,7 +25,12 @@ public class SubscriptionController {
 
     @GetMapping
     public List<VisibleSubscriptionResponse> listMine(Principal principal) {
-        return service.findVisibleTo(principal.getName());
+        return service.findCurrent(principal.getName());
+    }
+
+    @GetMapping("/cancelled")
+    public List<CancelledSubscriptionResponse> listCancelled(Principal principal) {
+        return service.findCancelled(principal.getName());
     }
 
     @PutMapping("/{id}")

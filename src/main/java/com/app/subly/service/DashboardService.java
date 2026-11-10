@@ -1,5 +1,6 @@
 package com.app.subly.service;
 
+import com.app.subly.dto.MoneyResponse;
 import com.app.subly.dto.dashboard.CategorySpendingResponse;
 import com.app.subly.dto.dashboard.DashboardSummaryResponse;
 import com.app.subly.dto.dashboard.UpcomingPaymentResponse;
@@ -59,7 +60,7 @@ public class DashboardService {
         BigDecimal monthlyTotal = yearlyTotal.divide(MONTHS_IN_YEAR, MONEY_SCALE, RoundingMode.HALF_UP);
 
         return new DashboardSummaryResponse(
-                monthlyTotal, yearlyTotal.setScale(MONEY_SCALE, RoundingMode.HALF_UP), Currency.EUR);
+                monthlyTotal, yearlyTotal.setScale(MONEY_SCALE, RoundingMode.HALF_UP), Currency.EUR, shares.size());
     }
 
     @Transactional(readOnly = true)
@@ -120,6 +121,20 @@ public class DashboardService {
                 .sorted(Comparator.comparing(CategorySpendingResponse::yearlyTotal)
                         .reversed())
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public MoneyResponse getSavings(String username) {
+        LocalDate today = userRepository.getByUsername(username).today(clock);
+
+        // Savings from all canceled subscriptions, each converted to EUR, like the other dashboard totals.
+        BigDecimal total = BigDecimal.ZERO;
+        for (Share share : subscriptionShares.load(username, SubscriptionStatus.CANCELLED)) {
+            total = total.add(CurrencyConverter.toEur(
+                    share.savedUntil(today), share.subscription().getCurrency()));
+        }
+
+        return new MoneyResponse(total.setScale(MONEY_SCALE, RoundingMode.HALF_UP), Currency.EUR);
     }
 
     private record CategoryKey(Long id, String name) {}

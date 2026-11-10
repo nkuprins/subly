@@ -27,16 +27,17 @@ class SubscriptionMembershipRepositoryTest extends AbstractRepositoryTest {
     @Autowired
     SubscriptionRepository subscriptionRepository;
 
+    User alice;
     Subscription subscription;
     SubscriptionMembership ownerRow;
     SubscriptionMembership memberRow;
 
     @BeforeEach
     void setUp() {
-        User owner = persistUser(ALICE);
+        alice = persistUser(ALICE);
         User member = persistUser(BOB);
-        subscription = persistSubscription(owner);
-        ownerRow = entityManager.persist(SubscriptionMembership.owner(owner, subscription));
+        subscription = persistSubscription(alice);
+        ownerRow = entityManager.persist(SubscriptionMembership.owner(alice, subscription));
         memberRow = entityManager.persist(new SubscriptionMembership(member, subscription, MembershipRole.MEMBER));
         entityManager.flush();
     }
@@ -91,6 +92,17 @@ class SubscriptionMembershipRepositoryTest extends AbstractRepositoryTest {
 
         assertThat(repository.existsById(ownerRow.getId())).isFalse();
         assertThat(repository.existsById(memberRow.getId())).isFalse();
+    }
+
+    @Test
+    void findCancelled_shouldIncludeMembersOfCancelledSharedSubscriptions() {
+        subscription.cancel(NOW);
+        entityManager.flush();
+
+        assertThat(repository.findByUserUsernameAndSubscriptionStatusOrderBySubscriptionNextPaymentDateAsc(
+                        BOB, SubscriptionStatus.CANCELLED))
+                .extracting(SubscriptionMembership::getId)
+                .containsExactly(memberRow.getId());
     }
 
     private List<SubscriptionMembership> findOwnersDueBefore(LocalDate date) {

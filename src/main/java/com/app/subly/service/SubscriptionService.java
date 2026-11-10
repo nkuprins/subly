@@ -35,6 +35,7 @@ public class SubscriptionService {
     private final SubscriptionMembershipRepository membershipRepository;
     private final SubscriptionProviderRepository subscriptionProviderRepository;
     private final UserRepository userRepository;
+    private final SubscriptionShares subscriptionShares;
     private final PendingInvitationRepository pendingInvitationRepository;
     private final Clock clock;
 
@@ -48,12 +49,20 @@ public class SubscriptionService {
     }
 
     @Transactional(readOnly = true)
-    public List<VisibleSubscriptionResponse> findVisibleTo(String username) {
+    public List<VisibleSubscriptionResponse> findCurrent(String username) {
         return membershipRepository
                 .findByUserUsernameAndSubscriptionStatusOrderBySubscriptionNextPaymentDateAsc(
                         username, SubscriptionStatus.ACTIVE)
                 .stream()
                 .map(VisibleSubscriptionResponse::from)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<CancelledSubscriptionResponse> findCancelled(String username) {
+        LocalDate today = userRepository.getByUsername(username).today(clock);
+        return subscriptionShares.load(username, SubscriptionStatus.CANCELLED).stream()
+                .map(share -> CancelledSubscriptionResponse.from(share.membership(), share.savedUntil(today)))
                 .toList();
     }
 

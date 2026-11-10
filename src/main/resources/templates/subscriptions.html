@@ -9,13 +9,28 @@
 <body>
 <div th:replace="~{fragments/header :: header}"></div>
 
-<main class="container page">
+<main class="container page" th:with="cancelledTab=${tab == 'cancelled'}">
     <div class="page-head">
         <h1>Subscriptions</h1>
         <span class="spacer"></span>
         <a th:href="@{/subscriptions/new}" class="btn btn-primary">+ Add Subscription</a>
     </div>
-    <div class="table-wrap">
+
+    <p class="notice" th:if="${notice}" th:text="${notice}" role="status"></p>
+
+    <nav class="tabs" aria-label="Subscription status">
+        <a th:href="@{/subscriptions}" class="tab" th:classappend="${!cancelledTab} ? ' tab-active'"
+           th:attr="aria-current=${!cancelledTab} ? 'page' : null">
+            Active <span class="tab-count" th:text="${activeCount}">0</span>
+        </a>
+        <a th:href="@{/subscriptions(tab='cancelled')}" class="tab" th:classappend="${cancelledTab} ? ' tab-active'"
+           th:attr="aria-current=${cancelledTab} ? 'page' : null">
+            Cancelled <span class="tab-count" th:text="${cancelledCount}">0</span>
+        </a>
+    </nav>
+
+    <!-- Active subscriptions -->
+    <div class="table-wrap" th:unless="${cancelledTab}">
         <table>
             <thead>
             <tr>
@@ -43,9 +58,15 @@
                         <a
                                 th:href="@{/subscriptions/{id}/edit(id=${item.subscription.id})}" class="link">Edit</a>
                         <a th:href="@{/subscriptions/{id}/invite(id=${item.subscription.id})}" class="link">Invite</a>
+                        <form th:if="${item.role.name() == 'OWNER'}"
+                              th:action="@{/subscriptions/{id}/cancel(id=${item.subscription.id})}" method="post"
+                              onsubmit="return confirm('Cancel this subscription? It will move to the Cancelled tab and stop counting toward your totals. You can reactivate it any time.');"
+                              class="inline-form">
+                            <button type="submit" class="link btn-link">Cancel</button>
+                        </form>
                         <form
                                 th:action="@{/subscriptions/{id}/delete(id=${item.subscription.id})}" method="post"
-                                onsubmit="return confirm('Delete this subscription?');" class="inline-form">
+                                onsubmit="return confirm('Delete this subscription permanently?');" class="inline-form">
                             <button type="submit" class="link link-danger btn-link">Delete</button>
                         </form>
                     </div>
@@ -56,6 +77,55 @@
                 <td colspan="6" class="empty-row">
                     No subscriptions yet. <a th:href="@{/subscriptions/new}" class="link">Add one</a>
                 </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Cancelled subscriptions -->
+    <div class="table-wrap" th:if="${cancelledTab}">
+        <table>
+            <thead>
+            <tr>
+                <th>Provider</th>
+                <th>Price</th>
+                <th>Currency</th>
+                <th>Cycle</th>
+                <th>Ends on</th>
+                <th>Saved</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="item : ${subscriptions}" class="row-cancelled">
+                <td th:text="${item.subscription.providerName()}"></td>
+                <td th:text="${item.subscription.price}"></td>
+                <td th:text="${item.subscription.currency}"></td>
+                <td>
+            <span class="pill"
+                  th:classappend="${item.subscription.billingCycle.name() == 'YEARLY'} ? ' pill-year'"
+                  th:text="${item.subscription.billingCycle}"></span>
+                </td>
+                <td th:text="${item.endsOn}"></td>
+                <td th:text="|${item.saved} ${item.subscription.currency}|"></td>
+                <td>
+                    <div class="actions" th:if="${item.role.name() == 'OWNER'}">
+                        <form th:action="@{/subscriptions/{id}/reactivate(id=${item.subscription.id})}" method="post"
+                              class="inline-form">
+                            <button type="submit" class="link btn-link">Reactivate</button>
+                        </form>
+                        <form th:action="@{/subscriptions/{id}/delete(id=${item.subscription.id},tab='cancelled')}"
+                              method="post"
+                              onsubmit="return confirm('Delete this subscription permanently?');" class="inline-form">
+                            <button type="submit" class="link link-danger btn-link">Delete</button>
+                        </form>
+                    </div>
+                    <span class="muted-inline" th:unless="${item.role.name() == 'OWNER'}">Cancelled by owner</span>
+                </td>
+            </tr>
+
+            <tr th:if="${#lists.isEmpty(subscriptions)}">
+                <td colspan="7" class="empty-row">No cancelled subscriptions.</td>
             </tr>
             </tbody>
         </table>
