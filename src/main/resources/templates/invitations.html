@@ -15,7 +15,7 @@
         <h1>Invite people</h1>
     </div>
 
-    <div class="form-card">
+    <div class="form-card" th:unless="${full}">
         <form th:action="@{/subscriptions/{id}/invite(id=${subscriptionId})}" method="post" class="form">
             <div class="field">
                 <label for="usernameOrEmail">Username or email</label>
@@ -28,6 +28,7 @@
             </div>
         </form>
     </div>
+    <p class="notice" th:if="${full}" role="status">This subscription is full — all seats are taken.</p>
     <h2>Current members</h2>
     <div class="table-wrap">
         <table>

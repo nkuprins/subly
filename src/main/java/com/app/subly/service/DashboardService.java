@@ -11,6 +11,7 @@ import com.app.subly.model.subscription.SubscriptionStatus;
 import com.app.subly.repository.UserRepository;
 import com.app.subly.service.SubscriptionShares.Share;
 import com.app.subly.util.CurrencyConverter;
+import com.app.subly.util.Money;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Clock;
@@ -31,8 +32,6 @@ public class DashboardService {
     private static final BigDecimal MONTHS_IN_YEAR = BigDecimal.valueOf(12);
 
     private static final int UPCOMING_DAYS = 30;
-
-    private static final int MONEY_SCALE = 2;
 
     private final SubscriptionShares subscriptionShares;
     private final UserRepository userRepository;
@@ -61,10 +60,9 @@ public class DashboardService {
             yearlyTotal = yearlyTotal.add(amount.multiply(paymentsPerYear));
         }
 
-        BigDecimal monthlyTotal = yearlyTotal.divide(MONTHS_IN_YEAR, MONEY_SCALE, RoundingMode.HALF_UP);
+        BigDecimal monthlyTotal = yearlyTotal.divide(MONTHS_IN_YEAR, Money.FRACTION_DIGITS, RoundingMode.HALF_UP);
 
-        return new DashboardSummaryResponse(
-                monthlyTotal, yearlyTotal.setScale(MONEY_SCALE, RoundingMode.HALF_UP), targetCurrency, shares.size());
+        return new DashboardSummaryResponse(monthlyTotal, Money.round(yearlyTotal), targetCurrency, shares.size());
     }
 
     @Transactional(readOnly = true)
@@ -101,8 +99,7 @@ public class DashboardService {
                 .map(payment -> new UpcomingPaymentResponse(
                         payment.subscriptionId(),
                         payment.providerName(),
-                        CurrencyConverter.convert(payment.amount(), payment.currency(), targetCurrency)
-                                .setScale(MONEY_SCALE, RoundingMode.HALF_UP),
+                        Money.round(CurrencyConverter.convert(payment.amount(), payment.currency(), targetCurrency)),
                         targetCurrency,
                         payment.nextPaymentDate(),
                         payment.daysLeft()))
@@ -139,8 +136,8 @@ public class DashboardService {
                 .map(entry -> new CategorySpendingResponse(
                         entry.getKey().id(),
                         entry.getKey().name(),
-                        entry.getValue().divide(MONTHS_IN_YEAR, MONEY_SCALE, RoundingMode.HALF_UP),
-                        entry.getValue().setScale(MONEY_SCALE, RoundingMode.HALF_UP),
+                        entry.getValue().divide(MONTHS_IN_YEAR, Money.FRACTION_DIGITS, RoundingMode.HALF_UP),
+                        Money.round(entry.getValue()),
                         targetCurrency))
                 .sorted(Comparator.comparing(CategorySpendingResponse::yearlyTotal)
                         .reversed())
@@ -165,7 +162,7 @@ public class DashboardService {
                     share.savedUntil(today), share.subscription().getCurrency(), targetCurrency));
         }
 
-        return new MoneyResponse(total.setScale(MONEY_SCALE, RoundingMode.HALF_UP), targetCurrency);
+        return new MoneyResponse(Money.round(total), targetCurrency);
     }
 
     private record CategoryKey(Long id, String name) {}

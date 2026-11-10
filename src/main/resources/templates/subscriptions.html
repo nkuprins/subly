@@ -36,6 +36,7 @@
             <tr>
                 <th>Provider</th>
                 <th>Price</th>
+                <th>Your share</th>
                 <th>Currency</th>
                 <th>Cycle</th>
                 <th>Next payment</th>
@@ -44,15 +45,22 @@
             </thead>
             <tbody>
             <tr th:each="item : ${subscriptions}">
-                <td th:text="${item.subscription.providerName()}"></td>
+                <td>
+                    <span th:text="${item.subscription.providerName()}"></span>
+                    <span class="pill pill-trial" th:if="${item.subscription.freeTrial}">Free trial</span>
+                </td>
                 <td th:text="${item.subscription.price}"></td>
+                <td th:text="${shares[item.subscription.id]}"></td>
                 <td th:text="${item.subscription.currency}"></td>
                 <td>
             <span class="pill"
                   th:classappend="${item.subscription.billingCycle.name() == 'YEARLY'} ? ' pill-year'"
                   th:text="${item.subscription.billingCycle}"></span>
                 </td>
-                <td th:text="${item.subscription.nextPaymentDate}"></td>
+                <td>
+                    <span th:text="${item.subscription.nextPaymentDate}"></span>
+                    <span class="trial-note" th:if="${item.subscription.freeTrial}">first charge · trial ends</span>
+                </td>
                 <td>
                     <div class="actions">
                         <a th:if="${item.role.name() == 'OWNER'}"
@@ -80,7 +88,7 @@
             </tr>
 
             <tr th:if="${#lists.isEmpty(subscriptions)}">
-                <td colspan="6" class="empty-row">
+                <td colspan="7" class="empty-row">
                     No subscriptions yet. <a th:href="@{/subscriptions/new}" class="link">Add one</a>
                 </td>
             </tr>

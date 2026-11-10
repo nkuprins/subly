@@ -26,9 +26,17 @@ public class InvitationPageController {
     public String invitePage(@PathVariable long id, Principal principal, Model model) {
         if (principal == null) return "redirect:/login";
         try {
+            var members = subscriptionService.findMembers(principal.getName(), id);
+            int max = subscriptionService.findCurrent(principal.getName()).stream()
+                    .map(com.app.subly.dto.subscription.VisibleSubscriptionResponse::subscription)
+                    .filter(s -> s.id().equals(id))
+                    .findFirst()
+                    .map(com.app.subly.dto.subscription.SubscriptionResponse::maxParticipants)
+                    .orElse(1);
             model.addAttribute("subscriptionId", id);
             model.addAttribute("pending", invitationService.findPending(principal.getName(), id));
-            model.addAttribute("members", subscriptionService.findMembers(principal.getName(), id));
+            model.addAttribute("members", members);
+            model.addAttribute("full", members.size() >= max);
             return "invitations";
         } catch (RuntimeException ex) {
             return "redirect:/subscriptions";
@@ -65,5 +73,31 @@ public class InvitationPageController {
             redirectAttributes.addFlashAttribute("notice", ex.getMessage());
         }
         return "redirect:/subscriptions/" + id + "/invite";
+    }
+
+    @PostMapping("/invitations/{invitationId}/accept")
+    public String acceptInvitation(
+            @PathVariable long invitationId, Principal principal, RedirectAttributes redirectAttributes) {
+        if (principal == null) return "redirect:/login";
+        try {
+            invitationService.accept(principal.getName(), invitationId);
+            redirectAttributes.addFlashAttribute("notice", "Invitation accepted. The subscription is now in your list");
+        } catch (RuntimeException ex) {
+            redirectAttributes.addFlashAttribute("notice", ex.getMessage());
+        }
+        return "redirect:/dashboard";
+    }
+
+    @PostMapping("/invitations/{invitationId}/decline")
+    public String declineInvitation(
+            @PathVariable long invitationId, Principal principal, RedirectAttributes redirectAttributes) {
+        if (principal == null) return "redirect:/login";
+        try {
+            invitationService.decline(principal.getName(), invitationId);
+            redirectAttributes.addFlashAttribute("notice", "Invitation declined.");
+        } catch (RuntimeException ex) {
+            redirectAttributes.addFlashAttribute("notice", ex.getMessage());
+        }
+        return "redirect:/dashboard";
     }
 }
