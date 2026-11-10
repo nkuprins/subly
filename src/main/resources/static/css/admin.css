@@ -16,6 +16,18 @@
 .notice { padding: 12px 15px; border-radius: 9px; margin: 0 0 18px; font-size: 13px; }
 .notice-success { color: #166534; border: 1px solid #bbf7d0; background: #f0fdf4; }
 .catalogue-panel { background: white; border: 1px solid #e9eaf1; border-radius: 14px; box-shadow: 0 5px 20px rgba(27, 31, 59, .035); overflow: hidden; }
+.admin-categories-panel { margin-top: 24px; }
+.category-table th:first-child, .category-table td:first-child { width: auto; }
+.category-table th:nth-child(2), .category-table td:nth-child(2) { width: 140px; }
+.category-table th:last-child, .category-table td:last-child { width: 180px; }
+.category-actions { white-space: nowrap; }
+.category-action-button { border: 0; padding: 4px 6px; background: transparent; color: var(--primary); font: inherit; font-weight: 600; cursor: pointer; }
+.category-action-button:hover { text-decoration: underline; }
+.category-action-delete { color: #b42318; }
+.category-action-delete:disabled { color: rgb(66 31 31 / 0.72); }
+.category-action-button:focus-visible { outline: 2px solid #c4a1eb; outline-offset: 2px; border-radius: 3px; }
+.category-action-button:disabled:hover{cursor: not-allowed;text-decoration: none;}
+.provider-dialog .form-actions { margin-top: 18px; }
 .catalogue-toolbar { display: flex; justify-content: space-between; align-items: center; padding: 21px 24px; border-bottom: 1px solid #eceef4; }
 .catalogue-toolbar h2 { font-size: 16px; letter-spacing: -.01em; margin: 0 0 4px; }
 .catalogue-toolbar p { font-size: 12px; color: #858b9a; }
@@ -62,4 +74,5 @@
     .catalogue-table th, .catalogue-table td { padding-left: 16px; padding-right: 16px; }
     .provider-form-card { padding: 21px 18px; }
     .catalogue-table th:first-child, .catalogue-table td:first-child { display: none; }
+    .category-table th:first-child, .category-table td:first-child { display: table-cell; }
 }
