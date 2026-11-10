@@ -15,6 +15,7 @@ import com.app.subly.model.subscription.BillingCycle;
 import com.app.subly.model.subscription.Subscription;
 import com.app.subly.model.subscription.SubscriptionMembership;
 import com.app.subly.model.user.User;
+import com.app.subly.repository.PendingInvitationRepository;
 import com.app.subly.repository.SubscriptionMembershipRepository;
 import com.app.subly.repository.SubscriptionProviderRepository;
 import com.app.subly.repository.SubscriptionRepository;
@@ -48,6 +49,9 @@ abstract class AbstractSubscriptionServiceTest {
     UserRepository userRepository;
 
     @Mock
+    PendingInvitationRepository pendingInvitationRepository;
+
+    @Mock
     SubscriptionAccess subscriptionAccess;
 
     SubscriptionService service;
@@ -61,6 +65,7 @@ abstract class AbstractSubscriptionServiceTest {
                 membershipRepository,
                 subscriptionProviderRepository,
                 userRepository,
+                pendingInvitationRepository,
                 TestClock.CLOCK);
     }
 

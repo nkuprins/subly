@@ -1,5 +1,6 @@
 package com.app.subly.controller;
 
+import com.app.subly.dto.dashboard.CategorySpendingResponse;
 import com.app.subly.dto.dashboard.DashboardSummaryResponse;
 import com.app.subly.dto.dashboard.UpcomingPaymentResponse;
 import com.app.subly.service.DashboardService;
@@ -25,5 +26,10 @@ public class DashboardController {
     @GetMapping("/upcoming-payments")
     public List<UpcomingPaymentResponse> getUpcomingPayments(Principal principal) {
         return dashboardService.getUpcomingPayments(principal.getName());
+    }
+
+    @GetMapping("/categories")
+    public List<CategorySpendingResponse> getSpendingByCategory(Principal principal) {
+        return dashboardService.getSpendingByCategory(principal.getName());
     }
 }

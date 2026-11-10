@@ -4,6 +4,7 @@ import com.app.subly.dto.subscription.*;
 import com.app.subly.dto.subscription.PaymentDetails;
 import com.app.subly.exception.provider.ProviderNotFoundException;
 import com.app.subly.exception.subscription.PaymentDateInPastException;
+import com.app.subly.exception.subscription.PriceTooLowException;
 import com.app.subly.model.provider.SubscriptionProvider;
 import com.app.subly.model.subscription.MembershipRole;
 import com.app.subly.model.subscription.Subscription;
@@ -15,6 +16,7 @@ import com.app.subly.repository.SubscriptionMembershipRepository;
 import com.app.subly.repository.SubscriptionProviderRepository;
 import com.app.subly.repository.SubscriptionRepository;
 import com.app.subly.repository.UserRepository;
+import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -34,14 +36,16 @@ public class SubscriptionService {
     private final PendingInvitationRepository invitationRepository;
     private final SubscriptionProviderRepository subscriptionProviderRepository;
     private final UserRepository userRepository;
+    private final PendingInvitationRepository pendingInvitationRepository;
     private final Clock clock;
 
     @Transactional
     public SubscriptionResponse create(String username, CreateSubscriptionRequest request) {
         User owner = userRepository.getByUsername(username);
         requireNotInPast(owner, request);
+        requireCentPerParticipant(request.price(), request.maxParticipants());
         SubscriptionProvider provider = findVisibleProvider(request.providerId(), owner);
-        return subscribe(owner, provider, request);
+        return subscribe(owner, provider, request, request.maxParticipants());
     }
 
     @Transactional(readOnly = true)
@@ -60,6 +64,7 @@ public class SubscriptionService {
                 subscriptionAccess.getOwnerMembershipWithSubscriptionDetails(username, subscriptionId);
         Subscription subscription = owner.getSubscription();
         requireNotInPast(owner.getUser(), request);
+        requireCentPerParticipant(request.price(), subscription.getMaxParticipants());
         applyPaymentDetails(subscription, request);
         return SubscriptionResponse.from(subscription);
     }
@@ -77,6 +82,7 @@ public class SubscriptionService {
         Subscription subscription = subscriptionAccess.getOwnedSubscription(username, subscriptionId);
 
         //  Decide what happens to payments when they are implemented.
+        pendingInvitationRepository.deleteBySubscriptionId(subscriptionId);
         subscriptionRepository.delete(subscription);
     }
 
@@ -127,9 +133,14 @@ public class SubscriptionService {
         subscriptionRepository.flush();
     }
 
-    private SubscriptionResponse subscribe(User owner, SubscriptionProvider provider, PaymentDetails request) {
+    private SubscriptionResponse subscribe(
+            User owner, SubscriptionProvider provider, PaymentDetails request, int maxParticipants) {
         Subscription subscription = new Subscription(
                 provider, request.price(), request.billingCycle(), request.nextPaymentDate(), request.freeTrial());
+
+        if (maxParticipants > 1) {
+            subscription.makeSharable(maxParticipants);
+        }
         subscriptionRepository.save(subscription);
 
         membershipRepository.save(SubscriptionMembership.owner(owner, subscription));
@@ -146,6 +157,13 @@ public class SubscriptionService {
     private void requireNotInPast(User user, PaymentDetails request) {
         if (request.nextPaymentDate().isBefore(user.today(clock))) {
             throw new PaymentDateInPastException(request.nextPaymentDate());
+        }
+    }
+
+    private static void requireCentPerParticipant(BigDecimal price, int maxParticipants) {
+        BigDecimal minimum = BigDecimal.valueOf(maxParticipants, Subscription.PRICE_FRACTION_DIGITS);
+        if (price.compareTo(minimum) < 0) {
+            throw new PriceTooLowException(price, maxParticipants, minimum);
         }
     }
 

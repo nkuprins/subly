@@ -8,7 +8,6 @@ import com.app.subly.model.category.Category;
 import com.app.subly.model.provider.ProviderType;
 import com.app.subly.model.provider.SubscriptionProvider;
 import com.app.subly.model.user.User;
-import com.app.subly.model.user.UserRole;
 import com.app.subly.repository.CategoryRepository;
 import com.app.subly.repository.SubscriptionProviderRepository;
 import com.app.subly.repository.UserRepository;
@@ -40,11 +39,11 @@ public class ProviderService {
     }
 
     @Transactional
-    public ProviderResponse create(String username, ProviderRequest request) {
+    public ProviderResponse create(String username, ProviderRequest request, ProviderType type) {
         User user = userRepository.getByUsername(username);
         Category category = findCategory(request.categoryId());
         String name = request.name().strip();
-        SubscriptionProvider provider = user.getRole() == UserRole.ADMIN
+        SubscriptionProvider provider = type == ProviderType.CATALOG
                 ? SubscriptionProvider.catalog(name, category)
                 : SubscriptionProvider.custom(name, category, user);
         provider.setLogoPath(normalizeLogoPath(request.logoPath()));
