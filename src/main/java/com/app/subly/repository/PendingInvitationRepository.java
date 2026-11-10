@@ -15,7 +15,7 @@ public interface PendingInvitationRepository extends JpaRepository<PendingInvita
     @EntityGraph(attributePaths = "user")
     List<PendingInvitation> findBySubscriptionIdOrderByInvitedAt(Long subscriptionId);
 
-    @EntityGraph(attributePaths = "subscription.provider")
+    @EntityGraph(attributePaths = {"subscription.provider", "invitedBy"})
     List<PendingInvitation> findByUserUsernameOrderByInvitedAt(String username);
 
     @EntityGraph(attributePaths = {"user", "subscription"})

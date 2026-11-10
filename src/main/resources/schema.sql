@@ -91,6 +91,7 @@ CREATE TABLE IF NOT EXISTS subscription_pending (
     id BIGINT NOT NULL AUTO_INCREMENT,
     user_id BIGINT NOT NULL,
     subscription_id BIGINT NOT NULL,
+    invited_by BIGINT NOT NULL,
     invited_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     CONSTRAINT uq_subscription_pending_pair UNIQUE (subscription_id, user_id),
@@ -100,7 +101,10 @@ CREATE TABLE IF NOT EXISTS subscription_pending (
         ON DELETE RESTRICT,
     CONSTRAINT fk_subscription_pending_subscription_id
         FOREIGN KEY (subscription_id) REFERENCES subscriptions (id)
-        ON DELETE CASCADE
+        ON DELETE CASCADE,
+    CONSTRAINT fk_subscription_pending_invited_by
+        FOREIGN KEY (invited_by) REFERENCES users (id)
+        ON DELETE RESTRICT
 );
 
 CREATE TABLE IF NOT EXISTS subscription_payments (

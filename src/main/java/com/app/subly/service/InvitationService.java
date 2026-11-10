@@ -12,8 +12,6 @@ import com.app.subly.repository.SubscriptionMembershipRepository;
 import com.app.subly.repository.SubscriptionRepository;
 import com.app.subly.repository.UserRepository;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -31,7 +29,7 @@ public class InvitationService {
 
     @Transactional
     public InviteResponse invite(String ownerUsername, long subscriptionId, InviteRequest request) {
-        Subscription subscription = subscriptionAccess.getOwnedSubscription(ownerUsername, subscriptionId);
+        SubscriptionMembership owner = subscriptionAccess.getOwnerMembership(ownerUsername, subscriptionId);
         String usernameOrEmail = request.usernameOrEmail().strip();
         User invitedUser = userRepository
                 .findByUsername(usernameOrEmail)
@@ -46,7 +44,8 @@ public class InvitationService {
         if (invitationRepository.existsBySubscriptionIdAndUserId(subscriptionId, invitedUser.getId())) {
             throw new AlreadyInvitedException(invitedUser.getUsername(), subscriptionId);
         }
-        PendingInvitation invitation = invitationRepository.save(new PendingInvitation(invitedUser, subscription));
+        PendingInvitation invitation =
+                invitationRepository.save(new PendingInvitation(invitedUser, owner.getSubscription(), owner.getUser()));
         return InviteResponse.from(invitation);
     }
 
@@ -60,23 +59,8 @@ public class InvitationService {
 
     @Transactional(readOnly = true)
     public List<ReceivedInvitationResponse> findReceived(String username) {
-        List<PendingInvitation> invitations = invitationRepository.findByUserUsernameOrderByInvitedAt(username);
-        if (invitations.isEmpty()) {
-            return List.of();
-        }
-        List<Long> subscriptionIds = invitations.stream()
-                .map(invitation -> invitation.getSubscription().getId())
-                .toList();
-        Map<Long, String> ownerBySubscriptionId =
-                membershipRepository.findBySubscriptionIdInAndRole(subscriptionIds, MembershipRole.OWNER).stream()
-                        .collect(Collectors.toMap(
-                                // same subscriptions the first query already loaded, so no extra query
-                                owner -> owner.getSubscription().getId(),
-                                owner -> owner.getUser().getUsername()));
-        return invitations.stream()
-                .map(invitation -> ReceivedInvitationResponse.from(
-                        invitation,
-                        ownerBySubscriptionId.get(invitation.getSubscription().getId())))
+        return invitationRepository.findByUserUsernameOrderByInvitedAt(username).stream()
+                .map(ReceivedInvitationResponse::from)
                 .toList();
     }
 

@@ -22,9 +22,6 @@ public interface SubscriptionMembershipRepository extends JpaRepository<Subscrip
     Optional<SubscriptionMembership> findWithSubscriptionDetailsBySubscriptionIdAndRole(
             Long subscriptionId, MembershipRole role);
 
-    @EntityGraph(attributePaths = "user")
-    List<SubscriptionMembership> findBySubscriptionIdInAndRole(Collection<Long> subscriptionIds, MembershipRole role);
-
     List<SubscriptionMembership> findBySubscriptionIdIn(Collection<Long> subscriptionIds);
 
     @EntityGraph(attributePaths = "subscription")
