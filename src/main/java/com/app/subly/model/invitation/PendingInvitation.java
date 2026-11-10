@@ -32,12 +32,17 @@ public class PendingInvitation {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Subscription subscription;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "invited_by", nullable = false)
+    private User invitedBy;
+
     @CreationTimestamp
     @Column(updatable = false, nullable = false)
     private Instant invitedAt;
 
-    public PendingInvitation(User user, Subscription subscription) {
+    public PendingInvitation(User user, Subscription subscription, User invitedBy) {
         this.user = user;
         this.subscription = subscription;
+        this.invitedBy = invitedBy;
     }
 }

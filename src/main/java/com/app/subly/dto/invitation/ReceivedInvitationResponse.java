@@ -17,13 +17,13 @@ public record ReceivedInvitationResponse(
         BillingCycle billingCycle,
         Instant invitedAt) {
 
-    public static ReceivedInvitationResponse from(PendingInvitation invitation, String ownerUsername) {
+    public static ReceivedInvitationResponse from(PendingInvitation invitation) {
         Subscription subscription = invitation.getSubscription();
         return new ReceivedInvitationResponse(
                 invitation.getId(),
                 subscription.getId(),
                 subscription.getProvider().getName(),
-                ownerUsername,
+                invitation.getInvitedBy().getUsername(),
                 subscription.getPrice(),
                 subscription.getCurrency(),
                 subscription.getBillingCycle(),

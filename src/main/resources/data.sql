@@ -63,10 +63,10 @@ INSERT IGNORE INTO subscription_membership (id, user_id, subscription_id, role, 
     (15, 4, 11, 'OWNER',  CURDATE() + INTERVAL 9 DAY - INTERVAL 4 MONTH),
     (16, 4, 12, 'OWNER',  CURDATE() + INTERVAL 28 DAY - INTERVAL 1 MONTH);
 
-INSERT IGNORE INTO subscription_pending (id, user_id, subscription_id, invited_at) VALUES
-    (1, 5, 1,  NOW() - INTERVAL 2 DAY),
-    (2, 6, 2,  NOW() - INTERVAL 1 DAY),
-    (3, 6, 10, NOW() - INTERVAL 6 HOUR);
+INSERT IGNORE INTO subscription_pending (id, user_id, subscription_id, invited_by, invited_at) VALUES
+    (1, 5, 1,  2, NOW() - INTERVAL 2 DAY),
+    (2, 6, 2,  2, NOW() - INTERVAL 1 DAY),
+    (3, 6, 10, 3, NOW() - INTERVAL 6 HOUR);
 
 INSERT IGNORE INTO subscription_payments (id, membership_id, amount, paid_on) VALUES
     (1,  1,  6.01,  CURDATE() + INTERVAL 3 DAY - INTERVAL 3 MONTH),
