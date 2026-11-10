@@ -88,7 +88,6 @@ class SubscriptionMembershipRepositoryTest extends AbstractRepositoryTest {
     @Test
     void deleteById_shouldDeleteMembershipsOfTheSubscription() {
         // membership
-        entityManager.clear();
         subscriptionRepository.deleteById(subscription.getId());
         entityManager.flush();
 
