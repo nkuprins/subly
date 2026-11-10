@@ -42,5 +42,10 @@ public interface SubscriptionMembershipRepository extends JpaRepository<Subscrip
 
     void deleteBySubscription_IdIn(Collection<Long> subscriptionIds);
 
+    @EntityGraph(attributePaths = "user")
+    List<SubscriptionMembership> findBySubscriptionIdOrderByIdAsc(Long subscriptionId);
+
+    Optional<SubscriptionMembership> findBySubscriptionIdAndUserUsername(Long subscriptionId, String username);
+
     long countBySubscriptionId(Long subscriptionId);
 }
