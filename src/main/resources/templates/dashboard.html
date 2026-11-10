@@ -26,6 +26,14 @@
             <span class="card-value" th:text="${activeCount}">0</span>
         </div>
     </section>
+    <section class="panel" th:if="${not #lists.isEmpty(receivedInvitations)}">
+        <h2>Invitations for you</h2>
+        <div th:each="inv : ${receivedInvitations}" class="invite-row">
+            <span class="invite-service" th:text="${inv.providerName}"></span>
+            <span class="invite-owner" th:text="|from ${inv.ownerUsername}|"></span>
+            <span class="invite-price" th:text="|${inv.price} ${inv.currency} / ${inv.billingCycle}|"></span>
+        </div>
+    </section>
     <section class="panel">
         <h2>Upcoming payments</h2>
         <div th:each="p : ${upcoming}" class="upcoming-row">
@@ -34,6 +42,27 @@
             <span class="upcoming-amount" th:text="|${p.amount} ${p.currency}|"></span>
         </div>
         <p class="muted" th:if="${#lists.isEmpty(upcoming)}">No payments in the next 30 days</p>
+    </section>
+    <section class="panel">
+        <h2>Spending by category</h2>
+        <div th:each="c : ${categories}" class="category-row">
+            <span class="category-name" th:text="${c.categoryName()}"></span>
+            <span class="category-amount" th:text="|${c.monthlyTotal} ${c.currency}/month|"></span>
+        </div>
+        <p class="muted" th:if="${#lists.isEmpty(categories)}">No spending yet</p>
+    </section>
+    <section class="panel" th:if="${not #lists.isEmpty(categories)}"
+             th:with="maxCat=${#aggregates.max(categories.![monthlyTotal])}">
+        <h2>By category</h2>
+        <div th:each="c : ${categories}" class="cat-bar-row">
+            <span class="cat-bar-name" th:text="${c.categoryName()}"></span>
+            <span class="cat-bar-track">
+        <span class="cat-bar-fill"
+              th:style="|width: ${c.monthlyTotal.doubleValue() * 100.0 / maxCat.doubleValue()}%|"></span>
+        </span>
+            <span class="cat-bar-amount" th:text="|${c.monthlyTotal} ${c.currency}|">
+        </span>
+        </div>
     </section>
 </main>
 <div th:replace="~{fragments/footer :: footer}"></div>
