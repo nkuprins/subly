@@ -201,3 +201,36 @@ tbody tr { border-top: 1px solid #eee; }
 .invite-service { font-weight: 600; color: var(--text); }
 .invite-owner { color: var(--muted); }
 .invite-price { font-weight: 600; color: var(--primary); }
+
+/* Dashboard currency switcher */
+.dashboard-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+}
+.currency-form {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.currency-form label {
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 600;
+}
+.currency-form select {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 7px 10px;
+    background: var(--surface);
+    color: var(--text);
+    font: inherit;
+}
+@media (max-width: 600px) {
+    .dashboard-heading {
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+}
