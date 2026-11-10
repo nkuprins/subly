@@ -11,6 +11,7 @@
 
 <main class="container page">
     <div class="page-head">
+        <p class="notice" th:if="${notice}" th:text="${notice}" role="status"></p>
         <h1>Invite people</h1>
     </div>
 
@@ -27,7 +28,36 @@
             </div>
         </form>
     </div>
-
+    <h2>Current members</h2>
+    <div class="table-wrap">
+        <table>
+            <thead>
+            <tr>
+                <th>User</th>
+                <th>Role</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="member : ${members}">
+                <td th:text="${member.username}"></td>
+                <td th:text="${member.role}"></td>
+                <td>
+                    <form th:if="${member.role.name() == 'MEMBER'}"
+                          th:action="@{/subscriptions/{id}/members/{membershipId}/kick(id=${subscriptionId},membershipId=${member.membershipId})}"
+                          method="post"
+                          onsubmit="return confirm('Remove this member from the subscription?');"
+                          class="inline-form">
+                        <button type="submit" class="link link-danger btn-link">Kick</button>
+                    </form>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(members)}">
+                <td colspan="3" class="empty-row">No members yet.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
     <h2>Pending invitations</h2>
     <div class="table-wrap">
         <table>
