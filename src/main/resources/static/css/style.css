@@ -245,3 +245,4 @@ tbody tr { border-top: 1px solid #eee; }
     color: var(--primary);
     font-weight: 600;
 }
+.invite-actions { margin-left: auto; display: inline-flex; gap: 8px; }

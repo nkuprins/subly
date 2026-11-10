@@ -66,4 +66,30 @@ public class InvitationPageController {
         }
         return "redirect:/subscriptions/" + id + "/invite";
     }
+
+    @PostMapping("/invitations/{invitationId}/accept")
+    public String acceptInvitation(
+            @PathVariable long invitationId, Principal principal, RedirectAttributes redirectAttributes) {
+        if (principal == null) return "redirect:/login";
+        try {
+            invitationService.accept(principal.getName(), invitationId);
+            redirectAttributes.addFlashAttribute("notice", "Invitation accepted. The subscription is now in your list");
+        } catch (RuntimeException ex) {
+            redirectAttributes.addFlashAttribute("notice", ex.getMessage());
+        }
+        return "redirect:/dashboard";
+    }
+
+    @PostMapping("/invitations/{invitationId}/decline")
+    public String declineInvitation(
+            @PathVariable long invitationId, Principal principal, RedirectAttributes redirectAttributes) {
+        if (principal == null) return "redirect:/login";
+        try {
+            invitationService.decline(principal.getName(), invitationId);
+            redirectAttributes.addFlashAttribute("notice", "Invitation declined.");
+        } catch (RuntimeException ex) {
+            redirectAttributes.addFlashAttribute("notice", ex.getMessage());
+        }
+        return "redirect:/dashboard";
+    }
 }
