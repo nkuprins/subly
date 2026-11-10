@@ -51,6 +51,7 @@ abstract class AbstractSubscriptionControllerTest extends AbstractWebMvcTest {
                 DEFAULT_NEXT_PAYMENT_DATE,
                 false,
                 1,
-                SubscriptionStatus.ACTIVE);
+                SubscriptionStatus.ACTIVE,
+                null);
     }
 }

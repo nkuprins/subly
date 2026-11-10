@@ -11,6 +11,7 @@ import com.app.subly.model.subscription.Subscription;
 import com.app.subly.model.subscription.SubscriptionMembership;
 import com.app.subly.model.subscription.SubscriptionStatus;
 import com.app.subly.model.user.User;
+import com.app.subly.repository.PendingInvitationRepository;
 import com.app.subly.repository.SubscriptionMembershipRepository;
 import com.app.subly.repository.SubscriptionProviderRepository;
 import com.app.subly.repository.SubscriptionRepository;
@@ -35,6 +36,7 @@ public class SubscriptionService {
     private final SubscriptionProviderRepository subscriptionProviderRepository;
     private final UserRepository userRepository;
     private final SubscriptionShares subscriptionShares;
+    private final PendingInvitationRepository pendingInvitationRepository;
     private final Clock clock;
 
     @Transactional
@@ -46,22 +48,21 @@ public class SubscriptionService {
         return subscribe(owner, provider, request, request.maxParticipants());
     }
 
-    // A canceled subscription stays here until its end date, then it moves to the history.
     @Transactional(readOnly = true)
     public List<VisibleSubscriptionResponse> findCurrent(String username) {
-        LocalDate today = userRepository.getByUsername(username).today(clock);
-        return membershipRepository.findByUserUsernameOrderBySubscriptionNextPaymentDateAsc(username).stream()
-                .filter(membership -> !membership.getSubscription().hasEndedBy(today))
+        return membershipRepository
+                .findByUserUsernameAndSubscriptionStatusOrderBySubscriptionNextPaymentDateAsc(
+                        username, SubscriptionStatus.ACTIVE)
+                .stream()
                 .map(VisibleSubscriptionResponse::from)
                 .toList();
     }
 
     @Transactional(readOnly = true)
-    public List<HistorySubscriptionResponse> findHistory(String username) {
+    public List<CancelledSubscriptionResponse> findCancelled(String username) {
         LocalDate today = userRepository.getByUsername(username).today(clock);
         return subscriptionShares.load(username, SubscriptionStatus.CANCELLED).stream()
-                .filter(share -> share.subscription().hasEndedBy(today))
-                .map(share -> HistorySubscriptionResponse.from(share.membership(), share.savedUntil(today)))
+                .map(share -> CancelledSubscriptionResponse.from(share.membership(), share.savedUntil(today)))
                 .toList();
     }
 
@@ -89,6 +90,7 @@ public class SubscriptionService {
         Subscription subscription = subscriptionAccess.getOwnedSubscription(username, subscriptionId);
 
         //  Decide what happens to payments when they are implemented.
+        pendingInvitationRepository.deleteBySubscriptionId(subscriptionId);
         subscriptionRepository.delete(subscription);
     }
 

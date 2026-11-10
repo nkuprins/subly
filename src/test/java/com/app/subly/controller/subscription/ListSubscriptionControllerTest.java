@@ -6,7 +6,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.app.subly.dto.subscription.HistorySubscriptionResponse;
+import com.app.subly.dto.subscription.CancelledSubscriptionResponse;
 import com.app.subly.dto.subscription.VisibleSubscriptionResponse;
 import com.app.subly.model.subscription.MembershipRole;
 import java.math.BigDecimal;
@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 
 class ListSubscriptionControllerTest extends AbstractSubscriptionControllerTest {
 
-    static final String HISTORY_URL = URL + "/history";
+    static final String CANCELLED_URL = URL + "/cancelled";
 
     @Test
     void listMine_shouldReturn200WithOwnedSubscriptions() throws Exception {
@@ -31,18 +31,18 @@ class ListSubscriptionControllerTest extends AbstractSubscriptionControllerTest 
     }
 
     @Test
-    void listHistory_shouldReturn200WithEndedSubscriptions() throws Exception {
-        LocalDate endedOn = LocalDate.of(2026, 10, 4);
-        when(service.findHistory(ALICE))
-                .thenReturn(List.of(new HistorySubscriptionResponse(
-                        subscriptionResponse(), MembershipRole.MEMBER, endedOn, new BigDecimal("10.00"))));
+    void listCancelled_shouldReturn200WithCancelledSubscriptions() throws Exception {
+        LocalDate endsOn = LocalDate.of(2026, 10, 4);
+        when(service.findCancelled(ALICE))
+                .thenReturn(List.of(new CancelledSubscriptionResponse(
+                        subscriptionResponse(), MembershipRole.MEMBER, endsOn, new BigDecimal("10.00"))));
 
-        mockMvc.perform(get(HISTORY_URL))
+        mockMvc.perform(get(CANCELLED_URL))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].subscription.id").value(SUBSCRIPTION_ID))
                 .andExpect(jsonPath("$[0].role").value("MEMBER"))
-                .andExpect(jsonPath("$[0].endedOn").value(endedOn.toString()))
+                .andExpect(jsonPath("$[0].endsOn").value(endsOn.toString()))
                 .andExpect(jsonPath("$[0].saved").value(10.00));
     }
 }

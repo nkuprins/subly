@@ -1,10 +1,14 @@
 package com.app.subly.controller;
 
+import com.app.subly.dto.provider.ProviderRequest;
 import com.app.subly.dto.subscription.CreateSubscriptionRequest;
 import com.app.subly.dto.subscription.UpdateSubscriptionRequest;
 import com.app.subly.dto.subscription.VisibleSubscriptionResponse;
+import com.app.subly.model.provider.ProviderType;
 import com.app.subly.model.subscription.BillingCycle;
+import com.app.subly.service.CategoryService;
 import com.app.subly.service.DashboardService;
+import com.app.subly.service.InvitationService;
 import com.app.subly.service.ProviderService;
 import com.app.subly.service.SubscriptionService;
 import java.math.BigDecimal;
@@ -17,21 +21,30 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 public class PageController {
 
+    private static final String CANCELLED_TAB = "cancelled";
+
     private final SubscriptionService subscriptionService;
     private final DashboardService dashboardService;
     private final ProviderService providerService;
+    private final InvitationService invitationService;
+    private final CategoryService categoryService;
 
     public PageController(
             SubscriptionService subscriptionService,
             DashboardService dashboardService,
-            ProviderService providerService) {
+            ProviderService providerService,
+            InvitationService invitationService,
+            CategoryService categoryService) {
         this.subscriptionService = subscriptionService;
         this.dashboardService = dashboardService;
         this.providerService = providerService;
+        this.invitationService = invitationService;
+        this.categoryService = categoryService;
     }
 
     @GetMapping({"/", "/dashboard"})
@@ -41,21 +54,40 @@ public class PageController {
         model.addAttribute("summary", dashboardService.getSummary(username));
         model.addAttribute("upcoming", dashboardService.getUpcomingPayments(username));
         model.addAttribute("savings", dashboardService.getSavings(username));
+        model.addAttribute("categories", dashboardService.getSpendingByCategory(username));
+        model.addAttribute("receivedInvitations", invitationService.findReceived(username));
         return "dashboard";
     }
 
-    @GetMapping("/history")
-    public String history(Principal principal, Model model) {
+    @GetMapping("/subscriptions")
+    public String subscriptions(Principal principal, Model model, @RequestParam(defaultValue = "active") String tab) {
         if (principal == null) return "redirect:/login";
-        model.addAttribute("history", subscriptionService.findHistory(principal.getName()));
-        return "history";
+        String username = principal.getName();
+        var active = subscriptionService.findCurrent(username);
+        var cancelled = subscriptionService.findCancelled(username);
+        boolean showCancelled = CANCELLED_TAB.equals(tab);
+
+        model.addAttribute("tab", showCancelled ? CANCELLED_TAB : "active");
+        model.addAttribute("subscriptions", showCancelled ? cancelled : active);
+        model.addAttribute("activeCount", active.size());
+        model.addAttribute("cancelledCount", cancelled.size());
+        return "subscriptions";
     }
 
-    @GetMapping("/subscriptions")
-    public String subscriptions(Principal principal, Model model) {
+    @PostMapping("/subscriptions/{id}/cancel")
+    public String cancelSubscription(@PathVariable Long id, Principal principal, RedirectAttributes redirect) {
         if (principal == null) return "redirect:/login";
-        model.addAttribute("subscriptions", subscriptionService.findCurrent(principal.getName()));
-        return "subscriptions";
+        subscriptionService.cancel(principal.getName(), id);
+        redirect.addFlashAttribute("notice", "Subscription cancelled. You can find it under the Cancelled tab.");
+        return "redirect:/subscriptions";
+    }
+
+    @PostMapping("/subscriptions/{id}/reactivate")
+    public String reactivateSubscription(@PathVariable Long id, Principal principal, RedirectAttributes redirect) {
+        if (principal == null) return "redirect:/login";
+        subscriptionService.reactivate(principal.getName(), id);
+        redirect.addFlashAttribute("notice", "Subscription reactivated. It's back in your active list.");
+        return "redirect:/subscriptions";
     }
 
     @GetMapping("/subscriptions/new")
@@ -111,8 +143,35 @@ public class PageController {
     }
 
     @PostMapping("/subscriptions/{id}/delete")
-    public String deleteSubscription(@PathVariable Long id, Principal principal) {
+    public String deleteSubscription(
+            @PathVariable Long id, Principal principal, @RequestParam(defaultValue = "active") String tab) {
         subscriptionService.delete(principal.getName(), id);
-        return "redirect:/subscriptions";
+        return CANCELLED_TAB.equals(tab) ? "redirect:/subscriptions?tab=" + CANCELLED_TAB : "redirect:/subscriptions";
+    }
+
+    @GetMapping("/providers/new")
+    public String newProvider(Principal principal, Model model) {
+        if (principal == null) return "redirect:/login";
+        model.addAttribute("categories", categoryService.getAllCategories());
+        return "provider-form";
+    }
+
+    @PostMapping("/providers")
+    public String createProvider(
+            Principal principal,
+            @RequestParam String name,
+            @RequestParam Long categoryId,
+            @RequestParam(required = false) String logoPath,
+            Model model) {
+        if (principal == null) return "redirect:/login";
+        try {
+            providerService.create(
+                    principal.getName(), new ProviderRequest(name, categoryId, logoPath), ProviderType.CUSTOM);
+            return "redirect:/subscriptions/new";
+        } catch (RuntimeException ex) {
+            model.addAttribute("categories", categoryService.getAllCategories());
+            model.addAttribute("error", ex.getMessage());
+            return "provider-form";
+        }
     }
 }

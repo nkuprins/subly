@@ -5,11 +5,11 @@ import com.app.subly.model.subscription.SubscriptionMembership;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-public record HistorySubscriptionResponse(
-        SubscriptionResponse subscription, MembershipRole role, LocalDate endedOn, BigDecimal saved) {
+public record CancelledSubscriptionResponse(
+        SubscriptionResponse subscription, MembershipRole role, LocalDate endsOn, BigDecimal saved) {
 
-    public static HistorySubscriptionResponse from(SubscriptionMembership membership, BigDecimal saved) {
-        return new HistorySubscriptionResponse(
+    public static CancelledSubscriptionResponse from(SubscriptionMembership membership, BigDecimal saved) {
+        return new CancelledSubscriptionResponse(
                 SubscriptionResponse.from(membership.getSubscription()),
                 membership.getRole(),
                 membership.getSubscription().getNextPaymentDate(),

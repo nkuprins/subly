@@ -3,7 +3,6 @@ package com.app.subly.repository;
 import static com.app.subly.testdata.TestClock.DEFAULT_ZONE;
 import static com.app.subly.testdata.TestClock.NOW;
 import static com.app.subly.testdata.TestClock.TOKYO;
-import static com.app.subly.testdata.TestSubscriptions.aSubscription;
 import static com.app.subly.testdata.TestUsers.ALICE;
 import static com.app.subly.testdata.TestUsers.BOB;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -87,28 +86,23 @@ class SubscriptionMembershipRepositoryTest extends AbstractRepositoryTest {
     }
 
     @Test
-    void findAllOf_shouldReturnActiveAndCancelledRowsOfTheUserByNextPaymentDate() {
-        Subscription cancelledEarlier = entityManager.persist(aSubscription()
-                .withProvider(subscription.getProvider())
-                .withNextPaymentDate(subscription.getNextPaymentDate().minusDays(1))
-                .cancelled()
-                .build());
-        SubscriptionMembership cancelledRow =
-                entityManager.persist(SubscriptionMembership.owner(alice, cancelledEarlier));
-        entityManager.flush();
-
-        assertThat(repository.findByUserUsernameOrderBySubscriptionNextPaymentDateAsc(ALICE))
-                .extracting(SubscriptionMembership::getId)
-                .containsExactly(cancelledRow.getId(), ownerRow.getId());
-    }
-
-    @Test
     void deleteById_shouldDeleteMembershipsOfTheSubscription() {
         subscriptionRepository.deleteById(subscription.getId());
         entityManager.flush();
 
         assertThat(repository.existsById(ownerRow.getId())).isFalse();
         assertThat(repository.existsById(memberRow.getId())).isFalse();
+    }
+
+    @Test
+    void findCancelled_shouldIncludeMembersOfCancelledSharedSubscriptions() {
+        subscription.cancel(NOW);
+        entityManager.flush();
+
+        assertThat(repository.findByUserUsernameAndSubscriptionStatusOrderBySubscriptionNextPaymentDateAsc(
+                        BOB, SubscriptionStatus.CANCELLED))
+                .extracting(SubscriptionMembership::getId)
+                .containsExactly(memberRow.getId());
     }
 
     private List<SubscriptionMembership> findOwnersDueBefore(LocalDate date) {

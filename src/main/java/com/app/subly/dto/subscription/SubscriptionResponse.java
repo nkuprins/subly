@@ -8,6 +8,7 @@ import com.app.subly.model.subscription.Currency;
 import com.app.subly.model.subscription.Subscription;
 import com.app.subly.model.subscription.SubscriptionStatus;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 
 public record SubscriptionResponse(
@@ -23,7 +24,8 @@ public record SubscriptionResponse(
         LocalDate nextPaymentDate,
         boolean freeTrial,
         int maxParticipants,
-        SubscriptionStatus status) {
+        SubscriptionStatus status,
+        Instant cancelledAt) {
 
     public static SubscriptionResponse from(Subscription subscription) {
         SubscriptionProvider provider = subscription.getProvider();
@@ -41,6 +43,7 @@ public record SubscriptionResponse(
                 subscription.getNextPaymentDate(),
                 subscription.isFreeTrial(),
                 subscription.getMaxParticipants(),
-                subscription.getStatus());
+                subscription.getStatus(),
+                subscription.getCancelledAt());
     }
 }

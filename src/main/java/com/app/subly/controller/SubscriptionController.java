@@ -28,9 +28,9 @@ public class SubscriptionController {
         return service.findCurrent(principal.getName());
     }
 
-    @GetMapping("/history")
-    public List<HistorySubscriptionResponse> listHistory(Principal principal) {
-        return service.findHistory(principal.getName());
+    @GetMapping("/cancelled")
+    public List<CancelledSubscriptionResponse> listCancelled(Principal principal) {
+        return service.findCancelled(principal.getName());
     }
 
     @PutMapping("/{id}")

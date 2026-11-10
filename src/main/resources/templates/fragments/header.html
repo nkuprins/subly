@@ -8,7 +8,6 @@
         <nav class="nav">
             <a th:href="@{/dashboard}">Dashboard</a>
             <a th:href="@{/subscriptions}">Subscriptions</a>
-            <a th:href="@{/history}">History</a>
             <a th:href="@{/admin}" sec:authorize="hasRole('ADMIN')">Admin</a>
         </nav>
         <div class="user-box">
