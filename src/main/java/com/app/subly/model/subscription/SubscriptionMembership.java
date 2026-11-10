@@ -28,7 +28,7 @@ public class SubscriptionMembership {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "subscription_id", nullable = false)
-    @OnDelete(action = OnDeleteAction.CASCADE )
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Subscription subscription;
 
     @Enumerated(EnumType.STRING)
