@@ -36,6 +36,7 @@
             <tr>
                 <th>Provider</th>
                 <th>Price</th>
+                <th>Your share</th>
                 <th>Currency</th>
                 <th>Cycle</th>
                 <th>Next payment</th>
@@ -49,6 +50,7 @@
                     <span class="pill pill-trial" th:if="${item.subscription.freeTrial}">Free trial</span>
                 </td>
                 <td th:text="${item.subscription.price}"></td>
+                <td th:text="${shares[item.subscription.id]}"></td>
                 <td th:text="${item.subscription.currency}"></td>
                 <td>
             <span class="pill"
@@ -86,7 +88,7 @@
             </tr>
 
             <tr th:if="${#lists.isEmpty(subscriptions)}">
-                <td colspan="6" class="empty-row">
+                <td colspan="7" class="empty-row">
                     No subscriptions yet. <a th:href="@{/subscriptions/new}" class="link">Add one</a>
                 </td>
             </tr>
