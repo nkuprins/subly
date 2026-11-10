@@ -76,6 +76,19 @@ tbody tr { border-top: 1px solid #eee; }
 .link { color: var(--primary); text-decoration: none; font-weight: 600; font-size: 14px; }
 .link:hover { text-decoration: underline; }
 .link-danger { color: #dc2626; }
+.inline-form { display: inline; }
+.btn-link { background: none; border: none; padding: 0; cursor: pointer; font-family: inherit; }
+.empty-row { text-align: center; color: var(--muted); padding: 28px 16px; }
+.muted-inline { color: var(--muted); font-size: 13px; }
+
+/* subscription status tabs */
+.tabs { display: flex; gap: 4px; margin-bottom: 16px; border-bottom: 1px solid var(--border); }
+.tab { display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; margin-bottom: -1px; color: var(--muted); text-decoration: none; font-weight: 600; font-size: 14px; border-bottom: 2px solid transparent; }
+.tab:hover { color: var(--text); }
+.tab-active { color: var(--primary); border-bottom-color: var(--primary); }
+.tab-count { background: var(--primary-50); color: var(--primary); border-radius: 999px; padding: 1px 8px; font-size: 12px; }
+.row-cancelled td { color: var(--muted); }
+.notice { background: var(--primary-50); color: var(--primary); border: 1px solid var(--primary-100); border-radius: var(--radius-sm); padding: 10px 14px; margin-bottom: 16px; font-size: 14px; }
 
 /* form */
 .form-card { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); padding: 24px; max-width: 520px; }
