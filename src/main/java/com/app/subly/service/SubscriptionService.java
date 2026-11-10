@@ -104,7 +104,10 @@ public class SubscriptionService {
 
         //  Decide what happens to payments when they are implemented.
         pendingInvitationRepository.deleteBySubscriptionId(subscriptionId);
+        membershipRepository.deleteBySubscription_IdIn(List.of(subscriptionId));
+        membershipRepository.flush();
         subscriptionRepository.delete(subscription);
+        subscriptionRepository.flush();
     }
 
     @Transactional
@@ -161,6 +164,19 @@ public class SubscriptionService {
         }
 
         membershipRepository.delete(target);
+    }
+
+    @Transactional
+    public void deleteAllSubscriptionsFor(Long userId) {
+        List<Long> subscriptionIds = membershipRepository.findByUser_IdAndRole(userId, MembershipRole.OWNER).stream()
+                .map(membership -> membership.getSubscription().getId())
+                .toList();
+        if (subscriptionIds.isEmpty()) {
+            return;
+        }
+
+        membershipRepository.deleteByUser_Id(userId);
+        subscriptionRepository.deleteAllById(subscriptionIds);
     }
 
     private SubscriptionResponse subscribe(

@@ -20,13 +20,18 @@ public class UserService {
     private final UserRepository repository;
     private final PasswordEncoder encoder;
 
+    private final SubscriptionService subscriptionService;
+    private final ProviderService providerService;
+
+    @Transactional
     public void addNewUser(String username, String name, String password, String email, ZoneId timeZone) {
         // Adds a new user into db from raw data. Throws UserAlreadyExistsException if
         // user exists with this username or email. It is supposed that the length of the name is validated
         // before calling this method.
 
         try {
-            repository.save(createUserFromRawData(username.strip(), name.strip(), password, email.strip(), timeZone));
+            repository.saveAndFlush(
+                    createUserFromRawData(username.strip(), name.strip(), password, email.strip(), timeZone));
         } catch (DataIntegrityViolationException exception) {
             throw new UserAlreadyExistsException("A user with the username or the email already exists");
         }
@@ -46,6 +51,7 @@ public class UserService {
         }
 
         try {
+            this.cleanUserConnectedData(user.getId(), username);
             repository.deleteByUsername(username);
         } catch (DataIntegrityViolationException exception) {
             throw new UserIsConnectedException(
@@ -130,5 +136,11 @@ public class UserService {
             return true;
         }
         return originalCredential.equals(providedCredential);
+    }
+
+    private void cleanUserConnectedData(Long userId, String username) {
+        // deletes all data related to the user
+        this.subscriptionService.deleteAllSubscriptionsFor(userId);
+        this.providerService.deleteAllProvidersCreatedBy(username);
     }
 }

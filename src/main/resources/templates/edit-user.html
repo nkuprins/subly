@@ -60,6 +60,21 @@
             <p class="edit-user-message" id="information-message" role="status" aria-live="polite"></p>
         </form>
     </section>
+
+    <section class="panel edit-user-section delete-account-section">
+        <h2>Delete account</h2>
+        <form id="delete-account-form" class="form" novalidate>
+            <div class="field">
+                <label for="delete-account-password">Confirm with your password</label>
+                <input id="delete-account-password" name="password" type="password"
+                       placeholder="Confirm password" autocomplete="current-password" required/>
+                <p class="delete-account-error" id="delete-account-error" role="alert" aria-live="polite"></p>
+            </div>
+            <div class="form-actions">
+                <button id="delete-account-submit" class="btn btn-danger" type="submit" disabled>Delete account</button>
+            </div>
+        </form>
+    </section>
 </main>
 <dialog class="edit-user-dialog" id="edit-user-dialog" aria-labelledby="edit-user-dialog-title">
     <div class="edit-user-dialog-card">
