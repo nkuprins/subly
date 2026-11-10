@@ -7,11 +7,7 @@ import com.app.subly.dto.subscription.VisibleSubscriptionResponse;
 import com.app.subly.model.provider.ProviderType;
 import com.app.subly.model.subscription.BillingCycle;
 import com.app.subly.model.subscription.Currency;
-import com.app.subly.service.CategoryService;
-import com.app.subly.service.DashboardService;
-import com.app.subly.service.InvitationService;
-import com.app.subly.service.ProviderService;
-import com.app.subly.service.SubscriptionService;
+import com.app.subly.service.*;
 import java.math.BigDecimal;
 import java.security.Principal;
 import java.time.LocalDate;
@@ -143,6 +139,18 @@ public class PageController {
                 principal.getName(),
                 id,
                 new UpdateSubscriptionRequest(price, billingCycle, nextPaymentDate, freeTrial));
+        return "redirect:/subscriptions";
+    }
+
+    @PostMapping("/subscriptions/{id}/leave")
+    public String leaveSubscription(@PathVariable Long id, Principal principal, RedirectAttributes redirectAttributes) {
+        if (principal == null) return "redirect:/login";
+        try {
+            subscriptionService.leave(principal.getName(), id);
+            redirectAttributes.addFlashAttribute("notice", "You have left the group.");
+        } catch (RuntimeException ex) {
+            redirectAttributes.addFlashAttribute("notice", ex.getMessage());
+        }
         return "redirect:/subscriptions";
     }
 

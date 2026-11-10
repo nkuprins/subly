@@ -171,11 +171,13 @@ public class SubscriptionService {
         List<Long> subscriptionIds = membershipRepository.findByUser_IdAndRole(userId, MembershipRole.OWNER).stream()
                 .map(membership -> membership.getSubscription().getId())
                 .toList();
+
+        membershipRepository.deleteByUser_Id(userId);
+
         if (subscriptionIds.isEmpty()) {
             return;
         }
 
-        membershipRepository.deleteByUser_Id(userId);
         subscriptionRepository.deleteAllById(subscriptionIds);
     }
 

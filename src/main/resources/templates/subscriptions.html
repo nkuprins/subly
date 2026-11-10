@@ -44,7 +44,10 @@
             </thead>
             <tbody>
             <tr th:each="item : ${subscriptions}">
-                <td th:text="${item.subscription.providerName()}"></td>
+                <td>
+                    <span th:text="${item.subscription.providerName()}"></span>
+                    <span class="pill pill-trial" th:if="${item.subscription.freeTrial}">Free trial</span>
+                </td>
                 <td th:text="${item.subscription.price}"></td>
                 <td th:text="${item.subscription.currency}"></td>
                 <td>
@@ -52,22 +55,31 @@
                   th:classappend="${item.subscription.billingCycle.name() == 'YEARLY'} ? ' pill-year'"
                   th:text="${item.subscription.billingCycle}"></span>
                 </td>
-                <td th:text="${item.subscription.nextPaymentDate}"></td>
+                <td>
+                    <span th:text="${item.subscription.nextPaymentDate}"></span>
+                    <span class="trial-note" th:if="${item.subscription.freeTrial}">first charge · trial ends</span>
+                </td>
                 <td>
                     <div class="actions">
-                        <a
-                                th:href="@{/subscriptions/{id}/edit(id=${item.subscription.id})}" class="link">Edit</a>
-                        <a th:href="@{/subscriptions/{id}/invite(id=${item.subscription.id})}" class="link">Invite</a>
+                        <a th:if="${item.role.name() == 'OWNER'}"
+                           th:href="@{/subscriptions/{id}/edit(id=${item.subscription.id})}" class="link">Edit</a>
+                        <a th:if="${item.role.name() == 'OWNER' and item.subscription.maxParticipants > 1}"
+                           th:href="@{/subscriptions/{id}/invite(id=${item.subscription.id})}" class="link">Members / Invite</a>
                         <form th:if="${item.role.name() == 'OWNER'}"
                               th:action="@{/subscriptions/{id}/cancel(id=${item.subscription.id})}" method="post"
                               onsubmit="return confirm('Cancel this subscription? It will move to the Cancelled tab and stop counting toward your totals. You can reactivate it any time.');"
                               class="inline-form">
                             <button type="submit" class="link btn-link">Cancel</button>
                         </form>
-                        <form
-                                th:action="@{/subscriptions/{id}/delete(id=${item.subscription.id})}" method="post"
-                                onsubmit="return confirm('Delete this subscription permanently?');" class="inline-form">
+                        <form th:if="${item.role.name() == 'OWNER'}"
+                              th:action="@{/subscriptions/{id}/delete(id=${item.subscription.id})}" method="post"
+                              onsubmit="return confirm('Delete this subscription permanently?');" class="inline-form">
                             <button type="submit" class="link link-danger btn-link">Delete</button>
+                        </form>
+                        <form th:if="${item.role.name() == 'MEMBER'}"
+                              th:action="@{/subscriptions/{id}/leave(id=${item.subscription.id})}" method="post"
+                              onsubmit="return confirm('Leave this group subscription?');" class="inline-form">
+                            <button type="submit" class="link link-danger btn-link">Leave Group</button>
                         </form>
                     </div>
                 </td>
@@ -120,7 +132,11 @@
                             <button type="submit" class="link link-danger btn-link">Delete</button>
                         </form>
                     </div>
-                    <span class="muted-inline" th:unless="${item.role.name() == 'OWNER'}">Cancelled by owner</span>
+                    <form th:if="${item.role.name() == 'MEMBER'}"
+                          th:action="@{/subscriptions/{id}/leave(id=${item.subscription.id})}" method="post"
+                          onsubmit="return confirm('Leave this group subscription?');" class="inline-form">
+                        <button type="submit" class="link link-danger btn-link">Leave Group</button>
+                    </form>
                 </td>
             </tr>
 

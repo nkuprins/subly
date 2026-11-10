@@ -24,7 +24,7 @@ public class SecurityConfig {
                             .authenticated()
                             .requestMatchers("/api/category/listAll")
                             .authenticated()
-                            .requestMatchers("/api/category/**", "/admin/**")
+                            .requestMatchers("/api/category/**", "/admin", "/admin/**")
                             .hasRole("ADMIN")
                             .requestMatchers(
                                     "/api/subscriptions",
