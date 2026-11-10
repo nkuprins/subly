@@ -38,6 +38,9 @@ public interface SubscriptionMembershipRepository extends JpaRepository<Subscrip
     List<SubscriptionMembership> findByRoleAndSubscriptionStatusAndUserTimeZoneAndSubscriptionNextPaymentDateBefore(
             MembershipRole role, SubscriptionStatus status, ZoneId timeZone, LocalDate date);
 
+    @EntityGraph(attributePaths = "subscription")
+    List<SubscriptionMembership> findBySubscriptionStatus(SubscriptionStatus status);
+
     void deleteByUser_Id(Long userId);
 
     void deleteBySubscription_IdIn(Collection<Long> subscriptionIds);
