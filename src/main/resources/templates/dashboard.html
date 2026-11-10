@@ -9,6 +9,7 @@
 <body>
 <div th:replace="~{fragments/header :: header}"></div>
 <main class="container page">
+    <p class="notice" th:if="${notice}" th:text="${notice}" role="status"></p>
     <div class="dashboard-heading">
         <div>
             <h1>Dashboard</h1>
@@ -68,6 +69,15 @@
             <span class="invite-service" th:text="${inv.providerName}"></span>
             <span class="invite-owner" th:text="|from ${inv.ownerUsername}|"></span>
             <span class="invite-price" th:text="|${inv.price} ${inv.currency} / ${inv.billingCycle}|"></span>
+            <span class="invite-actions">
+                <form th:action="@{/invitations/{id}/accept(id=${inv.id})}" method="post" class="inline-form">
+                    <button type="submit" class="link btn-link">Accept</button>
+                </form>
+                <form th:action="@{/invitations/{id}/decline(id=${inv.id})}" method="post"
+                      onsubmit="return confirm('Decline this invitation?');" class="inline-form">
+                    <button type="submit" class="link link-danger btn-link">Decline</button>
+                </form>
+            </span>
         </div>
     </section>
     <section class="panel">
