@@ -83,7 +83,10 @@ public class SubscriptionService {
 
         //  Decide what happens to payments when they are implemented.
         pendingInvitationRepository.deleteBySubscriptionId(subscriptionId);
+        membershipRepository.deleteBySubscription_IdIn(List.of(subscriptionId));
+        membershipRepository.flush();
         subscriptionRepository.delete(subscription);
+        subscriptionRepository.flush();
     }
 
     @Transactional
