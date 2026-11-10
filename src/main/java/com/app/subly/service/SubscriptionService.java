@@ -3,8 +3,11 @@ package com.app.subly.service;
 import com.app.subly.dto.subscription.*;
 import com.app.subly.dto.subscription.PaymentDetails;
 import com.app.subly.exception.provider.ProviderNotFoundException;
+import com.app.subly.exception.subscription.MembershipActionForbiddenException;
 import com.app.subly.exception.subscription.PaymentDateInPastException;
 import com.app.subly.exception.subscription.PriceTooLowException;
+import com.app.subly.exception.subscription.SubscriptionMemberNotFoundException;
+import com.app.subly.exception.subscription.SubscriptionNotFoundException;
 import com.app.subly.model.provider.SubscriptionProvider;
 import com.app.subly.model.subscription.MembershipRole;
 import com.app.subly.model.subscription.Subscription;
@@ -66,6 +69,16 @@ public class SubscriptionService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<SubscriptionMemberResponse> findMembers(String ownerUsername, long subscriptionId) {
+
+        subscriptionAccess.getOwnedSubscription(ownerUsername, subscriptionId);
+
+        return membershipRepository.findBySubscriptionIdOrderByIdAsc(subscriptionId).stream()
+                .map(SubscriptionMemberResponse::from)
+                .toList();
+    }
+
     @Transactional
     public SubscriptionResponse update(String username, long subscriptionId, UpdateSubscriptionRequest request) {
         SubscriptionMembership owner =
@@ -117,6 +130,37 @@ public class SubscriptionService {
         LocalDate today = owner.getUser().today(clock);
 
         subscription.reactivate(today);
+    }
+
+    @Transactional
+    public void leave(String username, long subscriptionId) {
+
+        SubscriptionMembership membership = membershipRepository
+                .findBySubscriptionIdAndUserUsername(subscriptionId, username)
+                .orElseThrow(() -> new SubscriptionNotFoundException(subscriptionId));
+
+        if (membership.getRole() != MembershipRole.MEMBER) {
+            throw new MembershipActionForbiddenException("The owner cannot leave their own subscription");
+        }
+
+        membershipRepository.delete(membership);
+    }
+
+    @Transactional
+    public void removeMember(String ownerUsername, long subscriptionId, long membershipId) {
+
+        subscriptionAccess.getOwnedSubscription(ownerUsername, subscriptionId);
+
+        SubscriptionMembership target = membershipRepository
+                .findById(membershipId)
+                .filter(membership -> membership.getSubscription().getId().equals(subscriptionId))
+                .orElseThrow(() -> new SubscriptionMemberNotFoundException(membershipId));
+
+        if (target.getRole() != MembershipRole.MEMBER) {
+            throw new MembershipActionForbiddenException("The owner cannot be removed from the subscription");
+        }
+
+        membershipRepository.delete(target);
     }
 
     private SubscriptionResponse subscribe(
