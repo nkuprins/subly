@@ -6,6 +6,7 @@ import com.app.subly.dto.subscription.UpdateSubscriptionRequest;
 import com.app.subly.dto.subscription.VisibleSubscriptionResponse;
 import com.app.subly.model.provider.ProviderType;
 import com.app.subly.model.subscription.BillingCycle;
+import com.app.subly.model.subscription.Currency;
 import com.app.subly.service.CategoryService;
 import com.app.subly.service.DashboardService;
 import com.app.subly.service.InvitationService;
@@ -48,13 +49,16 @@ public class PageController {
     }
 
     @GetMapping({"/", "/dashboard"})
-    public String dashboard(Principal principal, Model model) {
+    public String dashboard(Principal principal, Model model, @RequestParam(defaultValue = "EUR") Currency currency) {
+
         if (principal == null) return "redirect:/login";
         String username = principal.getName();
-        model.addAttribute("summary", dashboardService.getSummary(username));
-        model.addAttribute("upcoming", dashboardService.getUpcomingPayments(username));
-        model.addAttribute("savings", dashboardService.getSavings(username));
-        model.addAttribute("categories", dashboardService.getSpendingByCategory(username));
+
+        model.addAttribute("selectedCurrency", currency);
+        model.addAttribute("summary", dashboardService.getSummary(username, currency));
+        model.addAttribute("upcoming", dashboardService.getUpcomingPayments(username, currency));
+        model.addAttribute("savings", dashboardService.getSavings(username, currency));
+        model.addAttribute("categories", dashboardService.getSpendingByCategory(username, currency));
         model.addAttribute("receivedInvitations", invitationService.findReceived(username));
         return "dashboard";
     }

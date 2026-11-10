@@ -9,8 +9,40 @@
 <body>
 <div th:replace="~{fragments/header :: header}"></div>
 <main class="container page">
-    <h1>Dashboard</h1>
-    <p class="muted">Your subscriptions at a glance</p>
+    <div class="dashboard-heading">
+        <div>
+            <h1>Dashboard</h1>
+            <p class="muted">Your subscriptions at a glance</p>
+        </div>
+
+        <form class="currency-form"
+              th:action="@{/dashboard}"
+              method="get">
+
+            <label for="currency">Currency</label>
+
+            <select id="currency" name="currency">
+                <option value="EUR"
+                        th:selected="${selectedCurrency.name() == 'EUR'}">
+                    EUR (€)
+                </option>
+
+                <option value="USD"
+                        th:selected="${selectedCurrency.name() == 'USD'}">
+                    USD ($)
+                </option>
+
+                <option value="GBP"
+                        th:selected="${selectedCurrency.name() == 'GBP'}">
+                    GBP (£)
+                </option>
+            </select>
+
+            <button type="submit" class="btn btn-primary">
+                Apply
+            </button>
+        </form>
+    </div>
 
     <section class="cards">
         <div class="card">
@@ -47,22 +79,22 @@
         </div>
         <p class="muted" th:if="${#lists.isEmpty(upcoming)}">No payments in the next 30 days</p>
     </section>
-    <section class="panel">
-        <h2>Spending by category</h2>
-        <div th:each="c : ${categories}" class="category-row">
-            <span class="category-name" th:text="${c.categoryName()}"></span>
-            <span class="category-amount" th:text="|${c.monthlyTotal} ${c.currency}/month|"></span>
-        </div>
-        <p class="muted" th:if="${#lists.isEmpty(categories)}">No spending yet</p>
-    </section>
+<!--    <section class="panel">-->
+<!--        <h2>Spending by category</h2>-->
+<!--        <div th:each="c : ${categories}" class="category-row">-->
+<!--            <span class="category-name" th:text="${c.categoryName()}"></span>-->
+<!--            <span class="category-amount" th:text="|${c.monthlyTotal} ${c.currency}/month|"></span>-->
+<!--        </div>-->
+<!--        <p class="muted" th:if="${#lists.isEmpty(categories)}">No spending yet</p>-->
+<!--    </section>-->
     <section class="panel" th:if="${not #lists.isEmpty(categories)}"
-             th:with="maxCat=${#aggregates.max(categories.![monthlyTotal])}">
+             th:with="maxCat=${categories[0].monthlyTotal}">
         <h2>By category</h2>
         <div th:each="c : ${categories}" class="cat-bar-row">
             <span class="cat-bar-name" th:text="${c.categoryName()}"></span>
             <span class="cat-bar-track">
         <span class="cat-bar-fill"
-              th:style="|width: ${c.monthlyTotal.doubleValue() * 100.0 / maxCat.doubleValue()}%|"></span>
+              th:style="|width: ${maxCat.signum() > 0 ? c.monthlyTotal.doubleValue() * 100.0 / maxCat.doubleValue() : 0}%|"></span>
         </span>
             <span class="cat-bar-amount" th:text="|${c.monthlyTotal} ${c.currency}|">
         </span>
