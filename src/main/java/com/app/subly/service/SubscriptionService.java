@@ -123,12 +123,6 @@ public class SubscriptionService {
     }
 
     @Transactional
-    public void deleteMembershipFor(Long id) {
-        this.membershipRepository.deleteByUser_Id(id);
-        this.membershipRepository.flush();
-    }
-
-    @Transactional
     public void deleteAllSubscriptionsFor(Long userId) {
         List<Long> subscriptionIds = membershipRepository.findByUser_IdAndRole(userId, MembershipRole.OWNER).stream()
                 .map(membership -> membership.getSubscription().getId())
@@ -137,11 +131,8 @@ public class SubscriptionService {
             return;
         }
 
-        pendingInvitationRepository.deleteBySubscription_IdIn(subscriptionIds);
-        membershipRepository.deleteBySubscription_IdIn(subscriptionIds);
-        membershipRepository.flush();
+        membershipRepository.deleteByUser_Id(userId);
         subscriptionRepository.deleteAllById(subscriptionIds);
-        subscriptionRepository.flush();
     }
 
     private SubscriptionResponse subscribe(

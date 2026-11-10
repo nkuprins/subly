@@ -72,7 +72,6 @@ public class ProviderService {
             if (response.providerType().equals(ProviderType.CUSTOM))
                 this.subscriptionProviderRepository.deleteById(response.id());
         }
-        this.subscriptionProviderRepository.flush();
     }
 
     private Category findCategory(long categoryId) {

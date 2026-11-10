@@ -20,6 +20,9 @@ import com.app.subly.exception.user.UserIsConnectedException;
 import com.app.subly.exception.user.WrongPasswordException;
 import com.app.subly.model.user.User;
 import com.app.subly.repository.UserRepository;
+import com.app.subly.service.InvitationService;
+import com.app.subly.service.ProviderService;
+import com.app.subly.service.SubscriptionService;
 import com.app.subly.testdata.TestUsers;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -49,13 +52,22 @@ class UserServiceTest {
     @Mock
     PasswordEncoder encoder;
 
+    @Mock
+    InvitationService invitationService;
+
+    @Mock
+    SubscriptionService subscriptionService;
+
+    @Mock
+    ProviderService providerService;
+
     @InjectMocks
     UserService service;
 
     @Test
     void addNewUser_shouldRejectExistingUser() {
         when(encoder.encode(PASSWORD)).thenReturn(PASSWORD_HASH);
-        when(repository.save(any(User.class))).thenThrow(DataIntegrityViolationException.class);
+        when(repository.saveAndFlush(any(User.class))).thenThrow(DataIntegrityViolationException.class);
         String aliceEmail = email(ALICE);
 
         assertThatThrownBy(() -> service.addNewUser(ALICE, "Alice", PASSWORD, aliceEmail, null))
