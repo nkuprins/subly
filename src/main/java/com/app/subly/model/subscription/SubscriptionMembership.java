@@ -39,7 +39,7 @@ public class SubscriptionMembership {
     @Column(updatable = false, nullable = false)
     private Instant joinedAt;
 
-    public SubscriptionMembership(User user, Subscription subscription, MembershipRole role) {
+    private SubscriptionMembership(User user, Subscription subscription, MembershipRole role) {
         this.user = user;
         this.subscription = subscription;
         this.role = role;
@@ -47,5 +47,9 @@ public class SubscriptionMembership {
 
     public static SubscriptionMembership owner(User user, Subscription subscription) {
         return new SubscriptionMembership(user, subscription, MembershipRole.OWNER);
+    }
+
+    public static SubscriptionMembership member(User user, Subscription subscription) {
+        return new SubscriptionMembership(user, subscription, MembershipRole.MEMBER);
     }
 }

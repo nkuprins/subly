@@ -10,7 +10,6 @@ import com.app.subly.dto.admin.AdminStatisticsResponse;
 import com.app.subly.dto.admin.PopularServiceResponse;
 import com.app.subly.model.provider.ProviderType;
 import com.app.subly.model.provider.SubscriptionProvider;
-import com.app.subly.model.subscription.MembershipRole;
 import com.app.subly.model.subscription.Subscription;
 import com.app.subly.model.subscription.SubscriptionMembership;
 import com.app.subly.model.subscription.SubscriptionStatus;
@@ -80,10 +79,8 @@ class AdminStatisticsServiceTest {
         when(userRepository.count()).thenReturn(3L);
         Subscription subscription =
                 aSubscription().withId(1L).withPrice("30.00").build();
-        SubscriptionMembership owner =
-                new SubscriptionMembership(TestUsers.userWithId(ALICE, 1L), subscription, MembershipRole.OWNER);
-        SubscriptionMembership member =
-                new SubscriptionMembership(TestUsers.userWithId(BOB, 2L), subscription, MembershipRole.MEMBER);
+        SubscriptionMembership owner = SubscriptionMembership.owner(TestUsers.userWithId(ALICE, 1L), subscription);
+        SubscriptionMembership member = SubscriptionMembership.member(TestUsers.userWithId(BOB, 2L), subscription);
         when(membershipRepository.findBySubscriptionStatus(SubscriptionStatus.ACTIVE))
                 .thenReturn(List.of(owner, member));
 

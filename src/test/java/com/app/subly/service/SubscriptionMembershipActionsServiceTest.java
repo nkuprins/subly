@@ -7,10 +7,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import com.app.subly.model.subscription.MembershipRole;
 import com.app.subly.model.subscription.Subscription;
 import com.app.subly.model.subscription.SubscriptionMembership;
-import com.app.subly.testdata.TestUsers;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
@@ -22,8 +20,7 @@ class SubscriptionMembershipActionsServiceTest extends AbstractSubscriptionServi
     void leave_shouldRemoveMemberWithoutDeletingSubscription() {
         Subscription subscription = aSubscription().withId(SUBSCRIPTION_ID).build();
 
-        SubscriptionMembership member =
-                new SubscriptionMembership(TestUsers.userWithId(BOB, 2L), subscription, MembershipRole.MEMBER);
+        SubscriptionMembership member = SubscriptionMembership.member(bob, subscription);
 
         when(membershipRepository.findBySubscriptionIdAndUserUsername(SUBSCRIPTION_ID, BOB))
                 .thenReturn(Optional.of(member));
@@ -39,8 +36,7 @@ class SubscriptionMembershipActionsServiceTest extends AbstractSubscriptionServi
         Subscription subscription = aSubscription().withId(SUBSCRIPTION_ID).build();
         stubOwnedSubscription(subscription);
 
-        SubscriptionMembership member =
-                new SubscriptionMembership(TestUsers.userWithId(BOB, 2L), subscription, MembershipRole.MEMBER);
+        SubscriptionMembership member = SubscriptionMembership.member(bob, subscription);
 
         member.setId(MEMBERSHIP_ID);
 
