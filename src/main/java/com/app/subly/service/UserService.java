@@ -20,6 +20,7 @@ public class UserService {
     private final UserRepository repository;
     private final PasswordEncoder encoder;
 
+    private final InvitationService invitationService;
     private final SubscriptionService subscriptionService;
     private final ProviderService providerService;
 
@@ -140,6 +141,7 @@ public class UserService {
 
     private void cleanUserConnectedData(Long userId, String username) {
         // deletes all data related to the user
+        this.invitationService.deleteInvitationFor(userId);
         this.subscriptionService.deleteAllSubscriptionsFor(userId);
         this.providerService.deleteAllProvidersCreatedBy(username);
     }
