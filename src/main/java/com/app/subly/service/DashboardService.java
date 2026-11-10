@@ -40,27 +40,31 @@ public class DashboardService {
 
     @Transactional(readOnly = true)
     public DashboardSummaryResponse getSummary(String username) {
+        return getSummary(username, Currency.EUR);
+    }
+
+    @Transactional(readOnly = true)
+    public DashboardSummaryResponse getSummary(String username, Currency targetCurrency) {
 
         List<Share> shares = subscriptionShares.load(username, SubscriptionStatus.ACTIVE);
 
         BigDecimal yearlyTotal = BigDecimal.ZERO;
 
         for (Share share : shares) {
-
             Subscription subscription = share.subscription();
 
-            BigDecimal amountEur = CurrencyConverter.toEur(share.amount(), subscription.getCurrency());
+            BigDecimal amount = CurrencyConverter.convert(share.amount(), subscription.getCurrency(), targetCurrency);
 
             BigDecimal paymentsPerYear =
                     BigDecimal.valueOf(subscription.getBillingCycle().getPaymentsPerYear());
 
-            yearlyTotal = yearlyTotal.add(amountEur.multiply(paymentsPerYear));
+            yearlyTotal = yearlyTotal.add(amount.multiply(paymentsPerYear));
         }
 
         BigDecimal monthlyTotal = yearlyTotal.divide(MONTHS_IN_YEAR, MONEY_SCALE, RoundingMode.HALF_UP);
 
         return new DashboardSummaryResponse(
-                monthlyTotal, yearlyTotal.setScale(MONEY_SCALE, RoundingMode.HALF_UP), Currency.EUR, shares.size());
+                monthlyTotal, yearlyTotal.setScale(MONEY_SCALE, RoundingMode.HALF_UP), targetCurrency, shares.size());
     }
 
     @Transactional(readOnly = true)
@@ -91,24 +95,44 @@ public class DashboardService {
     }
 
     @Transactional(readOnly = true)
+    public List<UpcomingPaymentResponse> getUpcomingPayments(String username, Currency targetCurrency) {
+
+        return getUpcomingPayments(username).stream()
+                .map(payment -> new UpcomingPaymentResponse(
+                        payment.subscriptionId(),
+                        payment.providerName(),
+                        CurrencyConverter.convert(payment.amount(), payment.currency(), targetCurrency)
+                                .setScale(MONEY_SCALE, RoundingMode.HALF_UP),
+                        targetCurrency,
+                        payment.nextPaymentDate(),
+                        payment.daysLeft()))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
     public List<CategorySpendingResponse> getSpendingByCategory(String username) {
+
+        return getSpendingByCategory(username, Currency.EUR);
+    }
+
+    @Transactional(readOnly = true)
+    public List<CategorySpendingResponse> getSpendingByCategory(String username, Currency targetCurrency) {
 
         Map<CategoryKey, BigDecimal> yearlyByCategory = new HashMap<>();
 
         for (Share share : subscriptionShares.load(username, SubscriptionStatus.ACTIVE)) {
+
             Subscription subscription = share.subscription();
             Category category = subscription.getProvider().getCategory();
 
             CategoryKey key = new CategoryKey(category.getId(), category.getName());
 
-            BigDecimal amountEur = CurrencyConverter.toEur(share.amount(), subscription.getCurrency());
+            BigDecimal amount = CurrencyConverter.convert(share.amount(), subscription.getCurrency(), targetCurrency);
 
             BigDecimal paymentsPerYear =
                     BigDecimal.valueOf(subscription.getBillingCycle().getPaymentsPerYear());
 
-            BigDecimal yearlyAmount = amountEur.multiply(paymentsPerYear);
-
-            yearlyByCategory.merge(key, yearlyAmount, BigDecimal::add);
+            yearlyByCategory.merge(key, amount.multiply(paymentsPerYear), BigDecimal::add);
         }
 
         return yearlyByCategory.entrySet().stream()
@@ -117,7 +141,7 @@ public class DashboardService {
                         entry.getKey().name(),
                         entry.getValue().divide(MONTHS_IN_YEAR, MONEY_SCALE, RoundingMode.HALF_UP),
                         entry.getValue().setScale(MONEY_SCALE, RoundingMode.HALF_UP),
-                        Currency.EUR))
+                        targetCurrency))
                 .sorted(Comparator.comparing(CategorySpendingResponse::yearlyTotal)
                         .reversed())
                 .toList();
@@ -125,16 +149,23 @@ public class DashboardService {
 
     @Transactional(readOnly = true)
     public MoneyResponse getSavings(String username) {
+        return getSavings(username, Currency.EUR);
+    }
+
+    @Transactional(readOnly = true)
+    public MoneyResponse getSavings(String username, Currency targetCurrency) {
+
         LocalDate today = userRepository.getByUsername(username).today(clock);
 
-        // Savings from all canceled subscriptions, each converted to EUR, like the other dashboard totals.
         BigDecimal total = BigDecimal.ZERO;
+
         for (Share share : subscriptionShares.load(username, SubscriptionStatus.CANCELLED)) {
-            total = total.add(CurrencyConverter.toEur(
-                    share.savedUntil(today), share.subscription().getCurrency()));
+
+            total = total.add(CurrencyConverter.convert(
+                    share.savedUntil(today), share.subscription().getCurrency(), targetCurrency));
         }
 
-        return new MoneyResponse(total.setScale(MONEY_SCALE, RoundingMode.HALF_UP), Currency.EUR);
+        return new MoneyResponse(total.setScale(MONEY_SCALE, RoundingMode.HALF_UP), targetCurrency);
     }
 
     private record CategoryKey(Long id, String name) {}
