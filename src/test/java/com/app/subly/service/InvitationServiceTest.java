@@ -40,6 +40,7 @@ class InvitationServiceTest {
     private static final long INVITATION_ID = 5L;
     private static final long SUBSCRIPTION_ID = 10L;
     private static final long INVITEE_ID = 2L;
+    private static final long OWNER_ID = 1L;
     private static final int MAX_PARTICIPANTS = 3;
 
     @Mock
@@ -63,11 +64,12 @@ class InvitationServiceTest {
     @BeforeEach
     void setUp() {
         User invitee = TestUsers.userWithId(ALICE, INVITEE_ID);
+        User owner = TestUsers.userWithId(BOB, OWNER_ID);
         subscription = aSubscription()
                 .withId(SUBSCRIPTION_ID)
                 .withMaxParticipants(MAX_PARTICIPANTS)
                 .build();
-        invitation = new PendingInvitation(invitee, subscription);
+        invitation = new PendingInvitation(invitee, subscription, owner);
     }
 
     @Test

@@ -25,7 +25,7 @@ class PendingInvitationRepositoryTest extends AbstractRepositoryTest {
         User alice = persistUser(ALICE);
         User bob = persistUser(BOB);
         Subscription subscription = persistSubscription(alice);
-        invitation = entityManager.persist(new PendingInvitation(bob, subscription));
+        invitation = entityManager.persist(new PendingInvitation(bob, subscription, alice));
         entityManager.flush();
     }
 
