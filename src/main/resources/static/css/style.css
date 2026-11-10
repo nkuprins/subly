@@ -185,3 +185,14 @@ tbody tr { border-top: 1px solid #eee; }
         margin-bottom: 16px;
     }
 }
+/* highlight payments due within 7 days */
+.upcoming-soon {
+    background: rgba(107, 33, 168, .08);
+    border-left: 3px solid var(--primary);
+    border-radius: var(--radius-sm);
+    padding-left: 10px;
+}
+.upcoming-soon .upcoming-date {
+    color: var(--primary);
+    font-weight: 600;
+}
