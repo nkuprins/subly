@@ -26,9 +26,17 @@ public class InvitationPageController {
     public String invitePage(@PathVariable long id, Principal principal, Model model) {
         if (principal == null) return "redirect:/login";
         try {
+            var members = subscriptionService.findMembers(principal.getName(), id);
+            int max = subscriptionService.findCurrent(principal.getName()).stream()
+                    .map(com.app.subly.dto.subscription.VisibleSubscriptionResponse::subscription)
+                    .filter(s -> s.id().equals(id))
+                    .findFirst()
+                    .map(com.app.subly.dto.subscription.SubscriptionResponse::maxParticipants)
+                    .orElse(1);
             model.addAttribute("subscriptionId", id);
             model.addAttribute("pending", invitationService.findPending(principal.getName(), id));
-            model.addAttribute("members", subscriptionService.findMembers(principal.getName(), id));
+            model.addAttribute("members", members);
+            model.addAttribute("full", members.size() >= max);
             return "invitations";
         } catch (RuntimeException ex) {
             return "redirect:/subscriptions";
