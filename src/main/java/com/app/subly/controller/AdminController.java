@@ -1,10 +1,12 @@
 package com.app.subly.controller;
 
+import com.app.subly.dto.admin.AdminStatisticsResponse;
 import com.app.subly.dto.form.CreateProviderForm;
 import com.app.subly.dto.provider.ProviderRequest;
 import com.app.subly.model.category.Category;
 import com.app.subly.model.provider.ProviderType;
 import com.app.subly.model.provider.SubscriptionProvider;
+import com.app.subly.service.AdminStatisticsService;
 import com.app.subly.service.CategoryService;
 import com.app.subly.service.ProviderService;
 import jakarta.validation.Valid;
@@ -14,10 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequiredArgsConstructor
@@ -25,6 +24,7 @@ public class AdminController {
 
     private final ProviderService providerService;
     private final CategoryService categoryService;
+    private final AdminStatisticsService adminStatisticsService;
 
     @ModelAttribute("categories")
     public List<Category> getCategories() {
@@ -37,6 +37,7 @@ public class AdminController {
         model.addAttribute("providers", providers);
         model.addAttribute("providerCount", providers.size());
         model.addAttribute("created", created);
+        model.addAttribute("statistics", adminStatisticsService.getStatistics());
         return "admin";
     }
 
@@ -65,5 +66,11 @@ public class AdminController {
                 ProviderType.CATALOG);
 
         return "redirect:/admin";
+    }
+
+    @GetMapping("/admin/statistics")
+    @ResponseBody
+    public AdminStatisticsResponse getStatistics() {
+        return adminStatisticsService.getStatistics();
     }
 }
