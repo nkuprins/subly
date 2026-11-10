@@ -17,7 +17,6 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
-import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -125,20 +124,17 @@ public class DashboardService {
     }
 
     @Transactional(readOnly = true)
-    public List<MoneyResponse> getSavings(String username) {
+    public MoneyResponse getSavings(String username) {
         LocalDate today = userRepository.getByUsername(username).today(clock);
 
-        Map<Currency, BigDecimal> totals = new EnumMap<>(Currency.class);
+        // Savings from all canceled subscriptions, each converted to EUR, like the other dashboard totals.
+        BigDecimal total = BigDecimal.ZERO;
         for (Share share : subscriptionShares.load(username, SubscriptionStatus.CANCELLED)) {
-            BigDecimal saved = share.savedUntil(today);
-            if (saved.signum() > 0) {
-                totals.merge(share.subscription().getCurrency(), saved, BigDecimal::add);
-            }
+            total = total.add(CurrencyConverter.toEur(
+                    share.savedUntil(today), share.subscription().getCurrency()));
         }
 
-        return totals.entrySet().stream()
-                .map(total -> new MoneyResponse(total.getValue(), total.getKey()))
-                .toList();
+        return new MoneyResponse(total.setScale(MONEY_SCALE, RoundingMode.HALF_UP), Currency.EUR);
     }
 
     private record CategoryKey(Long id, String name) {}

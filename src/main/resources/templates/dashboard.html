@@ -27,8 +27,7 @@
         </div>
         <div class="card">
             <span class="card-label">Saved</span>
-            <span class="card-value" th:each="s : ${savings}" th:text="|${s.amount} ${s.currency}|"></span>
-            <span class="card-value" th:if="${#lists.isEmpty(savings)}">0</span>
+            <span class="card-value" th:text="|${savings.amount} ${savings.currency}|"></span>
         </div>
     </section>
     <section class="panel" th:if="${not #lists.isEmpty(receivedInvitations)}">

@@ -165,25 +165,22 @@ class DashboardServiceTest {
     }
 
     @Test
-    void getSavings_shouldSumCancelledSubscriptionsFromTheEndDatePerCurrency() {
+    void getSavings_shouldSumCancelledSubscriptionsFromTheEndDateInEur() {
         stubCancelledShares(List.of(
                 cancelledShare("10.00", Currency.EUR, TODAY.minusDays(1)),
                 cancelledShare("5.00", Currency.EUR, TODAY.minusMonths(1)),
                 cancelledShare("7.00", Currency.USD, TODAY.minusDays(1))));
         stubUserIn(DEFAULT_ZONE);
 
-        assertThat(service.getSavings(ALICE))
-                .containsExactly(
-                        new MoneyResponse(new BigDecimal("20.00"), Currency.EUR),
-                        new MoneyResponse(new BigDecimal("7.00"), Currency.USD));
+        assertThat(service.getSavings(ALICE)).isEqualTo(new MoneyResponse(new BigDecimal("26.23"), Currency.EUR));
     }
 
     @Test
-    void getSavings_shouldBeEmptyBeforeTheEndDate() {
+    void getSavings_shouldBeZeroBeforeTheEndDate() {
         stubCancelledShares(List.of(cancelledShare("10.00", Currency.EUR, TODAY.plusDays(3))));
         stubUserIn(DEFAULT_ZONE);
 
-        assertThat(service.getSavings(ALICE)).isEmpty();
+        assertThat(service.getSavings(ALICE)).isEqualTo(new MoneyResponse(new BigDecimal("0.00"), Currency.EUR));
     }
 
     private void stubCancelledShares(List<Share> shares) {

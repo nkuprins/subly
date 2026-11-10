@@ -68,14 +68,12 @@ class DashboardControllerTest extends AbstractWebMvcTest {
 
     @Test
     void getSavings_shouldReturnSavingsOfAuthenticatedUser() throws Exception {
-        when(dashboardService.getSavings(ALICE))
-                .thenReturn(List.of(new MoneyResponse(new BigDecimal("20.00"), Currency.EUR)));
+        when(dashboardService.getSavings(ALICE)).thenReturn(new MoneyResponse(new BigDecimal("20.00"), Currency.EUR));
 
         mockMvc.perform(get(SAVINGS_URL))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].amount").value(20.00))
-                .andExpect(jsonPath("$[0].currency").value("EUR"));
+                .andExpect(jsonPath("$.amount").value(20.00))
+                .andExpect(jsonPath("$.currency").value("EUR"));
     }
 
     @Test

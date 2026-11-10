@@ -35,7 +35,7 @@ public class DashboardController {
     }
 
     @GetMapping("/savings")
-    public List<MoneyResponse> getSavings(Principal principal) {
+    public MoneyResponse getSavings(Principal principal) {
         return dashboardService.getSavings(principal.getName());
     }
 }
