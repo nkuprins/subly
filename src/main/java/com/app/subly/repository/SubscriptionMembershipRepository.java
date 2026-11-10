@@ -31,10 +31,6 @@ public interface SubscriptionMembershipRepository extends JpaRepository<Subscrip
     List<SubscriptionMembership> findByUserUsernameAndSubscriptionStatusOrderBySubscriptionNextPaymentDateAsc(
             String username, SubscriptionStatus status);
 
-    @EntityGraph(attributePaths = {"subscription", "subscription.provider"})
-    List<SubscriptionMembership> findByUserUsernameAndSubscriptionStatusOrderBySubscriptionCancelledAtDesc(
-            String username, SubscriptionStatus status);
-
     @EntityGraph(attributePaths = "subscription")
     List<SubscriptionMembership> findByRoleAndSubscriptionStatusAndUserTimeZoneAndSubscriptionNextPaymentDateBefore(
             MembershipRole role, SubscriptionStatus status, ZoneId timeZone, LocalDate date);

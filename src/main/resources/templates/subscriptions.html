@@ -91,7 +91,8 @@
                 <th>Price</th>
                 <th>Currency</th>
                 <th>Cycle</th>
-                <th>Cancelled on</th>
+                <th>Ends on</th>
+                <th>Saved</th>
                 <th></th>
             </tr>
             </thead>
@@ -105,8 +106,8 @@
                   th:classappend="${item.subscription.billingCycle.name() == 'YEARLY'} ? ' pill-year'"
                   th:text="${item.subscription.billingCycle}"></span>
                 </td>
-                <td th:text="${item.subscription.cancelledAt != null}
-                        ? ${item.subscription.cancelledAt.atZone(zone).toLocalDate()} : '—'"></td>
+                <td th:text="${item.endsOn}"></td>
+                <td th:text="|${item.saved} ${item.subscription.currency}|"></td>
                 <td>
                     <div class="actions" th:if="${item.role.name() == 'OWNER'}">
                         <form th:action="@{/subscriptions/{id}/reactivate(id=${item.subscription.id})}" method="post"
@@ -124,7 +125,7 @@
             </tr>
 
             <tr th:if="${#lists.isEmpty(subscriptions)}">
-                <td colspan="6" class="empty-row">No cancelled subscriptions.</td>
+                <td colspan="7" class="empty-row">No cancelled subscriptions.</td>
             </tr>
             </tbody>
         </table>

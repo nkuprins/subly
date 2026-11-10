@@ -23,7 +23,11 @@
         </div>
         <div class="card">
             <span class="card-label">Active subscription</span>
-            <span class="card-value" th:text="${activeCount}">0</span>
+            <span class="card-value" th:text="${summary.activeCount}">0</span>
+        </div>
+        <div class="card">
+            <span class="card-label">Saved</span>
+            <span class="card-value" th:text="|${savings.amount} ${savings.currency}|"></span>
         </div>
     </section>
     <section class="panel" th:if="${not #lists.isEmpty(receivedInvitations)}">

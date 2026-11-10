@@ -5,6 +5,7 @@ import com.app.subly.model.subscription.SubscriptionMembership;
 import com.app.subly.model.subscription.SubscriptionStatus;
 import com.app.subly.repository.SubscriptionMembershipRepository;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -51,6 +52,10 @@ class SubscriptionShares {
 
         public Subscription subscription() {
             return membership.getSubscription();
+        }
+
+        public BigDecimal savedUntil(LocalDate today) {
+            return amount.multiply(BigDecimal.valueOf(subscription().skippedPaymentsUntil(today)));
         }
     }
 }
