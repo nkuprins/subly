@@ -18,7 +18,7 @@
         </div>
     </div>
 
-    <div class="notice notice-success" role="status" th:if="${created}">Provider added to the catalogue.</div>
+    <div class="notice notice-success" role="status" th:if="${providerCreated}">Provider added to the catalogue.</div>
 
     <section class="admin-metrics" aria-label="Catalogue summary">
         <div class="admin-metric">
@@ -59,7 +59,64 @@
             <a th:href="@{/admin/providers/new}" class="btn btn-primary">Add first provider</a>
         </div>
     </section>
+
+    <section class="catalogue-panel admin-categories-panel" aria-labelledby="categories-title">
+        <div class="catalogue-toolbar">
+            <div>
+                <h2 id="categories-title">Categories</h2>
+                <p>Categories used by catalogue providers</p>
+            </div>
+            <button class="btn btn-primary" id="add-category-button" type="button">Add category <span aria-hidden="true">＋</span></button>
+        </div>
+        <div class="table-scroll" th:if="${!#lists.isEmpty(categories)}">
+            <table class="catalogue-table category-table">
+                <thead>
+                <tr><th scope="col">Category</th><th scope="col">References</th><th scope="col">Actions</th></tr>
+                </thead>
+                <tbody>
+                <tr th:each="category : ${categories}" th:attr="data-category-id=${category.id}">
+                    <td class="provider-name" th:text="${category.name}">Category</td>
+                    <td th:text="${categoryReferences.get(category.id)}">0</td>
+                    <td class="category-actions">
+                        <button class="category-action-button" type="button" data-action="edit"
+                                th:attr="data-category-id=${category.id}">Edit</button>
+                        <span aria-hidden="true">|</span>
+                        <button class="category-action-button category-action-delete" type="button" data-action="delete"
+                                th:attr="data-category-id=${category.id}" th:disabled="${categoryReferences.get(category.id) > 0}">Delete</button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="catalogue-empty" th:if="${#lists.isEmpty(categories)}">
+            <span class="empty-icon" aria-hidden="true">◇</span>
+            <h3>No categories yet</h3>
+            <p>Add a category to organize catalogue providers.</p>
+        </div>
+    </section>
 </main>
+<dialog class="provider-dialog" id="category-dialog" aria-labelledby="category-dialog-title"
+        th:attr="data-open=${!#strings.isEmpty(categoryCreationError)}">
+    <div class="provider-dialog-card">
+        <button class="provider-dialog-close" id="category-dialog-close" type="button" aria-label="Close">&times;</button>
+        <h2 id="category-dialog-title">Add a category</h2>
+        <p>Enter a name for the new category.</p>
+        <form th:action="@{/admin/category/create}" th:object="${categoryCreationForm}" method="post">
+            <div class="form-field">
+                <label for="category-title">Category name <span aria-hidden="true">*</span></label>
+                <input id="category-title" type="text" th:field="*{title}" maxlength="100" autocomplete="off" required
+                       aria-describedby="category-title-error"
+                       th:classappend="${!#strings.isEmpty(categoryCreationError)} ? 'field-invalid'"/>
+                <p id="category-title-error" class="field-error" th:if="${!#strings.isEmpty(categoryCreationError)}" th:text="${categoryCreationError}">Category already exists.</p>
+            </div>
+            <div class="form-actions">
+                <button class="btn btn-quiet" id="category-dialog-cancel" type="button">Cancel</button>
+                <button class="btn btn-primary" type="submit">Create category</button>
+            </div>
+        </form>
+    </div>
+</dialog>
 <div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/categories-admin.js}" defer></script>
 </body>
 </html>

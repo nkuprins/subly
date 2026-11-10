@@ -2,7 +2,6 @@ package com.app.subly.controller;
 
 import com.app.subly.dto.OperationResponse;
 import com.app.subly.dto.category.CategoryResponse;
-import com.app.subly.dto.category.CreateCustomCategoryRequest;
 import com.app.subly.dto.category.UpdateCategoryRequest;
 import com.app.subly.service.CategoryService;
 import jakarta.validation.Valid;
@@ -17,12 +16,6 @@ import org.springframework.web.bind.annotation.*;
 public class CategoryController {
 
     private final CategoryService service;
-
-    @PostMapping("/create")
-    public OperationResponse createCategory(@Valid @RequestBody CreateCustomCategoryRequest request) {
-        service.addNewCategory(request.categoryName());
-        return new OperationResponse("Successfully added new category " + request.categoryName());
-    }
 
     @PutMapping("/edit")
     public OperationResponse editCategory(@Valid @RequestBody UpdateCategoryRequest request) {

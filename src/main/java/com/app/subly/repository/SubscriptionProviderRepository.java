@@ -1,11 +1,13 @@
 package com.app.subly.repository;
 
+import com.app.subly.dto.provider.ProviderCategoryResponse;
 import com.app.subly.model.provider.ProviderType;
 import com.app.subly.model.provider.SubscriptionProvider;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 public interface SubscriptionProviderRepository extends JpaRepository<SubscriptionProvider, Long> {
 
@@ -17,4 +19,17 @@ public interface SubscriptionProviderRepository extends JpaRepository<Subscripti
 
     @EntityGraph(attributePaths = "category")
     List<SubscriptionProvider> findAllByProviderTypeOrderByNameAsc(ProviderType providerType);
+
+    //  SELECT COUNT(*), categories.name FROM subscription_providers JOIN categories ON categories.id = category_id
+    // GROUP
+    // BY category_id, name;
+    @Query("""
+            SELECT new com.app.subly.dto.provider.ProviderCategoryResponse(
+                       c.id, COUNT(sp)
+            ) FROM SubscriptionProvider sp
+              JOIN sp.category c
+              GROUP BY c.id
+
+            """)
+    List<ProviderCategoryResponse> getAllProvidersCountGroupedByCategory();
 }

@@ -1,5 +1,6 @@
 package com.app.subly.service;
 
+import com.app.subly.dto.provider.ProviderCategoryResponse;
 import com.app.subly.dto.provider.ProviderRequest;
 import com.app.subly.dto.provider.ProviderResponse;
 import com.app.subly.exception.category.InvalidCategoryException;
@@ -72,6 +73,10 @@ public class ProviderService {
             if (response.providerType().equals(ProviderType.CUSTOM))
                 this.subscriptionProviderRepository.deleteById(response.id());
         }
+    }
+
+    public List<ProviderCategoryResponse> listGroupProvidersByCategory() {
+        return this.subscriptionProviderRepository.getAllProvidersCountGroupedByCategory();
     }
 
     private Category findCategory(long categoryId) {
