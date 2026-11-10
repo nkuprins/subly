@@ -10,6 +10,7 @@ const providerCombo = byId('providerCombo');
 const providerCurrent = byId('providerCurrent');
 const providerDialog = byId('providerDialog');
 
+
 function providerLogo(provider, className) {
     if (!provider.logoPath) return createProviderInitial(provider.name);
     const image = document.createElement('img');
@@ -123,7 +124,6 @@ byId('providerDialogForm').addEventListener('submit', async (e) => {
 
     const saveButton = byId('saveProvider');
     saveButton.disabled = true;
-    // CHANGE HERE API ENDPOINT
     try {
         const res = await fetch('/api/providers', {
             method: 'POST',
@@ -149,6 +149,8 @@ byId('providerDialogForm').addEventListener('submit', async (e) => {
     }
 });
 
+
+// delete
 async function loadCategories() {
     const res = await fetch('/api/category/listAll');
     if (!res.ok) return;
@@ -162,6 +164,7 @@ async function loadCategories() {
     });
 }
 
+// delete
 async function loadProviders() {
 
     // CHANGE API HERE
@@ -173,6 +176,7 @@ async function loadProviders() {
     });
 }
 
+// delete
 async function prefill() {
     const res = await fetch('/api/subscriptions');
     if (!res.ok) return;
@@ -191,6 +195,7 @@ async function prefill() {
     byId('freeTrial').checked = sub.freeTrial;
 }
 
+// delete
 form.addEventListener('submit', async (e) => {
     e.preventDefault();
     if (!providerSelect.value) {
@@ -230,6 +235,7 @@ form.addEventListener('submit', async (e) => {
     else alert('Save failed (status ' + res.status + ')');
 });
 
+// delete
 async function init() {
     await Promise.all([loadCategories(), loadProviders()]);
     if (isEdit) await prefill();
