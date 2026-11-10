@@ -33,7 +33,6 @@ public class SubscriptionService {
     private final SubscriptionRepository subscriptionRepository;
     private final SubscriptionAccess subscriptionAccess;
     private final SubscriptionMembershipRepository membershipRepository;
-    private final PendingInvitationRepository invitationRepository;
     private final SubscriptionProviderRepository subscriptionProviderRepository;
     private final UserRepository userRepository;
     private final PendingInvitationRepository pendingInvitationRepository;
@@ -129,7 +128,7 @@ public class SubscriptionService {
             return;
         }
 
-        invitationRepository.deleteBySubscription_IdIn(subscriptionIds);
+        pendingInvitationRepository.deleteBySubscription_IdIn(subscriptionIds);
         membershipRepository.deleteBySubscription_IdIn(subscriptionIds);
         membershipRepository.flush();
         subscriptionRepository.deleteAllById(subscriptionIds);
