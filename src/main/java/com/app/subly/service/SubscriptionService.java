@@ -11,6 +11,7 @@ import com.app.subly.model.subscription.Subscription;
 import com.app.subly.model.subscription.SubscriptionMembership;
 import com.app.subly.model.subscription.SubscriptionStatus;
 import com.app.subly.model.user.User;
+import com.app.subly.repository.PendingInvitationRepository;
 import com.app.subly.repository.SubscriptionMembershipRepository;
 import com.app.subly.repository.SubscriptionProviderRepository;
 import com.app.subly.repository.SubscriptionRepository;
@@ -34,6 +35,7 @@ public class SubscriptionService {
     private final SubscriptionMembershipRepository membershipRepository;
     private final SubscriptionProviderRepository subscriptionProviderRepository;
     private final UserRepository userRepository;
+    private final PendingInvitationRepository pendingInvitationRepository;
     private final Clock clock;
 
     @Transactional
@@ -79,6 +81,7 @@ public class SubscriptionService {
         Subscription subscription = subscriptionAccess.getOwnedSubscription(username, subscriptionId);
 
         //  Decide what happens to payments when they are implemented.
+        pendingInvitationRepository.deleteBySubscriptionId(subscriptionId);
         subscriptionRepository.delete(subscription);
     }
 

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Add provider</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+
+<main class="container page">
+    <div class="page-head">
+        <h1>Add provider</h1>
+    </div>
+    <div class="form-card">
+        <form th:action="@{/providers}" method="post" class="form">
+            <div class="field">
+                <label for="name">Provider name</label>
+                <input type="text" id="name" name="name" maxlength="200" required/>
+            </div>
+            <div class="field">
+                <label for="categoryId">Category</label>
+                <select id="categoryId" name="categoryId" required>
+                    <option value="">Choose a category</option>
+                    <option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${cat.name}"></option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="logoPath">Logo URL <span class="field-help">(optional)</span></label>
+                <input type="text" id="logoPath" name="logoPath" maxlength="500"
+                       placeholder="https://… or /images/provider.svg"/>
+            </div>
+            <p class="field-error" th:if="${error}" th:text="${error}"></p>
+            <div class="form-actions">
+                <a th:href="@{/subscriptions/new}" class="link">Cancel</a>
+                <button type="submit" class="btn btn-primary">Add provider</button>
+            </div>
+        </form>
+    </div>
+</main>
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>
