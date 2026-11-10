@@ -61,6 +61,19 @@ public class ProviderService {
         return ProviderResponse.from(provider);
     }
 
+    @Transactional
+    public void deleteAllProvidersCreatedBy(String username) {
+        List<ProviderResponse> result = this.findVisibleTo(username);
+        if (result.isEmpty()) {
+            return;
+        }
+
+        for (ProviderResponse response : result) {
+            if (response.providerType().equals(ProviderType.CUSTOM))
+                this.subscriptionProviderRepository.deleteById(response.id());
+        }
+    }
+
     private Category findCategory(long categoryId) {
         return categoryRepository.findById(categoryId).orElseThrow(() -> new InvalidCategoryException(categoryId));
     }

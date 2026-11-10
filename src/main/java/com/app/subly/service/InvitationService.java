@@ -124,4 +124,10 @@ public class InvitationService {
 
         invitationRepository.delete(invitation);
     }
+
+    @Transactional
+    public void deleteInvitationFor(Long userId) {
+        this.invitationRepository.deleteByUser_Id(userId);
+        this.invitationRepository.flush();
+    }
 }
