@@ -33,6 +33,12 @@ public class SubscriptionController {
         return service.findCancelled(principal.getName());
     }
 
+    @GetMapping("/{id}/members")
+    public List<SubscriptionMemberResponse> listMembers(Principal principal, @PathVariable @Positive long id) {
+
+        return service.findMembers(principal.getName(), id);
+    }
+
     @PutMapping("/{id}")
     public SubscriptionResponse update(
             Principal principal,
@@ -51,6 +57,21 @@ public class SubscriptionController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void reactivate(Principal principal, @PathVariable @Positive long id) {
         service.reactivate(principal.getName(), id);
+    }
+
+    @DeleteMapping("/{id}/leave")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void leave(Principal principal, @PathVariable @Positive long id) {
+
+        service.leave(principal.getName(), id);
+    }
+
+    @DeleteMapping("/{id}/members/{membershipId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void removeMember(
+            Principal principal, @PathVariable @Positive long id, @PathVariable @Positive long membershipId) {
+
+        service.removeMember(principal.getName(), id, membershipId);
     }
 
     @DeleteMapping("/{id}")

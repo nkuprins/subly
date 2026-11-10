@@ -35,5 +35,10 @@ public interface SubscriptionMembershipRepository extends JpaRepository<Subscrip
     List<SubscriptionMembership> findByRoleAndSubscriptionStatusAndUserTimeZoneAndSubscriptionNextPaymentDateBefore(
             MembershipRole role, SubscriptionStatus status, ZoneId timeZone, LocalDate date);
 
+    @EntityGraph(attributePaths = "user")
+    List<SubscriptionMembership> findBySubscriptionIdOrderByIdAsc(Long subscriptionId);
+
+    Optional<SubscriptionMembership> findBySubscriptionIdAndUserUsername(Long subscriptionId, String username);
+
     long countBySubscriptionId(Long subscriptionId);
 }
