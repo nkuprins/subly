@@ -1,12 +1,15 @@
 package com.app.subly.model.subscription;
 
 import com.app.subly.model.provider.SubscriptionProvider;
+import com.app.subly.util.Money;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,10 +22,6 @@ import org.hibernate.annotations.CreationTimestamp;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Subscription {
 
-    public static final int PRICE_INTEGER_DIGITS = 8;
-
-    public static final int PRICE_FRACTION_DIGITS = 2;
-
     @Id
     @Setter
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,7 +32,7 @@ public class Subscription {
     private SubscriptionProvider provider;
 
     @Setter
-    @Column(nullable = false, precision = PRICE_INTEGER_DIGITS + PRICE_FRACTION_DIGITS, scale = PRICE_FRACTION_DIGITS)
+    @Column(nullable = false, precision = Money.INTEGER_DIGITS + Money.FRACTION_DIGITS, scale = Money.FRACTION_DIGITS)
     private BigDecimal price;
 
     @Setter
@@ -122,6 +121,17 @@ public class Subscription {
         nextPaymentDate = date.isBefore(today) ? billingAnchorDate.plus(cycles + 1, unit) : date;
     }
 
+    public List<SubscriptionPayment> paymentsDue(List<SubscriptionMembership> members) {
+        List<SubscriptionPayment> payments = new ArrayList<>();
+        for (SubscriptionMembership member : members) {
+            BigDecimal amount = shareFor(member.getRole(), members.size());
+            if (amount.signum() > 0) {
+                payments.add(new SubscriptionPayment(this, member.getUser(), amount, nextPaymentDate));
+            }
+        }
+        return payments;
+    }
+
     public long skippedPaymentsUntil(LocalDate today) {
         if (nextPaymentDate.isAfter(today)) {
             return 0;
@@ -134,7 +144,7 @@ public class Subscription {
             throw new IllegalStateException("Subscription " + id + " has no members");
         }
 
-        BigDecimal baseShare = price.divide(BigDecimal.valueOf(memberCount), PRICE_FRACTION_DIGITS, RoundingMode.DOWN);
+        BigDecimal baseShare = price.divide(BigDecimal.valueOf(memberCount), Money.FRACTION_DIGITS, RoundingMode.DOWN);
 
         BigDecimal leftover = price.subtract(baseShare.multiply(BigDecimal.valueOf(memberCount)));
         return role == MembershipRole.OWNER ? baseShare.add(leftover) : baseShare;

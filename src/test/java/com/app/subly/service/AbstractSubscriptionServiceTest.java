@@ -4,6 +4,7 @@ import static com.app.subly.testdata.TestSubscriptions.DEFAULT_NEXT_PAYMENT_DATE
 import static com.app.subly.testdata.TestSubscriptions.DEFAULT_PRICE;
 import static com.app.subly.testdata.TestSubscriptions.aSubscription;
 import static com.app.subly.testdata.TestUsers.ALICE;
+import static com.app.subly.testdata.TestUsers.BOB;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
@@ -17,6 +18,7 @@ import com.app.subly.model.subscription.SubscriptionMembership;
 import com.app.subly.model.user.User;
 import com.app.subly.repository.PendingInvitationRepository;
 import com.app.subly.repository.SubscriptionMembershipRepository;
+import com.app.subly.repository.SubscriptionPaymentRepository;
 import com.app.subly.repository.SubscriptionProviderRepository;
 import com.app.subly.repository.SubscriptionRepository;
 import com.app.subly.repository.UserRepository;
@@ -35,6 +37,7 @@ abstract class AbstractSubscriptionServiceTest {
     static final long SUBSCRIPTION_ID = 7L;
     static final long PROVIDER_ID = 1L;
     static final long ALICE_ID = 1L;
+    static final long BOB_ID = 2L;
 
     @Mock
     SubscriptionRepository subscriptionRepository;
@@ -57,8 +60,12 @@ abstract class AbstractSubscriptionServiceTest {
     @Mock
     SubscriptionShares subscriptionShares;
 
+    @Mock
+    SubscriptionPaymentRepository paymentRepository;
+
     SubscriptionService service;
     final User alice = TestUsers.userWithId(ALICE, ALICE_ID);
+    final User bob = TestUsers.userWithId(BOB, BOB_ID);
 
     @BeforeEach
     void setUp() {
@@ -68,6 +75,7 @@ abstract class AbstractSubscriptionServiceTest {
                 membershipRepository,
                 subscriptionProviderRepository,
                 userRepository,
+                paymentRepository,
                 subscriptionShares,
                 pendingInvitationRepository,
                 TestClock.CLOCK);

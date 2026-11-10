@@ -10,7 +10,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.app.subly.model.subscription.MembershipRole;
 import com.app.subly.model.subscription.Subscription;
 import com.app.subly.model.subscription.SubscriptionMembership;
 import com.app.subly.model.subscription.SubscriptionStatus;
@@ -46,8 +45,7 @@ class SubscriptionSharesTest {
     void load_shouldSplitEachSubscriptionByItsOwnMembers() {
         Subscription shared = subscription(1L, "10.00");
         Subscription solo = subscription(2L, "6.00");
-        SubscriptionMembership aliceInShared =
-                new SubscriptionMembership(TestUsers.user(ALICE), shared, MembershipRole.MEMBER);
+        SubscriptionMembership aliceInShared = SubscriptionMembership.member(TestUsers.user(ALICE), shared);
         SubscriptionMembership bobOwnsShared = SubscriptionMembership.owner(TestUsers.user(BOB), shared);
         SubscriptionMembership aliceOwnsSolo = SubscriptionMembership.owner(TestUsers.user(ALICE), solo);
         stubAliceMemberships(List.of(aliceInShared, aliceOwnsSolo));

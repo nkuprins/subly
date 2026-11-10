@@ -16,9 +16,11 @@ import com.app.subly.model.subscription.SubscriptionStatus;
 import com.app.subly.model.user.User;
 import com.app.subly.repository.PendingInvitationRepository;
 import com.app.subly.repository.SubscriptionMembershipRepository;
+import com.app.subly.repository.SubscriptionPaymentRepository;
 import com.app.subly.repository.SubscriptionProviderRepository;
 import com.app.subly.repository.SubscriptionRepository;
 import com.app.subly.repository.UserRepository;
+import com.app.subly.util.Money;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
@@ -38,6 +40,7 @@ public class SubscriptionService {
     private final SubscriptionMembershipRepository membershipRepository;
     private final SubscriptionProviderRepository subscriptionProviderRepository;
     private final UserRepository userRepository;
+    private final SubscriptionPaymentRepository paymentRepository;
     private final SubscriptionShares subscriptionShares;
     private final PendingInvitationRepository pendingInvitationRepository;
     private final Clock clock;
@@ -99,17 +102,20 @@ public class SubscriptionService {
 
     @Transactional
     public void advancePaymentDates(ZoneId zone, LocalDate today) {
-        membershipRepository
-                .findByRoleAndSubscriptionStatusAndUserTimeZoneAndSubscriptionNextPaymentDateBefore(
-                        MembershipRole.OWNER, SubscriptionStatus.ACTIVE, zone, today)
-                .forEach(owner -> owner.getSubscription().advancePaymentDate(today));
+        for (SubscriptionMembership owner :
+                membershipRepository.findByRoleAndSubscriptionStatusAndUserTimeZoneAndSubscriptionNextPaymentDateBefore(
+                        MembershipRole.OWNER, SubscriptionStatus.ACTIVE, zone, today)) {
+            Subscription subscription = owner.getSubscription();
+            List<SubscriptionMembership> members =
+                    membershipRepository.findBySubscriptionIdOrderByIdAsc(subscription.getId());
+            paymentRepository.saveAll(subscription.paymentsDue(members));
+            subscription.advancePaymentDate(subscription.getNextPaymentDate().plusDays(1));
+        }
     }
 
     @Transactional
     public void delete(String username, long subscriptionId) {
         Subscription subscription = subscriptionAccess.getOwnedSubscription(username, subscriptionId);
-
-        //  Decide what happens to payments when they are implemented.
         pendingInvitationRepository.deleteBySubscriptionId(subscriptionId);
         membershipRepository.deleteBySubscription_IdIn(List.of(subscriptionId));
         membershipRepository.flush();
@@ -216,7 +222,7 @@ public class SubscriptionService {
     }
 
     private static void requireCentPerParticipant(BigDecimal price, int maxParticipants) {
-        BigDecimal minimum = BigDecimal.valueOf(maxParticipants, Subscription.PRICE_FRACTION_DIGITS);
+        BigDecimal minimum = BigDecimal.valueOf(maxParticipants, Money.FRACTION_DIGITS);
         if (price.compareTo(minimum) < 0) {
             throw new PriceTooLowException(price, maxParticipants, minimum);
         }

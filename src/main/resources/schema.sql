@@ -109,14 +109,20 @@ CREATE TABLE IF NOT EXISTS subscription_pending (
 
 CREATE TABLE IF NOT EXISTS subscription_payments (
     id BIGINT NOT NULL AUTO_INCREMENT,
-    membership_id BIGINT NOT NULL,
+    subscription_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
     amount DECIMAL(10, 2) NOT NULL,
     paid_on DATE NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
-    INDEX idx_subscription_payments_membership_id (membership_id),
+    CONSTRAINT uq_subscription_payments_entry UNIQUE (subscription_id, user_id, paid_on),
+    INDEX idx_subscription_payments_subscription_id (subscription_id),
+    INDEX idx_subscription_payments_user_id (user_id),
     CONSTRAINT chk_subscription_payments_amount CHECK (amount > 0),
-    CONSTRAINT fk_subscription_payments_membership_id
-        FOREIGN KEY (membership_id) REFERENCES subscription_membership (id)
+    CONSTRAINT fk_subscription_payments_subscription_id
+        FOREIGN KEY (subscription_id) REFERENCES subscriptions (id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_subscription_payments_user_id
+        FOREIGN KEY (user_id) REFERENCES users (id)
         ON DELETE RESTRICT
 );

@@ -93,8 +93,7 @@ public class InvitationService {
             throw new InvitationCannotBeAcceptedException("Subscription has reached its participant limit");
         }
 
-        SubscriptionMembership membership =
-                new SubscriptionMembership(invitation.getUser(), subscription, MembershipRole.MEMBER);
+        SubscriptionMembership membership = SubscriptionMembership.member(invitation.getUser(), subscription);
 
         membershipRepository.save(membership);
 
