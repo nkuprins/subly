@@ -21,12 +21,45 @@
     <div class="notice notice-success" role="status" th:if="${created}">Provider added to the catalogue.</div>
 
     <section class="admin-metrics" aria-label="Catalogue summary">
+            <div class="admin-metric">
+                <span class="admin-metric-label">Providers in catalogue</span>
+                <strong class="admin-metric-value" th:text="${providerCount}"></strong>
+            </div>
         <div class="admin-metric">
-            <span class="admin-metric-label">Providers in catalogue</span>
-            <strong class="admin-metric-value" th:text="${providerCount}"></strong>
+            <span class="admin-metric-label">Total users</span>
+            <strong class="admin-metric-value" th:text="${statistics.totalUsers}"></strong>
+        </div>
+        <div class="admin-metric">
+            <span class="admin-metric-label">Active subscriptions</span>
+            <strong class="admin-metric-value" th:text="${statistics.activeSubscriptions}"></strong>
+        </div>
+        <div class="admin-metric">
+            <span class="admin-metric-label">Avg. monthly spend / user</span>
+            <strong class="admin-metric-value"
+                    th:text="|${statistics.averageMonthlySpendPerUser} ${statistics.currency}|"></strong>
         </div>
     </section>
-
+    <section class="catalogue-panel" th:if="${not #lists.isEmpty(statistics.popularServices)}">
+        <div class="catalogue-toolbar">
+            <div>
+                <h2>Popular services</h2>
+                <p>Most subscribed providers</p>
+            </div>
+        </div>
+        <div class="table-scroll">
+            <table class="catalogue-table">
+                <thead>
+                <tr><th scope="col">Service</th><th scope="col">Active subscriptions</th></tr>
+                </thead>
+                <tbody>
+                <tr th:each="svc : ${statistics.popularServices}">
+                    <td class="provider-name" th:text="${svc.providerName}"></td>
+                    <td th:text="${svc.activeSubscriptionCount}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
     <section class="catalogue-panel" aria-labelledby="catalogue-title">
         <div class="catalogue-toolbar">
             <div>
