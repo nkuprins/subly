@@ -9,7 +9,6 @@ import static org.mockito.Mockito.when;
 
 import com.app.subly.dto.subscription.CancelledSubscriptionResponse;
 import com.app.subly.dto.subscription.VisibleSubscriptionResponse;
-import com.app.subly.model.subscription.MembershipRole;
 import com.app.subly.model.subscription.Subscription;
 import com.app.subly.model.subscription.SubscriptionMembership;
 import com.app.subly.model.subscription.SubscriptionStatus;
@@ -26,7 +25,7 @@ class ListSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
         Subscription owned = subscription(customProvider());
         Subscription shared = subscription(catalogProvider());
         SubscriptionMembership ownerMembership = SubscriptionMembership.owner(alice, owned);
-        SubscriptionMembership memberMembership = new SubscriptionMembership(alice, shared, MembershipRole.MEMBER);
+        SubscriptionMembership memberMembership = SubscriptionMembership.member(alice, shared);
         when(membershipRepository.findByUserUsernameAndSubscriptionStatusOrderBySubscriptionNextPaymentDateAsc(
                         ALICE, SubscriptionStatus.ACTIVE))
                 .thenReturn(List.of(ownerMembership, memberMembership));

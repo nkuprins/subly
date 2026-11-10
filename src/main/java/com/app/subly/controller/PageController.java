@@ -1,5 +1,6 @@
 package com.app.subly.controller;
 
+import com.app.subly.dto.dashboard.PaidMonthResponse;
 import com.app.subly.dto.provider.ProviderRequest;
 import com.app.subly.dto.subscription.CreateSubscriptionRequest;
 import com.app.subly.dto.subscription.UpdateSubscriptionRequest;
@@ -11,6 +12,7 @@ import com.app.subly.service.*;
 import java.math.BigDecimal;
 import java.security.Principal;
 import java.time.LocalDate;
+import java.util.List;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -30,18 +32,21 @@ public class PageController {
     private final ProviderService providerService;
     private final InvitationService invitationService;
     private final CategoryService categoryService;
+    private final PaymentService paymentService;
 
     public PageController(
             SubscriptionService subscriptionService,
             DashboardService dashboardService,
             ProviderService providerService,
             InvitationService invitationService,
-            CategoryService categoryService) {
+            CategoryService categoryService,
+            PaymentService paymentService) {
         this.subscriptionService = subscriptionService;
         this.dashboardService = dashboardService;
         this.providerService = providerService;
         this.invitationService = invitationService;
         this.categoryService = categoryService;
+        this.paymentService = paymentService;
     }
 
     @GetMapping({"/", "/dashboard"})
@@ -56,8 +61,17 @@ public class PageController {
         model.addAttribute("savings", dashboardService.getSavings(username, currency));
         model.addAttribute("categories", dashboardService.getSpendingByCategory(username, currency));
         model.addAttribute("receivedInvitations", invitationService.findReceived(username));
+
+        List<PaidMonthResponse> paidPerMonth = paymentService.getPaidPerMonth(username, currency);
+        // ...
         return "dashboard";
     }
+
+    //    @GetMapping("/payments")
+    //    public String payments(Principal principal, Model model) {
+    //        model.addAttribute("payments", paymentService.findHistory(principal.getName()));
+    //        return "payments";
+    //    }
 
     @GetMapping("/subscriptions")
     public String subscriptions(Principal principal, Model model, @RequestParam(defaultValue = "active") String tab) {

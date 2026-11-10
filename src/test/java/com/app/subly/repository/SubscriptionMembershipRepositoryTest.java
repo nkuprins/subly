@@ -38,7 +38,7 @@ class SubscriptionMembershipRepositoryTest extends AbstractRepositoryTest {
         User member = persistUser(BOB);
         subscription = persistSubscription(alice);
         ownerRow = entityManager.persist(SubscriptionMembership.owner(alice, subscription));
-        memberRow = entityManager.persist(new SubscriptionMembership(member, subscription, MembershipRole.MEMBER));
+        memberRow = entityManager.persist(SubscriptionMembership.member(member, subscription));
         entityManager.flush();
     }
 
