@@ -64,6 +64,11 @@ public class PageController {
 
         List<PaidMonthResponse> paidPerMonth = paymentService.getPaidPerMonth(username, currency);
         model.addAttribute("paidPerMonth", paidPerMonth);
+        BigDecimal maxPaidAmount = paidPerMonth.stream()
+                .map(month -> month.paid().amount())
+                .max(BigDecimal::compareTo)
+                .orElse(BigDecimal.ZERO);
+        model.addAttribute("maxPaidAmount", maxPaidAmount);
         model.addAttribute("individualSummary", dashboardService.getSummary(username, currency, false));
         model.addAttribute("sharedSummary", dashboardService.getSummary(username, currency, true));
         return "dashboard";
