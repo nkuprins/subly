@@ -29,9 +29,6 @@ public class SecurityConfig {
                             .requestMatchers(
                                     "/api/subscriptions",
                                     "/api/subscriptions/**",
-                                    "/api/dashboard/**",
-                                    "/api/payments",
-                                    "/api/payments/**",
                                     "/dashboard",
                                     "/",
                                     "/api/invitations",
