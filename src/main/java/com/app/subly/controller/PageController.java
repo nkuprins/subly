@@ -1,6 +1,5 @@
 package com.app.subly.controller;
 
-import com.app.subly.dto.dashboard.PaidMonthResponse;
 import com.app.subly.dto.provider.ProviderRequest;
 import com.app.subly.dto.subscription.CreateSubscriptionRequest;
 import com.app.subly.dto.subscription.UpdateSubscriptionRequest;
@@ -12,7 +11,6 @@ import com.app.subly.service.*;
 import java.math.BigDecimal;
 import java.security.Principal;
 import java.time.LocalDate;
-import java.util.List;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -60,13 +58,6 @@ public class PageController {
         model.addAttribute("categories", dashboardService.getSpendingByCategory(username, currency));
         model.addAttribute("receivedInvitations", invitationService.findReceived(username));
 
-        List<PaidMonthResponse> paidPerMonth = paymentService.getPaidPerMonth(username, currency);
-        model.addAttribute("paidPerMonth", paidPerMonth);
-        BigDecimal maxPaidAmount = paidPerMonth.stream()
-                .map(month -> month.paid().amount())
-                .max(BigDecimal::compareTo)
-                .orElse(BigDecimal.ZERO);
-        model.addAttribute("maxPaidAmount", maxPaidAmount);
         model.addAttribute("individualSummary", dashboardService.getSummary(username, currency, false));
         model.addAttribute("sharedSummary", dashboardService.getSummary(username, currency, true));
         return "dashboard";

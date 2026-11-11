@@ -12,13 +12,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.app.subly.dto.MoneyResponse;
 import com.app.subly.dto.dashboard.DashboardSummaryResponse;
-import com.app.subly.dto.dashboard.PaidMonthResponse;
 import com.app.subly.dto.dashboard.UpcomingPaymentResponse;
 import com.app.subly.model.subscription.Currency;
 import com.app.subly.service.DashboardService;
-import com.app.subly.service.PaymentService;
 import java.math.BigDecimal;
-import java.time.YearMonth;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -33,13 +30,9 @@ class DashboardControllerTest extends AbstractWebMvcTest {
     static final String SUMMARY_URL = "/api/dashboard/summary";
     static final String UPCOMING_PAYMENTS_URL = "/api/dashboard/upcoming-payments";
     static final String SAVINGS_URL = "/api/dashboard/savings";
-    static final String PAID_PER_MONTH_URL = "/api/dashboard/paid-per-month";
 
     @MockitoBean
     DashboardService dashboardService;
-
-    @MockitoBean
-    PaymentService paymentService;
 
     @Test
     void getSummary_shouldReturnSummaryOfAuthenticatedUser() throws Exception {
@@ -81,20 +74,6 @@ class DashboardControllerTest extends AbstractWebMvcTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.amount").value(20.00))
                 .andExpect(jsonPath("$.currency").value("EUR"));
-    }
-
-    @Test
-    void getPaidPerMonth_shouldReturnPaymentsOfAuthenticatedUser() throws Exception {
-        PaidMonthResponse month =
-                new PaidMonthResponse(YearMonth.of(2026, 11), new MoneyResponse(new BigDecimal("4.50"), Currency.USD));
-        when(paymentService.getPaidPerMonth(ALICE, Currency.USD)).thenReturn(List.of(month));
-
-        mockMvc.perform(get(PAID_PER_MONTH_URL).param("currency", "USD"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].month").value("2026-11"))
-                .andExpect(jsonPath("$[0].paid.amount").value(4.50))
-                .andExpect(jsonPath("$[0].paid.currency").value("USD"));
     }
 
     @Test
