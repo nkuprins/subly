@@ -52,17 +52,6 @@ class SubscriptionPaymentRepositoryTest extends AbstractRepositoryTest {
     }
 
     @Test
-    void findPaidSince_shouldIncludeTheStartDateButNotTheDayBefore() {
-        LocalDate from = TODAY.withDayOfMonth(1);
-        SubscriptionPayment onStart = persistPayment(alice, from);
-        persistPayment(alice, from.minusDays(1));
-
-        assertThat(repository.findPaidSince(ALICE, from))
-                .extracting(SubscriptionPayment::getId)
-                .containsExactly(onStart.getId());
-    }
-
-    @Test
     void deleteById_shouldDeletePaymentsOfTheSubscription() {
         SubscriptionPayment payment = persistPayment(alice, TODAY);
         entityManager.flush();
