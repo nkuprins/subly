@@ -18,13 +18,17 @@ class PendingInvitationRepositoryTest extends AbstractRepositoryTest {
     @Autowired
     PendingInvitationRepository invitationRepository;
 
+    @Autowired
+    SubscriptionRepository subscriptionRepository;
+
+    Subscription subscription;
     PendingInvitation invitation;
 
     @BeforeEach
     void setUp() {
         User alice = persistUser(ALICE);
         User bob = persistUser(BOB);
-        Subscription subscription = persistSubscription(alice);
+        subscription = persistSubscription(alice);
         invitation = entityManager.persist(new PendingInvitation(bob, subscription, alice));
         entityManager.flush();
     }
@@ -52,5 +56,13 @@ class PendingInvitationRepositoryTest extends AbstractRepositoryTest {
         assertThatThrownBy(() -> invitationRepository.getByIdAndUserUsername(unknownId, BOB))
                 .isInstanceOf(InvitationNotFoundException.class)
                 .hasMessageContaining(String.valueOf(unknownId));
+    }
+
+    @Test
+    void delete_shouldDeleteInvitationsOfTheSubscription() {
+        subscriptionRepository.delete(subscription);
+        entityManager.flush();
+
+        assertThat(invitationRepository.existsById(invitation.getId())).isFalse();
     }
 }

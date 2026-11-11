@@ -15,7 +15,6 @@ import com.app.subly.model.subscription.Subscription;
 import com.app.subly.model.subscription.SubscriptionMembership;
 import com.app.subly.model.subscription.SubscriptionStatus;
 import com.app.subly.model.user.User;
-import com.app.subly.repository.PendingInvitationRepository;
 import com.app.subly.repository.SubscriptionMembershipRepository;
 import com.app.subly.repository.SubscriptionProviderRepository;
 import com.app.subly.repository.SubscriptionRepository;
@@ -41,7 +40,6 @@ public class SubscriptionService {
     private final SubscriptionProviderRepository subscriptionProviderRepository;
     private final UserRepository userRepository;
     private final SubscriptionShares subscriptionShares;
-    private final PendingInvitationRepository pendingInvitationRepository;
     private final Clock clock;
 
     @Transactional
@@ -96,11 +94,7 @@ public class SubscriptionService {
     @Transactional
     public void delete(String username, long subscriptionId) {
         Subscription subscription = subscriptionAccess.getOwnedSubscription(username, subscriptionId);
-        pendingInvitationRepository.deleteBySubscriptionId(subscriptionId);
-        membershipRepository.deleteBySubscription_IdIn(List.of(subscriptionId));
-        membershipRepository.flush();
         subscriptionRepository.delete(subscription);
-        subscriptionRepository.flush();
     }
 
     @Transactional
@@ -127,13 +121,10 @@ public class SubscriptionService {
         List<Long> subscriptionIds = membershipRepository.findByUser_IdAndRole(userId, MembershipRole.OWNER).stream()
                 .map(membership -> membership.getSubscription().getId())
                 .toList();
-
         membershipRepository.deleteByUser_Id(userId);
-
         if (subscriptionIds.isEmpty()) {
             return;
         }
-
         subscriptionRepository.deleteAllById(subscriptionIds);
     }
 

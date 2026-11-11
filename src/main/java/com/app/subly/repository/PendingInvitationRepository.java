@@ -2,7 +2,6 @@ package com.app.subly.repository;
 
 import com.app.subly.exception.invitation.InvitationNotFoundException;
 import com.app.subly.model.invitation.PendingInvitation;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -23,11 +22,7 @@ public interface PendingInvitationRepository extends JpaRepository<PendingInvita
 
     void deleteByUser_Id(Long userId);
 
-    void deleteBySubscription_IdIn(Collection<Long> subscriptionIds);
-
     default PendingInvitation getByIdAndUserUsername(long id, String username) {
         return findByIdAndUserUsername(id, username).orElseThrow(() -> new InvitationNotFoundException(id));
     }
-
-    void deleteBySubscriptionId(Long subscriptionId);
 }

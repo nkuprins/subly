@@ -52,6 +52,15 @@ class SubscriptionMembershipRepositoryTest extends AbstractRepositoryTest {
     }
 
     @Test
+    void delete_shouldDeleteMembershipsOfTheSubscription() {
+        subscriptionRepository.delete(subscription);
+        entityManager.flush();
+
+        assertThat(repository.existsById(ownerRow.getId())).isFalse();
+        assertThat(repository.existsById(memberRow.getId())).isFalse();
+    }
+
+    @Test
     void findOwnersDueBefore_shouldReturnOnlyTheOwnerRowAfterThePaymentDate() {
         LocalDate paymentDate = subscription.getNextPaymentDate();
 
