@@ -15,23 +15,15 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf((csrf) -> csrf.ignoringRequestMatchers("/api/**", "/users/delete/me", "/", "/users/logout/me"))
+        http.csrf((csrf) -> csrf.ignoringRequestMatchers("/api/**", "/users/delete/me", "/"))
                 .authorizeHttpRequests((authorize) -> {
                     authorize
                             .requestMatchers("/users/register")
                             .permitAll()
                             .requestMatchers(
                                     "/users/**",
-                                    "/api/category/listAll",
-                                    "/api/subscriptions",
-                                    "/api/subscriptions/**",
-                                    "/api/dashboard/**",
-                                    "/api/payments",
-                                    "/api/payments/**",
                                     "/dashboard",
                                     "/",
-                                    "/api/invitations",
-                                    "/api/invitations/**",
                                     "/edit/me",
                                     "/subscriptions/**",
                                     "/providers/**",

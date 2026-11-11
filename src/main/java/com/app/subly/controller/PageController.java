@@ -11,6 +11,7 @@ import com.app.subly.service.*;
 import java.math.BigDecimal;
 import java.security.Principal;
 import java.time.LocalDate;
+import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
+@RequiredArgsConstructor
 public class PageController {
 
     private static final String CANCELLED_TAB = "cancelled";
@@ -31,21 +33,6 @@ public class PageController {
     private final InvitationService invitationService;
     private final CategoryService categoryService;
     private final PaymentService paymentService;
-
-    public PageController(
-            SubscriptionService subscriptionService,
-            DashboardService dashboardService,
-            ProviderService providerService,
-            InvitationService invitationService,
-            CategoryService categoryService,
-            PaymentService paymentService) {
-        this.subscriptionService = subscriptionService;
-        this.dashboardService = dashboardService;
-        this.providerService = providerService;
-        this.invitationService = invitationService;
-        this.categoryService = categoryService;
-        this.paymentService = paymentService;
-    }
 
     @GetMapping({"/", "/dashboard"})
     public String dashboard(Principal principal, Model model, @RequestParam(defaultValue = "EUR") Currency currency) {
