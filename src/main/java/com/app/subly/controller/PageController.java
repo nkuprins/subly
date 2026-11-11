@@ -49,8 +49,6 @@ public class PageController {
 
     @GetMapping({"/", "/dashboard"})
     public String dashboard(Principal principal, Model model, @RequestParam(defaultValue = "EUR") Currency currency) {
-
-        if (principal == null) return "redirect:/login";
         String username = principal.getName();
 
         model.addAttribute("selectedCurrency", currency);
@@ -67,14 +65,12 @@ public class PageController {
 
     @GetMapping("/payments")
     public String payments(Principal principal, Model model) {
-        if (principal == null) return "redirect:/login";
         model.addAttribute("payments", paymentService.findHistory(principal.getName()));
         return "payments";
     }
 
     @GetMapping("/subscriptions")
     public String subscriptions(Principal principal, Model model, @RequestParam(defaultValue = "active") String tab) {
-        if (principal == null) return "redirect:/login";
         String username = principal.getName();
         var active = subscriptionService.findCurrent(username);
         var cancelled = subscriptionService.findCancelled(username);
@@ -90,7 +86,6 @@ public class PageController {
 
     @PostMapping("/subscriptions/{id}/cancel")
     public String cancelSubscription(@PathVariable Long id, Principal principal, RedirectAttributes redirect) {
-        if (principal == null) return "redirect:/login";
         subscriptionService.cancel(principal.getName(), id);
         redirect.addFlashAttribute("notice", "Subscription cancelled. You can find it under the Cancelled tab.");
         return "redirect:/subscriptions";
@@ -98,7 +93,6 @@ public class PageController {
 
     @PostMapping("/subscriptions/{id}/reactivate")
     public String reactivateSubscription(@PathVariable Long id, Principal principal, RedirectAttributes redirect) {
-        if (principal == null) return "redirect:/login";
         subscriptionService.reactivate(principal.getName(), id);
         redirect.addFlashAttribute("notice", "Subscription reactivated. It's back in your active list.");
         return "redirect:/subscriptions";
@@ -106,7 +100,6 @@ public class PageController {
 
     @GetMapping("/subscriptions/new")
     public String newSubscriptions(Principal principal, Model model) {
-        if (principal == null) return "redirect:/login";
         model.addAttribute("providers", providerService.findVisibleTo(principal.getName()));
         return "subscription-form";
     }
@@ -129,7 +122,6 @@ public class PageController {
 
     @GetMapping("/subscriptions/{id}/edit")
     public String editSubscriptions(@PathVariable Long id, Principal principal, Model model) {
-        if (principal == null) return "redirect:/login";
         var sub = subscriptionService.findCurrent(principal.getName()).stream()
                 .map(VisibleSubscriptionResponse::subscription)
                 .filter(s -> s.id().equals(id))
@@ -143,7 +135,6 @@ public class PageController {
 
     @GetMapping("/subscriptions/{id}/participants")
     public String participants(@PathVariable Long id, Principal principal, Model model) {
-        if (principal == null) return "redirect:/login";
         var sub = subscriptionService.findCurrent(principal.getName()).stream()
                 .map(VisibleSubscriptionResponse::subscription)
                 .filter(s -> s.id().equals(id))
@@ -173,7 +164,6 @@ public class PageController {
 
     @PostMapping("/subscriptions/{id}/leave")
     public String leaveSubscription(@PathVariable Long id, Principal principal, RedirectAttributes redirectAttributes) {
-        if (principal == null) return "redirect:/login";
         try {
             subscriptionService.leave(principal.getName(), id);
             redirectAttributes.addFlashAttribute("notice", "You have left the group.");
@@ -191,8 +181,7 @@ public class PageController {
     }
 
     @GetMapping("/providers/new")
-    public String newProvider(Principal principal, Model model) {
-        if (principal == null) return "redirect:/login";
+    public String newProvider(Model model) {
         model.addAttribute("categories", categoryService.getAllCategories());
         return "provider-form";
     }
@@ -204,7 +193,6 @@ public class PageController {
             @RequestParam Long categoryId,
             @RequestParam(required = false) String logoPath,
             Model model) {
-        if (principal == null) return "redirect:/login";
         try {
             providerService.create(
                     principal.getName(), new ProviderRequest(name, categoryId, logoPath), ProviderType.CUSTOM);

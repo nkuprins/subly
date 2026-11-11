@@ -20,13 +20,9 @@ public class SecurityConfig {
                     authorize
                             .requestMatchers("/users/register")
                             .permitAll()
-                            .requestMatchers("/users/**")
-                            .authenticated()
-                            .requestMatchers("/api/category/listAll")
-                            .authenticated()
-                            .requestMatchers("/api/category/**", "/admin", "/admin/**")
-                            .hasRole("ADMIN")
                             .requestMatchers(
+                                    "/users/**",
+                                    "/api/category/listAll",
                                     "/api/subscriptions",
                                     "/api/subscriptions/**",
                                     "/api/dashboard/**",
@@ -36,8 +32,13 @@ public class SecurityConfig {
                                     "/",
                                     "/api/invitations",
                                     "/api/invitations/**",
-                                    "/edit/me")
-                            .authenticated();
+                                    "/edit/me",
+                                    "/subscriptions/**",
+                                    "/providers/**",
+                                    "/payments")
+                            .authenticated()
+                            .requestMatchers("/api/category/**", "/admin", "/admin/**")
+                            .hasRole("ADMIN");
                     authorize.anyRequest().permitAll();
                 })
                 .exceptionHandling((exceptions) -> exceptions.accessDeniedPage("/access-denied"))
