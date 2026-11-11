@@ -20,12 +20,17 @@ public class SecurityConfig {
                     authorize
                             .requestMatchers("/users/register")
                             .permitAll()
-                            .requestMatchers("/users/**")
+                            .requestMatchers(
+                                    "/users/**",
+                                    "/dashboard",
+                                    "/",
+                                    "/edit/me",
+                                    "/subscriptions/**",
+                                    "/providers/**",
+                                    "/payments")
                             .authenticated()
                             .requestMatchers("/api/category/**", "/admin", "/admin/**")
-                            .hasRole("ADMIN")
-                            .requestMatchers("/dashboard", "/", "/edit/me")
-                            .authenticated();
+                            .hasRole("ADMIN");
                     authorize.anyRequest().permitAll();
                 })
                 .exceptionHandling((exceptions) -> exceptions.accessDeniedPage("/access-denied"))
