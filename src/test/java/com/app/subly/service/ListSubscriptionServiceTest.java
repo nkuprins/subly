@@ -4,20 +4,20 @@ import static com.app.subly.testdata.TestClock.TODAY;
 import static com.app.subly.testdata.TestSubscriptions.aSubscription;
 import static com.app.subly.testdata.TestUsers.ALICE;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.Mockito.when;
 
 import com.app.subly.dto.subscription.ActiveSubscriptionResponse;
 import com.app.subly.dto.subscription.CancelledSubscriptionResponse;
 import com.app.subly.dto.subscription.SubscriptionResponse;
-import com.app.subly.model.subscription.Subscription;
-import com.app.subly.model.subscription.SubscriptionMembership;
-import com.app.subly.model.subscription.SubscriptionStatus;
-import com.app.subly.service.SubscriptionShares.Share;
+import com.app.subly.entity.subscription.Subscription;
+import com.app.subly.entity.subscription.SubscriptionMembership;
+import com.app.subly.enums.SubscriptionStatus;
+import com.app.subly.exception.subscription.SubscriptionNotActiveException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
 class ListSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
@@ -38,26 +38,19 @@ class ListSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
     }
 
     @Test
-    void findActive_shouldReturnOneActiveSubscriptionOfTheUser() {
+    void getActive_shouldReturnOneActiveSubscriptionOfTheUser() {
         Subscription subscription = aSubscription().withId(SUBSCRIPTION_ID).build();
         stubAlicesMembership(SubscriptionMembership.member(alice, subscription));
 
-        assertThat(service.findActive(ALICE, SUBSCRIPTION_ID)).contains(SubscriptionResponse.from(subscription));
+        assertThat(service.getActive(ALICE, SUBSCRIPTION_ID)).isEqualTo(SubscriptionResponse.from(subscription));
     }
 
     @Test
-    void findActive_shouldNotReturnOneCancelledSubscription() {
+    void getActive_shouldRejectCancelledSubscription() {
         stubAlicesMembership(SubscriptionMembership.owner(alice, cancelled(SUBSCRIPTION_ID, TODAY.plusDays(3))));
 
-        assertThat(service.findActive(ALICE, SUBSCRIPTION_ID)).isEmpty();
-    }
-
-    @Test
-    void findActive_shouldNotReturnOneSubscriptionTheUserIsNotIn() {
-        when(membershipRepository.findBySubscriptionIdAndUserUsername(SUBSCRIPTION_ID, ALICE))
-                .thenReturn(Optional.empty());
-
-        assertThat(service.findActive(ALICE, SUBSCRIPTION_ID)).isEmpty();
+        assertThatThrownBy(() -> service.getActive(ALICE, SUBSCRIPTION_ID))
+                .isInstanceOf(SubscriptionNotActiveException.class);
     }
 
     @Test
@@ -75,8 +68,7 @@ class ListSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
     }
 
     private void stubAlicesMembership(SubscriptionMembership membership) {
-        when(membershipRepository.findBySubscriptionIdAndUserUsername(SUBSCRIPTION_ID, ALICE))
-                .thenReturn(Optional.of(membership));
+        when(subscriptionAccess.getMembership(ALICE, SUBSCRIPTION_ID)).thenReturn(membership);
     }
 
     private static Subscription cancelled(long id, LocalDate endDate) {

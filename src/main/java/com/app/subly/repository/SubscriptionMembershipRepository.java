@@ -1,8 +1,8 @@
 package com.app.subly.repository;
 
-import com.app.subly.model.subscription.MembershipRole;
-import com.app.subly.model.subscription.SubscriptionMembership;
-import com.app.subly.model.subscription.SubscriptionStatus;
+import com.app.subly.entity.subscription.SubscriptionMembership;
+import com.app.subly.enums.MembershipRole;
+import com.app.subly.enums.SubscriptionStatus;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Collection;
@@ -18,14 +18,14 @@ public interface SubscriptionMembershipRepository extends JpaRepository<Subscrip
     @EntityGraph(attributePaths = {"user", "subscription"})
     Optional<SubscriptionMembership> findBySubscriptionIdAndRole(Long subscriptionId, MembershipRole role);
 
-    @EntityGraph(attributePaths = {"user", "subscription.provider.category"})
-    Optional<SubscriptionMembership> findWithSubscriptionDetailsBySubscriptionIdAndRole(
-            Long subscriptionId, MembershipRole role);
-
     List<SubscriptionMembership> findBySubscriptionIdIn(Collection<Long> subscriptionIds);
 
     @EntityGraph(attributePaths = "subscription")
     List<SubscriptionMembership> findByUser_IdAndRole(Long userId, MembershipRole role);
+
+    default List<SubscriptionMembership> findMembershipsOf(String username, SubscriptionStatus status) {
+        return findByUserUsernameAndSubscriptionStatusOrderBySubscriptionNextPaymentDateAsc(username, status);
+    }
 
     @EntityGraph(attributePaths = {"subscription", "subscription.provider"})
     List<SubscriptionMembership> findByUserUsernameAndSubscriptionStatusOrderBySubscriptionNextPaymentDateAsc(
@@ -40,12 +40,12 @@ public interface SubscriptionMembershipRepository extends JpaRepository<Subscrip
 
     void deleteByUser_Id(Long userId);
 
-    void deleteBySubscription_IdIn(Collection<Long> subscriptionIds);
-
     @EntityGraph(attributePaths = "user")
     List<SubscriptionMembership> findBySubscriptionIdOrderByIdAsc(Long subscriptionId);
 
     Optional<SubscriptionMembership> findBySubscriptionIdAndUserUsername(Long subscriptionId, String username);
+
+    Optional<SubscriptionMembership> findByIdAndSubscriptionId(Long id, Long subscriptionId);
 
     long countBySubscriptionId(Long subscriptionId);
 }

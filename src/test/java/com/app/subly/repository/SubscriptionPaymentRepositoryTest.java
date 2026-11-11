@@ -5,10 +5,10 @@ import static com.app.subly.testdata.TestUsers.ALICE;
 import static com.app.subly.testdata.TestUsers.BOB;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.app.subly.model.subscription.Subscription;
-import com.app.subly.model.subscription.SubscriptionMembership;
-import com.app.subly.model.subscription.SubscriptionPayment;
-import com.app.subly.model.user.User;
+import com.app.subly.entity.subscription.Subscription;
+import com.app.subly.entity.subscription.SubscriptionMembership;
+import com.app.subly.entity.subscription.SubscriptionPayment;
+import com.app.subly.entity.user.User;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import org.junit.jupiter.api.BeforeEach;

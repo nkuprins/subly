@@ -6,9 +6,9 @@ import com.app.subly.dto.form.CreateCategoryForm;
 import com.app.subly.dto.form.CreateProviderForm;
 import com.app.subly.dto.provider.ProviderCategoryResponse;
 import com.app.subly.dto.provider.ProviderRequest;
+import com.app.subly.entity.provider.SubscriptionProvider;
+import com.app.subly.enums.ProviderType;
 import com.app.subly.exception.category.CategoryAlreadyExistsException;
-import com.app.subly.model.provider.ProviderType;
-import com.app.subly.model.provider.SubscriptionProvider;
 import com.app.subly.service.AdminStatisticsService;
 import com.app.subly.service.CategoryService;
 import com.app.subly.service.ProviderService;
@@ -52,7 +52,7 @@ public class AdminController {
         }
 
         try {
-            this.categoryService.addNewCategory(categoryForm.getTitle());
+            this.categoryService.create(categoryForm.getTitle());
         } catch (CategoryAlreadyExistsException ex) {
             attributes.addFlashAttribute("categoryCreationForm", categoryForm);
             attributes.addFlashAttribute("categoryCreationError", "The category with this name already exists");
@@ -64,7 +64,7 @@ public class AdminController {
     @GetMapping("/admin/providers/new")
     public String newProvider(Model model) {
         model.addAttribute("providerForm", new CreateProviderForm());
-        model.addAttribute("categories", categoryService.findCategories());
+        model.addAttribute("categories", categoryService.findAll());
         return "admin-provider-form";
     }
 
@@ -76,7 +76,7 @@ public class AdminController {
             Principal principal) {
 
         if (bindingResult.hasErrors()) {
-            model.addAttribute("categories", categoryService.findCategories());
+            model.addAttribute("categories", categoryService.findAll());
             return "admin-provider-form"; // return the user back on the page
         }
 
@@ -97,7 +97,7 @@ public class AdminController {
     private void fillAdminPageByContent(Model model, boolean providerCreated) {
 
         List<SubscriptionProvider> providers = providerService.findCatalogProviders();
-        List<CategoryResponse> categories = categoryService.findCategories();
+        List<CategoryResponse> categories = categoryService.findAll();
 
         model.addAttribute("providers", providers);
         model.addAttribute("providerCount", providers.size());
@@ -109,7 +109,7 @@ public class AdminController {
         for (CategoryResponse category : categories) {
             categoryReferences.put(category.id(), 0L);
         }
-        for (ProviderCategoryResponse reference : providerService.listGroupedProvidersByCategory()) {
+        for (ProviderCategoryResponse reference : providerService.findProviderCountsByCategory()) {
             categoryReferences.put(reference.categoryId(), reference.categoryCount());
         }
         model.addAttribute("categoryReferences", categoryReferences);

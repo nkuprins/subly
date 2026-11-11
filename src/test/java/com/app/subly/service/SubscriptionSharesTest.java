@@ -10,11 +10,10 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.app.subly.model.subscription.Subscription;
-import com.app.subly.model.subscription.SubscriptionMembership;
-import com.app.subly.model.subscription.SubscriptionStatus;
+import com.app.subly.entity.subscription.Subscription;
+import com.app.subly.entity.subscription.SubscriptionMembership;
+import com.app.subly.enums.SubscriptionStatus;
 import com.app.subly.repository.SubscriptionMembershipRepository;
-import com.app.subly.service.SubscriptionShares.Share;
 import com.app.subly.testdata.TestUsers;
 import java.math.BigDecimal;
 import java.util.List;
@@ -59,8 +58,7 @@ class SubscriptionSharesTest {
     }
 
     private void stubAliceMemberships(List<SubscriptionMembership> memberships) {
-        when(membershipRepository.findByUserUsernameAndSubscriptionStatusOrderBySubscriptionNextPaymentDateAsc(
-                        ALICE, SubscriptionStatus.ACTIVE))
+        when(membershipRepository.findMembershipsOf(ALICE, SubscriptionStatus.ACTIVE))
                 .thenReturn(memberships);
     }
 

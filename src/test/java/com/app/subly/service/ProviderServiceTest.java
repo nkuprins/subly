@@ -13,13 +13,13 @@ import static org.mockito.Mockito.when;
 
 import com.app.subly.dto.provider.ProviderRequest;
 import com.app.subly.dto.provider.ProviderResponse;
+import com.app.subly.entity.category.Category;
+import com.app.subly.entity.provider.SubscriptionProvider;
+import com.app.subly.entity.user.User;
+import com.app.subly.enums.ProviderType;
+import com.app.subly.enums.UserRole;
 import com.app.subly.exception.category.InvalidCategoryException;
 import com.app.subly.exception.provider.ProviderNotFoundException;
-import com.app.subly.model.category.Category;
-import com.app.subly.model.provider.ProviderType;
-import com.app.subly.model.provider.SubscriptionProvider;
-import com.app.subly.model.user.User;
-import com.app.subly.model.user.UserRole;
 import com.app.subly.repository.CategoryRepository;
 import com.app.subly.repository.SubscriptionProviderRepository;
 import com.app.subly.repository.UserRepository;
@@ -66,7 +66,6 @@ class ProviderServiceTest {
 
     @Test
     void create_shouldSaveCatalogProviderWithoutCreator() {
-        stubUser(UserRole.ADMIN);
         stubCategoryAndSave();
 
         ProviderResponse response = service.create(
@@ -114,7 +113,6 @@ class ProviderServiceTest {
 
     @Test
     void create_shouldRejectUnknownCategory() {
-        stubUser(UserRole.USER);
         when(categoryRepository.findById(CATEGORY_ID)).thenReturn(Optional.empty());
         ProviderRequest request = new ProviderRequest(CUSTOM_PROVIDER_NAME, CATEGORY_ID, null);
 

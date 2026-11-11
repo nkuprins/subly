@@ -2,7 +2,7 @@ package com.app.subly.controller;
 
 import com.app.subly.dto.form.CreateProviderForm;
 import com.app.subly.dto.provider.ProviderRequest;
-import com.app.subly.model.provider.ProviderType;
+import com.app.subly.enums.ProviderType;
 import com.app.subly.service.CategoryService;
 import com.app.subly.service.ProviderService;
 import jakarta.validation.Valid;
@@ -24,7 +24,7 @@ public class ProviderPageController {
     @GetMapping("/providers/new")
     public String newProvider(Model model) {
         model.addAttribute("providerForm", new CreateProviderForm());
-        model.addAttribute("categories", categoryService.findCategories());
+        model.addAttribute("categories", categoryService.findAll());
         return "provider-form";
     }
 
@@ -36,7 +36,7 @@ public class ProviderPageController {
             Model model) {
 
         if (bindingResult.hasErrors()) {
-            model.addAttribute("categories", categoryService.findCategories());
+            model.addAttribute("categories", categoryService.findAll());
             return "provider-form";
         }
 

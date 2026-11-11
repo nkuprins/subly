@@ -1,8 +1,7 @@
 package com.app.subly.controller;
 
 import com.app.subly.dto.invitation.InviteRequest;
-import com.app.subly.dto.subscription.ActiveSubscriptionResponse;
-import com.app.subly.dto.subscription.SubscriptionResponse;
+import com.app.subly.dto.subscription.MemberListResponse;
 import com.app.subly.exception.BadRequestException;
 import com.app.subly.exception.ConflictException;
 import com.app.subly.exception.subscription.MembershipActionForbiddenException;
@@ -37,15 +36,11 @@ public class InvitationPageController {
 
     @GetMapping("/subscriptions/{id}/invite")
     public String invitePage(@PathVariable long id, Principal principal, Model model) {
-        var members = membershipService.findMembers(principal.getName(), id);
-        int max = subscriptionService
-                .findActive(principal.getName(), id)
-                .map(SubscriptionResponse::maxParticipants)
-                .orElse(1);
+        MemberListResponse members = membershipService.findMembers(principal.getName(), id);
         model.addAttribute("subscriptionId", id);
         model.addAttribute("pending", invitationService.findPending(principal.getName(), id));
-        model.addAttribute("members", members);
-        model.addAttribute("full", members.size() >= max);
+        model.addAttribute("members", members.members());
+        model.addAttribute("full", members.full());
         return "invitations";
     }
 
@@ -63,10 +58,10 @@ public class InvitationPageController {
 
     @GetMapping("/subscriptions/{id}/participants")
     public String participants(@PathVariable Long id, Principal principal, Model model) {
-        var sub = subscriptionService.findActive(principal.getName(), id).orElse(null);
-        if (sub == null) return "redirect:/subscriptions";
-        model.addAttribute("sub", sub);
-        model.addAttribute("participants", membershipService.findParticipants(principal.getName(), id));
+        model.addAttribute("sub", subscriptionService.getActive(principal.getName(), id));
+        model.addAttribute(
+                "participants",
+                membershipService.findMembers(principal.getName(), id).members());
         return "participants";
     }
 
@@ -121,20 +116,10 @@ public class InvitationPageController {
         result.setStatus(status);
         result.addObject("subscriptionId", id);
         result.addObject("pending", invitationService.findPending(principal.getName(), id));
-        var members = membershipService.findMembers(principal.getName(), id);
-        result.addObject("members", members);
-        result.addObject("full", isSubscriptionFull(principal.getName(), id, members.size()));
+        MemberListResponse members = membershipService.findMembers(principal.getName(), id);
+        result.addObject("members", members.members());
+        result.addObject("full", members.full());
         result.addObject("error", ex.getMessage());
         return result;
-    }
-
-    private boolean isSubscriptionFull(String username, long id, int memberCount) {
-        int max = subscriptionService.findActive(username).stream()
-                .map(ActiveSubscriptionResponse::subscription)
-                .filter(s -> s.id().equals(id))
-                .findFirst()
-                .map(com.app.subly.dto.subscription.SubscriptionResponse::maxParticipants)
-                .orElse(1);
-        return memberCount >= max;
     }
 }

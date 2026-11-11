@@ -5,8 +5,8 @@ import static com.app.subly.testdata.TestSubscriptions.DEFAULT_NEXT_PAYMENT_DATE
 import static com.app.subly.testdata.TestUsers.ALICE;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.app.subly.model.subscription.Subscription;
-import com.app.subly.model.subscription.SubscriptionStatus;
+import com.app.subly.entity.subscription.Subscription;
+import com.app.subly.enums.SubscriptionStatus;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;

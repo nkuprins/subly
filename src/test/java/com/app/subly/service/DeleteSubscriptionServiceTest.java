@@ -4,8 +4,8 @@ import static com.app.subly.testdata.TestUsers.ALICE;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
-import com.app.subly.model.provider.ProviderType;
-import com.app.subly.model.subscription.Subscription;
+import com.app.subly.entity.subscription.Subscription;
+import com.app.subly.enums.ProviderType;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 

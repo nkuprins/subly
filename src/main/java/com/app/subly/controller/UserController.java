@@ -30,7 +30,7 @@ public class UserController {
             @RequestBody @Valid DeleteCurrentUserRequest deleteRequest,
             HttpServletRequest request,
             HttpServletResponse response) {
-        service.deleteUserByUsername(details.getUsername(), deleteRequest.password());
+        service.delete(details.getUsername(), deleteRequest.password());
         logoutCurrentSession(request, response);
         return new OperationResponse("The user account has been deleted");
     }
@@ -41,7 +41,7 @@ public class UserController {
             @Valid @RequestBody ChangePasswordRequest changeRequest,
             HttpServletRequest request,
             HttpServletResponse response) {
-        service.updateUserPassword(details.getUsername(), changeRequest.oldPassword(), changeRequest.newPassword());
+        service.updatePassword(details.getUsername(), changeRequest.oldPassword(), changeRequest.newPassword());
         logoutCurrentSession(request, response);
         return new OperationResponse("The password has been changed successfully. Please log in again.");
     }
@@ -52,7 +52,7 @@ public class UserController {
             @Valid @RequestBody UpdateUserInformationRequest updateRequest,
             HttpServletRequest request,
             HttpServletResponse response) {
-        service.updateUserInformation(details.getUsername(), updateRequest);
+        service.updateInformation(details.getUsername(), updateRequest);
         logoutCurrentSession(request, response);
         return new OperationResponse("The information has been saved. Please log in again to apply changes.");
     }

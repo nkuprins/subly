@@ -1,10 +1,12 @@
 package com.app.subly.service;
 
+import com.app.subly.dto.subscription.MemberListResponse;
 import com.app.subly.dto.subscription.SubscriptionMemberResponse;
+import com.app.subly.entity.subscription.Subscription;
+import com.app.subly.entity.subscription.SubscriptionMembership;
+import com.app.subly.enums.MembershipRole;
 import com.app.subly.exception.subscription.MembershipActionForbiddenException;
 import com.app.subly.exception.subscription.SubscriptionMemberNotFoundException;
-import com.app.subly.model.subscription.MembershipRole;
-import com.app.subly.model.subscription.SubscriptionMembership;
 import com.app.subly.repository.SubscriptionMembershipRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -19,23 +21,18 @@ public class MembershipService {
     private final SubscriptionMembershipRepository membershipRepository;
 
     @Transactional(readOnly = true)
-    public List<SubscriptionMemberResponse> findMembers(String ownerUsername, long subscriptionId) {
-        subscriptionAccess.getOwnedSubscription(ownerUsername, subscriptionId);
-        return membersOf(subscriptionId);
-    }
-
-    @Transactional(readOnly = true)
-    public List<SubscriptionMemberResponse> findParticipants(String username, long subscriptionId) {
-        subscriptionAccess.getMembership(username, subscriptionId);
-        return membersOf(subscriptionId);
+    public MemberListResponse findMembers(String username, long subscriptionId) {
+        Subscription subscription =
+                subscriptionAccess.getMembership(username, subscriptionId).getSubscription();
+        List<SubscriptionMemberResponse> members = membersOf(subscriptionId);
+        boolean full = subscription.isClosedToNewMembers(members.size());
+        return new MemberListResponse(members, full);
     }
 
     @Transactional
     public void leave(String username, long subscriptionId) {
         SubscriptionMembership membership = subscriptionAccess.getMembership(username, subscriptionId);
-        if (membership.getRole() != MembershipRole.MEMBER) {
-            throw new MembershipActionForbiddenException("The owner cannot leave their own subscription");
-        }
+        requireMemberRole(membership, "The owner cannot leave their own subscription");
         membershipRepository.delete(membership);
     }
 
@@ -43,13 +40,16 @@ public class MembershipService {
     public void removeMember(String ownerUsername, long subscriptionId, long membershipId) {
         subscriptionAccess.getOwnedSubscription(ownerUsername, subscriptionId);
         SubscriptionMembership target = membershipRepository
-                .findById(membershipId)
-                .filter(membership -> membership.getSubscription().getId().equals(subscriptionId))
+                .findByIdAndSubscriptionId(membershipId, subscriptionId)
                 .orElseThrow(() -> new SubscriptionMemberNotFoundException(membershipId));
-        if (target.getRole() != MembershipRole.MEMBER) {
-            throw new MembershipActionForbiddenException("The owner cannot be removed from the subscription");
-        }
+        requireMemberRole(target, "The owner cannot be removed from the subscription");
         membershipRepository.delete(target);
+    }
+
+    private static void requireMemberRole(SubscriptionMembership membership, String message) {
+        if (membership.getRole() != MembershipRole.MEMBER) {
+            throw new MembershipActionForbiddenException(message);
+        }
     }
 
     private List<SubscriptionMemberResponse> membersOf(long subscriptionId) {

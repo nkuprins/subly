@@ -3,10 +3,11 @@ package com.app.subly.service;
 import com.app.subly.dto.invitation.InviteRequest;
 import com.app.subly.dto.invitation.InviteResponse;
 import com.app.subly.dto.invitation.ReceivedInvitationResponse;
+import com.app.subly.entity.invitation.PendingInvitation;
+import com.app.subly.entity.subscription.*;
+import com.app.subly.entity.user.User;
 import com.app.subly.exception.invitation.*;
-import com.app.subly.model.invitation.PendingInvitation;
-import com.app.subly.model.subscription.*;
-import com.app.subly.model.user.User;
+import com.app.subly.exception.subscription.SubscriptionNotJoinableException;
 import com.app.subly.repository.PendingInvitationRepository;
 import com.app.subly.repository.SubscriptionMembershipRepository;
 import com.app.subly.repository.SubscriptionRepository;
@@ -28,8 +29,9 @@ public class InvitationService {
     private final SubscriptionRepository subscriptionRepository;
 
     @Transactional
-    public InviteResponse invite(String ownerUsername, long subscriptionId, InviteRequest request) {
+    public void invite(String ownerUsername, long subscriptionId, InviteRequest request) {
         SubscriptionMembership owner = subscriptionAccess.getOwnerMembership(ownerUsername, subscriptionId);
+        requireJoinable(owner.getSubscription());
         String usernameOrEmail = request.usernameOrEmail().strip();
         User invitedUser = userRepository
                 .findByUsername(usernameOrEmail)
@@ -42,9 +44,7 @@ public class InvitationService {
         if (invitationRepository.existsBySubscriptionIdAndUserId(subscriptionId, invitedUser.getId())) {
             throw new AlreadyInvitedException(invitedUser.getUsername(), subscriptionId);
         }
-        PendingInvitation invitation =
-                invitationRepository.save(new PendingInvitation(invitedUser, owner.getSubscription(), owner.getUser()));
-        return InviteResponse.from(invitation);
+        invitationRepository.save(new PendingInvitation(invitedUser, owner.getSubscription(), owner.getUser()));
     }
 
     @Transactional(readOnly = true)
@@ -68,18 +68,7 @@ public class InvitationService {
         Subscription subscription = subscriptionRepository
                 .findLockedById(invitation.getSubscription().getId())
                 .orElseThrow(() -> new InvitationCannotBeAcceptedException("Subscription no longer exists"));
-        if (!subscription.isActive()) {
-            throw new InvitationCannotBeAcceptedException("Subscription is not active");
-        }
-        if (!subscription.isSharable()) {
-            throw new InvitationCannotBeAcceptedException("Subscription is not sharable");
-        }
-        Long subscriptionId = subscription.getId();
-        requireNotMember(subscriptionId, invitation.getUser());
-        long memberCount = membershipRepository.countBySubscriptionId(subscriptionId);
-        if (memberCount >= subscription.getMaxParticipants()) {
-            throw new InvitationCannotBeAcceptedException("Subscription has reached its participant limit");
-        }
+        requireJoinable(subscription);
         SubscriptionMembership membership = SubscriptionMembership.member(invitation.getUser(), subscription);
         membershipRepository.save(membership);
         invitationRepository.delete(invitation);
@@ -93,8 +82,14 @@ public class InvitationService {
 
     @Transactional
     public void deleteInvitationFor(Long userId) {
-        this.invitationRepository.deleteByUser_Id(userId);
-        this.invitationRepository.flush();
+        invitationRepository.deleteByUser_Id(userId);
+        invitationRepository.flush();
+    }
+
+    private void requireJoinable(Subscription subscription) {
+        if (subscription.isClosedToNewMembers(membershipRepository.countBySubscriptionId(subscription.getId()))) {
+            throw new SubscriptionNotJoinableException(subscription.getId());
+        }
     }
 
     private void requireNotMember(long subscriptionId, User user) {

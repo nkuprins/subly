@@ -1,6 +1,6 @@
 package com.app.subly.dto.provider;
 
-import com.app.subly.model.provider.SubscriptionProvider;
+import com.app.subly.entity.provider.SubscriptionProvider;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;

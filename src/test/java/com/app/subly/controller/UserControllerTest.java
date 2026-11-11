@@ -17,9 +17,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.app.subly.dto.user.UpdateUserInformationRequest;
+import com.app.subly.entity.user.User;
 import com.app.subly.exception.user.UserAlreadyExistsException;
 import com.app.subly.exception.user.WrongPasswordException;
-import com.app.subly.model.user.User;
 import com.app.subly.service.UserService;
 import com.app.subly.testutil.JsonBody;
 import org.junit.jupiter.api.Test;
@@ -50,13 +50,13 @@ class UserControllerTest extends AbstractWebMvcTest {
                 .andExpect(jsonPath("$.message").value("The user account has been deleted"))
                 .andExpect(jsonPath("$.error").doesNotExist());
 
-        verify(service).deleteUserByUsername(ALICE, PASSWORD);
+        verify(service).delete(ALICE, PASSWORD);
     }
 
     @Test
     void deleteUser_shouldReturn400WhenPasswordIsWrong() throws Exception {
         WrongPasswordException exception = new WrongPasswordException("The passwords don't match");
-        doThrow(exception).when(service).deleteUserByUsername(ALICE, PASSWORD);
+        doThrow(exception).when(service).delete(ALICE, PASSWORD);
 
         sendJson(delete(DELETE_URL), passwordBody())
                 .andExpect(problem(HttpStatus.BAD_REQUEST, exception))
@@ -79,7 +79,7 @@ class UserControllerTest extends AbstractWebMvcTest {
                 .andExpect(jsonPath("$.message")
                         .value("The password has been changed successfully. Please log in again."));
 
-        verify(service).updateUserPassword(ALICE, PASSWORD, NEW_PASSWORD);
+        verify(service).updatePassword(ALICE, PASSWORD, NEW_PASSWORD);
     }
 
     @Test
@@ -105,7 +105,7 @@ class UserControllerTest extends AbstractWebMvcTest {
         sendJson(patch(INFO_URL).with(csrf()), usernameChange("a".repeat(User.USERNAME_MAX_LENGTH)))
                 .andExpect(status().isOk());
 
-        verify(service).updateUserInformation(eq(ALICE), any(UpdateUserInformationRequest.class));
+        verify(service).updateInformation(eq(ALICE), any(UpdateUserInformationRequest.class));
     }
 
     @Test
@@ -115,13 +115,13 @@ class UserControllerTest extends AbstractWebMvcTest {
                 .andExpect(jsonPath("$.message")
                         .value("The information has been saved. Please log in again to apply changes."));
 
-        verify(service).updateUserInformation(eq(ALICE), any(UpdateUserInformationRequest.class));
+        verify(service).updateInformation(eq(ALICE), any(UpdateUserInformationRequest.class));
     }
 
     @Test
     void updateUserInformation_shouldReturn409WhenEmailAlreadyExists() throws Exception {
         UserAlreadyExistsException exception = new UserAlreadyExistsException("Email already exists");
-        doThrow(exception).when(service).updateUserInformation(eq(ALICE), any(UpdateUserInformationRequest.class));
+        doThrow(exception).when(service).updateInformation(eq(ALICE), any(UpdateUserInformationRequest.class));
 
         sendJson(patch(INFO_URL).with(csrf()), emailChange(email(BOB)))
                 .andExpect(problem(HttpStatus.CONFLICT, exception));

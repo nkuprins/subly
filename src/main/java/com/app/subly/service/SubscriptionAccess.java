@@ -1,17 +1,17 @@
 package com.app.subly.service;
 
+import com.app.subly.entity.subscription.Subscription;
+import com.app.subly.entity.subscription.SubscriptionMembership;
+import com.app.subly.enums.MembershipRole;
 import com.app.subly.exception.subscription.SubscriptionAccessDeniedException;
 import com.app.subly.exception.subscription.SubscriptionNotFoundException;
-import com.app.subly.model.subscription.MembershipRole;
-import com.app.subly.model.subscription.Subscription;
-import com.app.subly.model.subscription.SubscriptionMembership;
 import com.app.subly.repository.SubscriptionMembershipRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-class SubscriptionAccess {
+final class SubscriptionAccess {
 
     private final SubscriptionMembershipRepository membershipRepository;
 
@@ -21,10 +21,6 @@ class SubscriptionAccess {
                 .orElseThrow(() -> new SubscriptionNotFoundException(subscriptionId));
     }
 
-    Subscription getOwnedSubscription(String username, long subscriptionId) {
-        return getOwnerMembership(username, subscriptionId).getSubscription();
-    }
-
     SubscriptionMembership getOwnerMembership(String username, long subscriptionId) {
         SubscriptionMembership owner = membershipRepository
                 .findBySubscriptionIdAndRole(subscriptionId, MembershipRole.OWNER)
@@ -32,11 +28,8 @@ class SubscriptionAccess {
         return requireOwnedBy(owner, username, subscriptionId);
     }
 
-    SubscriptionMembership getOwnerMembershipWithSubscriptionDetails(String username, long subscriptionId) {
-        SubscriptionMembership owner = membershipRepository
-                .findWithSubscriptionDetailsBySubscriptionIdAndRole(subscriptionId, MembershipRole.OWNER)
-                .orElseThrow(() -> new SubscriptionNotFoundException(subscriptionId));
-        return requireOwnedBy(owner, username, subscriptionId);
+    Subscription getOwnedSubscription(String username, long subscriptionId) {
+        return getOwnerMembership(username, subscriptionId).getSubscription();
     }
 
     private static SubscriptionMembership requireOwnedBy(

@@ -4,10 +4,10 @@ import static com.app.subly.testdata.TestUsers.ALICE;
 import static com.app.subly.testdata.TestUsers.BOB;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.app.subly.model.category.Category;
-import com.app.subly.model.provider.ProviderType;
-import com.app.subly.model.provider.SubscriptionProvider;
-import com.app.subly.model.user.User;
+import com.app.subly.entity.category.Category;
+import com.app.subly.entity.provider.SubscriptionProvider;
+import com.app.subly.entity.user.User;
+import com.app.subly.enums.ProviderType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

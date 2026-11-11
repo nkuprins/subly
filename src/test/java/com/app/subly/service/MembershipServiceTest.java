@@ -11,11 +11,10 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.app.subly.dto.subscription.SubscriptionMemberResponse;
-import com.app.subly.exception.subscription.SubscriptionAccessDeniedException;
+import com.app.subly.entity.subscription.Subscription;
+import com.app.subly.entity.subscription.SubscriptionMembership;
+import com.app.subly.enums.MembershipRole;
 import com.app.subly.exception.subscription.SubscriptionNotFoundException;
-import com.app.subly.model.subscription.MembershipRole;
-import com.app.subly.model.subscription.Subscription;
-import com.app.subly.model.subscription.SubscriptionMembership;
 import com.app.subly.repository.SubscriptionMembershipRepository;
 import com.app.subly.testdata.TestUsers;
 import java.math.BigDecimal;
@@ -49,10 +48,10 @@ class MembershipServiceTest {
 
     @Test
     void findMembers_shouldReturnEveryMemberWithTheirShareOfThePrice() {
-        when(subscriptionAccess.getOwnedSubscription(ALICE, SUBSCRIPTION_ID)).thenReturn(subscription);
+        when(subscriptionAccess.getMembership(ALICE, SUBSCRIPTION_ID)).thenReturn(owner);
         stubMembers();
 
-        assertThat(service.findMembers(ALICE, SUBSCRIPTION_ID))
+        assertThat(service.findMembers(ALICE, SUBSCRIPTION_ID).members())
                 .containsExactly(
                         new SubscriptionMemberResponse(1L, ALICE, MembershipRole.OWNER, new BigDecimal("3.34")),
                         new SubscriptionMemberResponse(2L, BOB, MembershipRole.MEMBER, new BigDecimal("3.33")),
@@ -60,31 +59,45 @@ class MembershipServiceTest {
     }
 
     @Test
-    void findMembers_shouldRejectNonOwner() {
-        when(subscriptionAccess.getOwnedSubscription(BOB, SUBSCRIPTION_ID))
-                .thenThrow(new SubscriptionAccessDeniedException(SUBSCRIPTION_ID));
-
-        assertThatThrownBy(() -> service.findMembers(BOB, SUBSCRIPTION_ID))
-                .isInstanceOf(SubscriptionAccessDeniedException.class);
-        verifyNoInteractions(membershipRepository);
-    }
-
-    @Test
-    void findParticipants_shouldReturnEveryMemberToAMember() {
+    void findMembers_shouldReturnEveryMemberToAMember() {
         when(subscriptionAccess.getMembership(BOB, SUBSCRIPTION_ID)).thenReturn(bob);
         stubMembers();
 
-        assertThat(service.findParticipants(BOB, SUBSCRIPTION_ID))
+        assertThat(service.findMembers(BOB, SUBSCRIPTION_ID).members())
                 .extracting(SubscriptionMemberResponse::username)
                 .containsExactly(ALICE, BOB, CAROL);
     }
 
     @Test
-    void findParticipants_shouldRejectUserOutsideTheSubscription() {
+    void findMembers_shouldBeFullWhenEverySeatIsTaken() {
+        stubOwnerOf(aSubscription().withMaxParticipants(3).build());
+        stubMembers();
+
+        assertThat(service.findMembers(ALICE, SUBSCRIPTION_ID).full()).isTrue();
+    }
+
+    @Test
+    void findMembers_shouldNotBeFullWhileASeatIsFree() {
+        stubOwnerOf(aSubscription().withMaxParticipants(4).build());
+        stubMembers();
+
+        assertThat(service.findMembers(ALICE, SUBSCRIPTION_ID).full()).isFalse();
+    }
+
+    @Test
+    void findMembers_shouldBeFullWhenCancelled() {
+        stubOwnerOf(aSubscription().withMaxParticipants(4).cancelled().build());
+        stubMembers();
+
+        assertThat(service.findMembers(ALICE, SUBSCRIPTION_ID).full()).isTrue();
+    }
+
+    @Test
+    void findMembers_shouldRejectUserOutsideTheSubscription() {
         when(subscriptionAccess.getMembership(BOB, SUBSCRIPTION_ID))
                 .thenThrow(new SubscriptionNotFoundException(SUBSCRIPTION_ID));
 
-        assertThatThrownBy(() -> service.findParticipants(BOB, SUBSCRIPTION_ID))
+        assertThatThrownBy(() -> service.findMembers(BOB, SUBSCRIPTION_ID))
                 .isInstanceOf(SubscriptionNotFoundException.class);
         verifyNoInteractions(membershipRepository);
     }
@@ -101,11 +114,17 @@ class MembershipServiceTest {
     @Test
     void removeMember_shouldAllowOwnerToKickMember() {
         when(subscriptionAccess.getOwnedSubscription(ALICE, SUBSCRIPTION_ID)).thenReturn(subscription);
-        when(membershipRepository.findById(bob.getId())).thenReturn(Optional.of(bob));
+        when(membershipRepository.findByIdAndSubscriptionId(bob.getId(), SUBSCRIPTION_ID))
+                .thenReturn(Optional.of(bob));
 
         service.removeMember(ALICE, SUBSCRIPTION_ID, bob.getId());
 
         verify(membershipRepository).delete(bob);
+    }
+
+    private void stubOwnerOf(Subscription ownedSubscription) {
+        when(subscriptionAccess.getMembership(ALICE, SUBSCRIPTION_ID))
+                .thenReturn(SubscriptionMembership.owner(TestUsers.user(ALICE), ownedSubscription));
     }
 
     private void stubMembers() {

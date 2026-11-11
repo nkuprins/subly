@@ -1,8 +1,8 @@
 package com.app.subly.dto.payment;
 
-import com.app.subly.model.subscription.Currency;
-import com.app.subly.model.subscription.Subscription;
-import com.app.subly.model.subscription.SubscriptionPayment;
+import com.app.subly.entity.subscription.Subscription;
+import com.app.subly.entity.subscription.SubscriptionPayment;
+import com.app.subly.enums.Currency;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 

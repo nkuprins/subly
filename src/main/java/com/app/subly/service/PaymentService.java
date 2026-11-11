@@ -1,10 +1,10 @@
 package com.app.subly.service;
 
 import com.app.subly.dto.payment.PaymentResponse;
-import com.app.subly.model.subscription.MembershipRole;
-import com.app.subly.model.subscription.Subscription;
-import com.app.subly.model.subscription.SubscriptionMembership;
-import com.app.subly.model.subscription.SubscriptionStatus;
+import com.app.subly.entity.subscription.Subscription;
+import com.app.subly.entity.subscription.SubscriptionMembership;
+import com.app.subly.enums.MembershipRole;
+import com.app.subly.enums.SubscriptionStatus;
 import com.app.subly.repository.SubscriptionMembershipRepository;
 import com.app.subly.repository.SubscriptionPaymentRepository;
 import java.time.LocalDate;
@@ -37,7 +37,7 @@ public class PaymentService {
             List<SubscriptionMembership> members =
                     membershipRepository.findBySubscriptionIdOrderByIdAsc(subscription.getId());
             paymentRepository.saveAll(subscription.paymentsDue(members));
-            subscription.advancePaymentDate(subscription.getNextPaymentDate().plusDays(1));
+            subscription.moveToNextCycle();
         }
     }
 }

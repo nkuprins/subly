@@ -1,7 +1,7 @@
 package com.app.subly.testdata;
 
-import com.app.subly.model.user.User;
-import com.app.subly.model.user.UserRole;
+import com.app.subly.entity.user.User;
+import com.app.subly.enums.UserRole;
 
 // Idea: use builder like in subscription if benefits
 public final class TestUsers {

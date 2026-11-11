@@ -2,7 +2,7 @@ package com.app.subly.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.app.subly.model.subscription.Currency;
+import com.app.subly.enums.Currency;
 import java.math.BigDecimal;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;

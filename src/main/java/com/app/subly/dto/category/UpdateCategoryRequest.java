@@ -1,6 +1,6 @@
 package com.app.subly.dto.category;
 
-import com.app.subly.model.category.Category;
+import com.app.subly.entity.category.Category;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;

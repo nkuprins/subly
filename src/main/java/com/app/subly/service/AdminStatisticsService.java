@@ -2,17 +2,17 @@ package com.app.subly.service;
 
 import com.app.subly.dto.admin.AdminStatisticsResponse;
 import com.app.subly.dto.admin.PopularServiceResponse;
-import com.app.subly.model.provider.ProviderType;
-import com.app.subly.model.subscription.Currency;
-import com.app.subly.model.subscription.Subscription;
-import com.app.subly.model.subscription.SubscriptionMembership;
-import com.app.subly.model.subscription.SubscriptionStatus;
+import com.app.subly.entity.subscription.Subscription;
+import com.app.subly.entity.subscription.SubscriptionMembership;
+import com.app.subly.enums.Currency;
+import com.app.subly.enums.ProviderType;
+import com.app.subly.enums.SubscriptionStatus;
 import com.app.subly.repository.SubscriptionMembershipRepository;
 import com.app.subly.repository.SubscriptionRepository;
 import com.app.subly.repository.UserRepository;
-import com.app.subly.util.CurrencyConverter;
+import com.app.subly.util.Money;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
+import java.math.MathContext;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -24,8 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class AdminStatisticsService {
-
-    private static final BigDecimal MONTHS_IN_YEAR = BigDecimal.valueOf(12);
 
     private final UserRepository userRepository;
     private final SubscriptionRepository subscriptionRepository;
@@ -80,16 +78,11 @@ public class AdminStatisticsService {
 
             long memberCount = memberCounts.get(subscription.getId());
 
-            BigDecimal personalShare = subscription.shareFor(membership.getRole(), memberCount);
+            Share share = new Share(membership, subscription.shareFor(membership.getRole(), memberCount));
 
-            BigDecimal personalShareEur = CurrencyConverter.toEur(personalShare, subscription.getCurrency());
-
-            BigDecimal paymentsPerYear =
-                    BigDecimal.valueOf(subscription.getBillingCycle().getPaymentsPerYear());
-
-            yearlySpend = yearlySpend.add(personalShareEur.multiply(paymentsPerYear));
+            yearlySpend = yearlySpend.add(share.yearlyIn(Currency.EUR));
         }
 
-        return yearlySpend.divide(MONTHS_IN_YEAR.multiply(BigDecimal.valueOf(totalUsers)), 2, RoundingMode.HALF_UP);
+        return Money.monthlyFromYearly(yearlySpend.divide(BigDecimal.valueOf(totalUsers), MathContext.DECIMAL128));
     }
 }

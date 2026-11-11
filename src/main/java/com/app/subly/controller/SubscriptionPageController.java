@@ -2,7 +2,7 @@ package com.app.subly.controller;
 
 import com.app.subly.dto.subscription.CreateSubscriptionRequest;
 import com.app.subly.dto.subscription.UpdateSubscriptionRequest;
-import com.app.subly.model.subscription.BillingCycle;
+import com.app.subly.enums.BillingCycle;
 import com.app.subly.service.ProviderService;
 import com.app.subly.service.SubscriptionService;
 import java.math.BigDecimal;
@@ -78,10 +78,8 @@ public class SubscriptionPageController {
 
     @GetMapping("/subscriptions/{id}/edit")
     public String editSubscriptions(@PathVariable Long id, Principal principal, Model model) {
-        var sub = subscriptionService.findActive(principal.getName(), id).orElse(null);
-        if (sub == null) return "redirect:/subscriptions";
         model.addAttribute("editId", id);
-        model.addAttribute("sub", sub);
+        model.addAttribute("sub", subscriptionService.getActive(principal.getName(), id));
         return "subscription-form";
     }
 

@@ -3,12 +3,11 @@ package com.app.subly.service;
 import com.app.subly.dto.provider.ProviderCategoryResponse;
 import com.app.subly.dto.provider.ProviderRequest;
 import com.app.subly.dto.provider.ProviderResponse;
+import com.app.subly.entity.category.Category;
+import com.app.subly.entity.provider.SubscriptionProvider;
+import com.app.subly.enums.ProviderType;
 import com.app.subly.exception.category.InvalidCategoryException;
 import com.app.subly.exception.provider.ProviderNotFoundException;
-import com.app.subly.model.category.Category;
-import com.app.subly.model.provider.ProviderType;
-import com.app.subly.model.provider.SubscriptionProvider;
-import com.app.subly.model.user.User;
 import com.app.subly.repository.CategoryRepository;
 import com.app.subly.repository.SubscriptionProviderRepository;
 import com.app.subly.repository.UserRepository;
@@ -21,18 +20,18 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class ProviderService {
 
-    private final SubscriptionProviderRepository subscriptionProviderRepository;
+    private final SubscriptionProviderRepository providerRepository;
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
     public List<SubscriptionProvider> findCatalogProviders() {
-        return subscriptionProviderRepository.findAllByProviderTypeOrderByNameAsc(ProviderType.CATALOG);
+        return providerRepository.findAllByProviderTypeOrderByNameAsc(ProviderType.CATALOG);
     }
 
     @Transactional(readOnly = true)
     public List<ProviderResponse> findVisibleTo(String username) {
-        return subscriptionProviderRepository
+        return providerRepository
                 .findAllByProviderTypeOrCreatedByUsernameOrderByNameAsc(ProviderType.CATALOG, username)
                 .stream()
                 .map(ProviderResponse::from)
@@ -41,19 +40,18 @@ public class ProviderService {
 
     @Transactional
     public ProviderResponse create(String username, ProviderRequest request, ProviderType type) {
-        User user = userRepository.getByUsername(username);
         Category category = findCategory(request.categoryId());
         String name = request.name().strip();
         SubscriptionProvider provider = (type == ProviderType.CATALOG)
                 ? SubscriptionProvider.catalog(name, category)
-                : SubscriptionProvider.custom(name, category, user);
+                : SubscriptionProvider.custom(name, category, userRepository.getByUsername(username));
         provider.setLogoPath(normalizeLogoPath(request.logoPath()));
-        return ProviderResponse.from(subscriptionProviderRepository.save(provider));
+        return ProviderResponse.from(providerRepository.save(provider));
     }
 
     @Transactional
     public ProviderResponse updateCustomProvider(String username, long providerId, ProviderRequest request) {
-        SubscriptionProvider provider = subscriptionProviderRepository
+        SubscriptionProvider provider = providerRepository
                 .findByIdAndCreatedByUsername(providerId, username)
                 .orElseThrow(() -> new ProviderNotFoundException(providerId));
         provider.setCategory(findCategory(request.categoryId()));
@@ -64,19 +62,18 @@ public class ProviderService {
 
     @Transactional
     public void deleteAllProvidersCreatedBy(String username) {
-        List<ProviderResponse> result = this.findVisibleTo(username);
+        List<ProviderResponse> result = findVisibleTo(username);
         if (result.isEmpty()) {
             return;
         }
 
         for (ProviderResponse response : result) {
-            if (response.providerType().equals(ProviderType.CUSTOM))
-                this.subscriptionProviderRepository.deleteById(response.id());
+            if (response.providerType().equals(ProviderType.CUSTOM)) providerRepository.deleteById(response.id());
         }
     }
 
-    public List<ProviderCategoryResponse> listGroupedProvidersByCategory() {
-        return this.subscriptionProviderRepository.getAllProvidersCountGroupedByCategory();
+    public List<ProviderCategoryResponse> findProviderCountsByCategory() {
+        return providerRepository.getAllProvidersCountGroupedByCategory();
     }
 
     private Category findCategory(long categoryId) {

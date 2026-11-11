@@ -1,6 +1,6 @@
 package com.app.subly.dto.form;
 
-import com.app.subly.model.provider.SubscriptionProvider;
+import com.app.subly.entity.provider.SubscriptionProvider;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -18,14 +18,14 @@ public class CreateProviderForm {
     @Size(
             max = SubscriptionProvider.NAME_MAX_LENGTH,
             message = "The name must not larger than " + SubscriptionProvider.NAME_MAX_LENGTH + " symbols.")
-    String name;
+    private String name;
 
     @NotNull(message = "Please choose a valid category")
     @Positive(message = "The id must be positive")
-    Long categoryId;
+    private Long categoryId;
 
     @Size(
             max = SubscriptionProvider.LOGO_PATH_MAX_LENGTH,
             message = "The logo path must not larger than " + SubscriptionProvider.LOGO_PATH_MAX_LENGTH + " symbols.")
-    String logoPath;
+    private String logoPath;
 }
