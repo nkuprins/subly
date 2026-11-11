@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 public class PaymentDateScheduler {
 
     private final UserRepository userRepository;
-    private final SubscriptionService subscriptionService;
+    private final PaymentService paymentService;
     private final Clock clock;
     private final Map<ZoneId, LocalDate> processedDates = new ConcurrentHashMap<>();
 
@@ -28,7 +28,7 @@ public class PaymentDateScheduler {
         for (ZoneId zone : userRepository.findDistinctTimeZones()) {
             LocalDate today = LocalDate.now(clock.withZone(zone));
             if (!today.equals(processedDates.get(zone))) {
-                subscriptionService.advancePaymentDates(zone, today);
+                paymentService.advancePaymentDates(zone, today);
                 processedDates.put(zone, today);
             }
         }

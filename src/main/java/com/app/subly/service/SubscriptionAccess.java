@@ -15,6 +15,12 @@ class SubscriptionAccess {
 
     private final SubscriptionMembershipRepository membershipRepository;
 
+    SubscriptionMembership getMembership(String username, long subscriptionId) {
+        return membershipRepository
+                .findBySubscriptionIdAndUserUsername(subscriptionId, username)
+                .orElseThrow(() -> new SubscriptionNotFoundException(subscriptionId));
+    }
+
     Subscription getOwnedSubscription(String username, long subscriptionId) {
         return getOwnerMembership(username, subscriptionId).getSubscription();
     }

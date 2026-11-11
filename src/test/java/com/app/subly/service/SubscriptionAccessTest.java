@@ -35,6 +35,24 @@ class SubscriptionAccessTest {
             SubscriptionMembership.owner(TestUsers.user(ALICE), aSubscription().build());
 
     @Test
+    void getMembership_shouldReturnTheUsersMembership() {
+        when(membershipRepository.findBySubscriptionIdAndUserUsername(SUBSCRIPTION_ID, ALICE))
+                .thenReturn(Optional.of(ownerRow));
+
+        assertThat(access.getMembership(ALICE, SUBSCRIPTION_ID)).isSameAs(ownerRow);
+    }
+
+    @Test
+    void getMembership_shouldRejectUserOutsideTheSubscription() {
+        when(membershipRepository.findBySubscriptionIdAndUserUsername(SUBSCRIPTION_ID, BOB))
+                .thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> access.getMembership(BOB, SUBSCRIPTION_ID))
+                .isInstanceOf(SubscriptionNotFoundException.class)
+                .hasMessageContaining(String.valueOf(SUBSCRIPTION_ID));
+    }
+
+    @Test
     void getOwnedSubscription_shouldReturnTheSubscriptionOfTheOwner() {
         stubOwnerRow();
 
