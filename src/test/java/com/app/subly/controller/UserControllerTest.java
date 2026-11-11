@@ -11,7 +11,6 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -38,7 +37,6 @@ class UserControllerTest extends AbstractWebMvcTest {
     static final String DELETE_URL = "/users/delete/me";
     static final String PASSWORD_URL = "/users/update/password/me";
     static final String INFO_URL = "/users/update/info/me";
-    static final String LOGOUT_URL = "/users/logout/me";
     static final String PASSWORD = "largepassword123456";
     static final String NEW_PASSWORD = "superlargepassword123456";
 
@@ -130,13 +128,6 @@ class UserControllerTest extends AbstractWebMvcTest {
     }
 
     @Test
-    void logoutCurrentUser_shouldReturn204() throws Exception {
-        mockMvc.perform(post(LOGOUT_URL))
-                .andExpect(status().isNoContent())
-                .andExpect(content().string(""));
-    }
-
-    @Test
     @WithAnonymousUser
     void deleteUser_shouldReturn401ForAnonymousUser() throws Exception {
         sendJson(delete(DELETE_URL), passwordBody()).andExpect(status().isUnauthorized());
@@ -152,12 +143,6 @@ class UserControllerTest extends AbstractWebMvcTest {
     @WithAnonymousUser
     void updateUserInformation_shouldReturn401ForAnonymousUser() throws Exception {
         sendJson(patch(INFO_URL).with(csrf()), usernameChange("alice_new")).andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    @WithAnonymousUser
-    void logoutCurrentUser_shouldReturn401ForAnonymousUser() throws Exception {
-        mockMvc.perform(post(LOGOUT_URL)).andExpect(status().isUnauthorized());
     }
 
     private static JsonBody passwordBody() {

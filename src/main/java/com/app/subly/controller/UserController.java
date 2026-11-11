@@ -9,7 +9,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -56,12 +55,6 @@ public class UserController {
         service.updateUserInformation(details.getUsername(), updateRequest);
         logoutCurrentSession(request, response);
         return new OperationResponse("The information has been saved. Please log in again to apply changes.");
-    }
-
-    @PostMapping("/logout/me")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void logoutCurrentUser(HttpServletRequest request, HttpServletResponse response) {
-        logoutCurrentSession(request, response);
     }
 
     private void logoutCurrentSession(HttpServletRequest request, HttpServletResponse response) {

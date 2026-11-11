@@ -15,25 +15,16 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf((csrf) -> csrf.ignoringRequestMatchers("/api/**", "/users/delete/me", "/", "/users/logout/me"))
+        http.csrf((csrf) -> csrf.ignoringRequestMatchers("/api/**", "/users/delete/me", "/"))
                 .authorizeHttpRequests((authorize) -> {
                     authorize
                             .requestMatchers("/users/register")
                             .permitAll()
                             .requestMatchers("/users/**")
                             .authenticated()
-                            .requestMatchers("/api/category/listAll")
-                            .authenticated()
                             .requestMatchers("/api/category/**", "/admin", "/admin/**")
                             .hasRole("ADMIN")
-                            .requestMatchers(
-                                    "/api/subscriptions",
-                                    "/api/subscriptions/**",
-                                    "/dashboard",
-                                    "/",
-                                    "/api/invitations",
-                                    "/api/invitations/**",
-                                    "/edit/me")
+                            .requestMatchers("/dashboard", "/", "/edit/me")
                             .authenticated();
                     authorize.anyRequest().permitAll();
                 })
