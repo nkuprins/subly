@@ -33,7 +33,9 @@ public class SecurityConfig {
                                     "/api/invitations",
                                     "/api/invitations/**",
                                     "/edit/me",
-                                    "/subscriptions/**", "/providers/**", "/payments")
+                                    "/subscriptions/**",
+                                    "/providers/**",
+                                    "/payments")
                             .authenticated()
                             .requestMatchers("/api/category/**", "/admin", "/admin/**")
                             .hasRole("ADMIN");
