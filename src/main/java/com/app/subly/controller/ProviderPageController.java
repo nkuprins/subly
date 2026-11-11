@@ -14,6 +14,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @RequiredArgsConstructor
@@ -24,7 +25,7 @@ public class ProviderPageController {
     @GetMapping("/providers/new")
     public String newProvider(Model model) {
         model.addAttribute("providerForm", new CreateProviderForm());
-        model.addAttribute("categories", categoryService.getAllCategories());
+        model.addAttribute("categories", categoryService.findCategories());
         return "provider-form";
     }
 
@@ -36,7 +37,7 @@ public class ProviderPageController {
             Model model) {
 
         if (bindingResult.hasErrors()) {
-            model.addAttribute("categories", categoryService.getAllCategories());
+            model.addAttribute("categories", categoryService.findCategories());
             return "provider-form";
         }
 

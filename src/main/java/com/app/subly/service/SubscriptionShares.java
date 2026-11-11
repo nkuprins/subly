@@ -21,7 +21,7 @@ class SubscriptionShares {
     private final SubscriptionMembershipRepository membershipRepository;
 
     // How much the user pays for each of their subscriptions with the given status.
-    List<Share> load(String username, SubscriptionStatus status) {
+    List<Share> forUser(String username, SubscriptionStatus status) {
         // The subscriptions the user is in, and their role in each one.
         List<SubscriptionMembership> memberships =
                 membershipRepository.findByUserUsernameAndSubscriptionStatusOrderBySubscriptionNextPaymentDateAsc(

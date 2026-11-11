@@ -2,7 +2,6 @@ package com.app.subly.controller;
 
 import com.app.subly.dto.subscription.CreateSubscriptionRequest;
 import com.app.subly.dto.subscription.UpdateSubscriptionRequest;
-import com.app.subly.dto.subscription.VisibleSubscriptionResponse;
 import com.app.subly.model.subscription.BillingCycle;
 import com.app.subly.service.ProviderService;
 import com.app.subly.service.SubscriptionService;
@@ -30,7 +29,7 @@ public class SubscriptionPageController {
     @GetMapping("/subscriptions")
     public String subscriptions(Principal principal, Model model, @RequestParam(defaultValue = "active") String tab) {
         String username = principal.getName();
-        var active = subscriptionService.findCurrent(username);
+        var active = subscriptionService.findActive(username);
         var cancelled = subscriptionService.findCancelled(username);
         boolean showCancelled = CANCELLED_TAB.equals(tab);
 
@@ -38,7 +37,6 @@ public class SubscriptionPageController {
         model.addAttribute("subscriptions", showCancelled ? cancelled : active);
         model.addAttribute("activeCount", active.size());
         model.addAttribute("cancelledCount", cancelled.size());
-        model.addAttribute("shares", subscriptionService.currentShares(username));
         return "subscriptions";
     }
 
@@ -80,11 +78,7 @@ public class SubscriptionPageController {
 
     @GetMapping("/subscriptions/{id}/edit")
     public String editSubscriptions(@PathVariable Long id, Principal principal, Model model) {
-        var sub = subscriptionService.findCurrent(principal.getName()).stream()
-                .map(VisibleSubscriptionResponse::subscription)
-                .filter(s -> s.id().equals(id))
-                .findFirst()
-                .orElse(null);
+        var sub = subscriptionService.findActive(principal.getName(), id).orElse(null);
         if (sub == null) return "redirect:/subscriptions";
         model.addAttribute("editId", id);
         model.addAttribute("sub", sub);

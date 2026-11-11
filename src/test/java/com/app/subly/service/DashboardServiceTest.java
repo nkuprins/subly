@@ -91,11 +91,11 @@ class DashboardServiceTest {
     }
 
     private void stubActiveShares(List<Share> shares) {
-        when(subscriptionShares.load(ALICE, SubscriptionStatus.ACTIVE)).thenReturn(shares);
+        when(subscriptionShares.forUser(ALICE, SubscriptionStatus.ACTIVE)).thenReturn(shares);
     }
 
     private void stubCancelledShares(List<Share> shares) {
-        when(subscriptionShares.load(ALICE, SubscriptionStatus.CANCELLED)).thenReturn(shares);
+        when(subscriptionShares.forUser(ALICE, SubscriptionStatus.CANCELLED)).thenReturn(shares);
     }
 
     private static DashboardSummaryResponse summary(String monthly, String yearly, int count) {

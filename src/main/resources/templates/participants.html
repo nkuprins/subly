@@ -26,7 +26,7 @@
             <tr th:each="p : ${participants}">
                 <td th:text="${p.username()}"></td>
                 <td th:text="${p.role()}"></td>
-                <td th:text="|${shares[p.username()]} ${sub.currency}|"></td>
+                <td th:text="|${p.share()} ${sub.currency}|"></td>
             </tr>
             </tbody>
         </table>
