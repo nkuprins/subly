@@ -29,7 +29,7 @@ public class InvitationService {
     private final SubscriptionRepository subscriptionRepository;
 
     @Transactional
-    public InviteResponse invite(String ownerUsername, long subscriptionId, InviteRequest request) {
+    public void invite(String ownerUsername, long subscriptionId, InviteRequest request) {
         SubscriptionMembership owner = subscriptionAccess.getOwnerMembership(ownerUsername, subscriptionId);
         requireJoinable(owner.getSubscription());
         String usernameOrEmail = request.usernameOrEmail().strip();
@@ -44,9 +44,7 @@ public class InvitationService {
         if (invitationRepository.existsBySubscriptionIdAndUserId(subscriptionId, invitedUser.getId())) {
             throw new AlreadyInvitedException(invitedUser.getUsername(), subscriptionId);
         }
-        PendingInvitation invitation =
-                invitationRepository.save(new PendingInvitation(invitedUser, owner.getSubscription(), owner.getUser()));
-        return InviteResponse.from(invitation);
+        invitationRepository.save(new PendingInvitation(invitedUser, owner.getSubscription(), owner.getUser()));
     }
 
     @Transactional(readOnly = true)

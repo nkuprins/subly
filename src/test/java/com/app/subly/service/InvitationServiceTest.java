@@ -6,7 +6,6 @@ import static com.app.subly.testdata.TestUsers.ALICE;
 import static com.app.subly.testdata.TestUsers.BOB;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -88,7 +87,6 @@ class InvitationServiceTest {
         stubOwnerOf(subscription);
         when(membershipRepository.countBySubscriptionId(SUBSCRIPTION_ID)).thenReturn(MAX_PARTICIPANTS - 1L);
         when(userRepository.findByUsername(ALICE)).thenReturn(Optional.of(invitee));
-        when(invitationRepository.save(any(PendingInvitation.class))).thenAnswer(returnsFirstArg());
 
         service.invite(BOB, SUBSCRIPTION_ID, new InviteRequest(ALICE));
 
