@@ -28,6 +28,7 @@ public class PageController {
         String username = principal.getName();
         DashboardResponse dashboard = dashboardService.getDashboard(username, currency);
 
+        model.addAttribute("currencies", Currency.values());
         model.addAttribute("selectedCurrency", currency);
         model.addAttribute("summary", dashboard.summary());
         model.addAttribute("individualSummary", dashboard.individualSummary());
