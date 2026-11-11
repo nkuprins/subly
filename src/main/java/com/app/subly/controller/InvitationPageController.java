@@ -38,7 +38,8 @@ public class InvitationPageController {
     @GetMapping("/subscriptions/{id}/invite")
     public String invitePage(@PathVariable long id, Principal principal, Model model) {
         var members = membershipService.findMembers(principal.getName(), id);
-        int max = subscriptionService.findActive(principal.getName(), id)
+        int max = subscriptionService
+                .findActive(principal.getName(), id)
                 .map(SubscriptionResponse::maxParticipants)
                 .orElse(1);
         model.addAttribute("subscriptionId", id);
