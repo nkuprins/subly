@@ -34,15 +34,15 @@ class SubscriptionSharesTest {
     SubscriptionShares subscriptionShares;
 
     @Test
-    void load_shouldReturnEmptyWithoutLoadingMembersWhenUserHasNoSubscriptions() {
+    void forUser_shouldReturnEmptyWithoutLoadingMembersWhenUserHasNoSubscriptions() {
         stubAliceMemberships(List.of());
 
-        assertThat(subscriptionShares.load(ALICE, SubscriptionStatus.ACTIVE)).isEmpty();
+        assertThat(subscriptionShares.forUser(ALICE, SubscriptionStatus.ACTIVE)).isEmpty();
         verify(membershipRepository, never()).findBySubscriptionIdIn(any());
     }
 
     @Test
-    void load_shouldSplitEachSubscriptionByItsOwnMembers() {
+    void forUser_shouldSplitEachSubscriptionByItsOwnMembers() {
         Subscription shared = subscription(1L, "10.00");
         Subscription solo = subscription(2L, "6.00");
         SubscriptionMembership aliceInShared = SubscriptionMembership.member(TestUsers.user(ALICE), shared);
@@ -52,7 +52,7 @@ class SubscriptionSharesTest {
         when(membershipRepository.findBySubscriptionIdIn(List.of(1L, 2L)))
                 .thenReturn(List.of(aliceInShared, bobOwnsShared, aliceOwnsSolo));
 
-        assertThat(subscriptionShares.load(ALICE, SubscriptionStatus.ACTIVE))
+        assertThat(subscriptionShares.forUser(ALICE, SubscriptionStatus.ACTIVE))
                 .extracting(Share::membership, Share::amount)
                 .containsExactly(
                         tuple(aliceInShared, new BigDecimal("5.00")), tuple(aliceOwnsSolo, new BigDecimal("6.00")));

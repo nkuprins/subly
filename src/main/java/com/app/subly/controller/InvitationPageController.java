@@ -1,8 +1,9 @@
 package com.app.subly.controller;
 
 import com.app.subly.dto.invitation.InviteRequest;
-import com.app.subly.dto.subscription.VisibleSubscriptionResponse;
+import com.app.subly.dto.subscription.SubscriptionResponse;
 import com.app.subly.service.InvitationService;
+import com.app.subly.service.MembershipService;
 import com.app.subly.service.SubscriptionService;
 import java.security.Principal;
 import org.springframework.stereotype.Controller;
@@ -17,21 +18,24 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class InvitationPageController {
     private final InvitationService invitationService;
     private final SubscriptionService subscriptionService;
+    private final MembershipService membershipService;
 
-    public InvitationPageController(InvitationService invitationService, SubscriptionService subscriptionService) {
+    public InvitationPageController(
+            InvitationService invitationService,
+            SubscriptionService subscriptionService,
+            MembershipService membershipService) {
         this.invitationService = invitationService;
         this.subscriptionService = subscriptionService;
+        this.membershipService = membershipService;
     }
 
     @GetMapping("/subscriptions/{id}/invite")
     public String invitePage(@PathVariable long id, Principal principal, Model model) {
         try {
-            var members = subscriptionService.findMembers(principal.getName(), id);
-            int max = subscriptionService.findCurrent(principal.getName()).stream()
-                    .map(com.app.subly.dto.subscription.VisibleSubscriptionResponse::subscription)
-                    .filter(s -> s.id().equals(id))
-                    .findFirst()
-                    .map(com.app.subly.dto.subscription.SubscriptionResponse::maxParticipants)
+            var members = membershipService.findMembers(principal.getName(), id);
+            int max = subscriptionService
+                    .findActive(principal.getName(), id)
+                    .map(SubscriptionResponse::maxParticipants)
                     .orElse(1);
             model.addAttribute("subscriptionId", id);
             model.addAttribute("pending", invitationService.findPending(principal.getName(), id));
@@ -52,7 +56,7 @@ public class InvitationPageController {
         } catch (RuntimeException ex) {
             model.addAttribute("subscriptionId", id);
             model.addAttribute("pending", invitationService.findPending(principal.getName(), id));
-            model.addAttribute("members", subscriptionService.findMembers(principal.getName(), id));
+            model.addAttribute("members", membershipService.findMembers(principal.getName(), id));
             model.addAttribute("error", ex.getMessage());
             return "invitations";
         }
@@ -60,22 +64,17 @@ public class InvitationPageController {
 
     @GetMapping("/subscriptions/{id}/participants")
     public String participants(@PathVariable Long id, Principal principal, Model model) {
-        var sub = subscriptionService.findCurrent(principal.getName()).stream()
-                .map(VisibleSubscriptionResponse::subscription)
-                .filter(s -> s.id().equals(id))
-                .findFirst()
-                .orElse(null);
+        var sub = subscriptionService.findActive(principal.getName(), id).orElse(null);
         if (sub == null) return "redirect:/subscriptions";
         model.addAttribute("sub", sub);
-        model.addAttribute("participants", subscriptionService.findParticipants(principal.getName(), id));
-        model.addAttribute("shares", subscriptionService.participantShares(principal.getName(), id));
+        model.addAttribute("participants", membershipService.findParticipants(principal.getName(), id));
         return "participants";
     }
 
     @PostMapping("/subscriptions/{id}/leave")
     public String leaveSubscription(@PathVariable Long id, Principal principal, RedirectAttributes redirectAttributes) {
         try {
-            subscriptionService.leave(principal.getName(), id);
+            membershipService.leave(principal.getName(), id);
             redirectAttributes.addFlashAttribute("notice", "You have left the group.");
         } catch (RuntimeException ex) {
             redirectAttributes.addFlashAttribute("notice", ex.getMessage());
@@ -90,7 +89,7 @@ public class InvitationPageController {
             Principal principal,
             RedirectAttributes redirectAttributes) {
         try {
-            subscriptionService.removeMember(principal.getName(), id, membershipId);
+            membershipService.removeMember(principal.getName(), id, membershipId);
             redirectAttributes.addFlashAttribute("notice", "Member removed successfully.");
         } catch (RuntimeException ex) {
             redirectAttributes.addFlashAttribute("notice", ex.getMessage());

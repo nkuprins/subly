@@ -50,7 +50,7 @@
                     <span class="pill pill-trial" th:if="${item.subscription.freeTrial}">Free trial</span>
                 </td>
                 <td th:text="${item.subscription.price}"></td>
-                <td th:text="${shares[item.subscription.id]}"></td>
+                <td th:text="${item.share}"></td>
                 <td th:text="${item.subscription.currency}"></td>
                 <td>
             <span class="pill"
