@@ -1,9 +1,11 @@
 package com.app.subly.service;
 
+import com.app.subly.model.subscription.Currency;
 import com.app.subly.model.subscription.Subscription;
 import com.app.subly.model.subscription.SubscriptionMembership;
 import com.app.subly.model.subscription.SubscriptionStatus;
 import com.app.subly.repository.SubscriptionMembershipRepository;
+import com.app.subly.util.CurrencyConverter;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -56,6 +58,18 @@ class SubscriptionShares {
 
         public BigDecimal savedUntil(LocalDate today) {
             return amount.multiply(BigDecimal.valueOf(subscription().skippedPaymentsUntil(today)));
+        }
+
+        public BigDecimal savedUntil(LocalDate today, Currency target) {
+            return toCurrency(savedUntil(today), target);
+        }
+
+        public BigDecimal amountIn(Currency target) {
+            return toCurrency(amount, target);
+        }
+
+        private BigDecimal toCurrency(BigDecimal value, Currency target) {
+            return CurrencyConverter.convert(value, subscription().getCurrency(), target);
         }
     }
 }

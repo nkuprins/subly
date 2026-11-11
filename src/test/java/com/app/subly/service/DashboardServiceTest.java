@@ -1,6 +1,5 @@
 package com.app.subly.service;
 
-import static com.app.subly.testdata.TestClock.DEFAULT_ZONE;
 import static com.app.subly.testdata.TestClock.TODAY;
 import static com.app.subly.testdata.TestClock.TOKYO;
 import static com.app.subly.testdata.TestClock.TOKYO_TODAY;
@@ -10,9 +9,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 import com.app.subly.dto.MoneyResponse;
+import com.app.subly.dto.dashboard.CategorySpendingResponse;
+import com.app.subly.dto.dashboard.DashboardResponse;
 import com.app.subly.dto.dashboard.DashboardSummaryResponse;
 import com.app.subly.dto.dashboard.UpcomingPaymentResponse;
-import com.app.subly.model.provider.SubscriptionProvider;
+import com.app.subly.model.category.Category;
 import com.app.subly.model.subscription.BillingCycle;
 import com.app.subly.model.subscription.Currency;
 import com.app.subly.model.subscription.Subscription;
@@ -27,7 +28,6 @@ import com.app.subly.testdata.TestSubscriptions;
 import com.app.subly.testdata.TestUsers;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -44,166 +44,187 @@ class DashboardServiceTest {
     @Mock
     UserRepository userRepository;
 
+    User alice;
+
     DashboardService service;
 
     @BeforeEach
     void setUp() {
+        alice = TestUsers.user(ALICE);
+        when(userRepository.getByUsername(ALICE)).thenReturn(alice);
+        stubActiveShares(List.of());
+        stubCancelledShares(List.of());
         service = new DashboardService(subscriptionShares, userRepository, TestClock.CLOCK);
     }
 
     @Test
-    void getSummary_shouldReturnZeroWhenUserHasNoSubscriptions() {
-        stubActiveShares(List.of());
+    void getDashboard_shouldReturnEmptyDashboardWhenUserHasNoSubscriptions() {
+        DashboardResponse result = service.getDashboard(ALICE, Currency.EUR);
 
-        DashboardSummaryResponse result = service.getSummary(ALICE);
-
-        assertThat(result.monthlyTotal()).isEqualByComparingTo("0.00");
-        assertThat(result.yearlyTotal()).isEqualByComparingTo("0.00");
-        assertThat(result.currency()).isEqualTo(Currency.EUR);
+        DashboardSummaryResponse zero = summary("0.00", "0.00", Currency.EUR, 0);
+        assertThat(result.summary()).isEqualTo(zero);
+        assertThat(result.individualSummary()).isEqualTo(zero);
+        assertThat(result.sharedSummary()).isEqualTo(zero);
+        assertThat(result.upcoming()).isEmpty();
+        assertThat(result.categories()).isEmpty();
+        assertThat(result.savings()).isEqualTo(money("0.00", Currency.EUR));
     }
 
     @Test
-    void getSummary_shouldConvertCurrenciesIntoMonthlyAndYearlyTotals() {
+    void getDashboard_shouldConvertCurrenciesIntoMonthlyAndYearlyTotals() {
         stubActiveShares(List.of(
-                fullShare(subscription(1L, "Netflix").withPrice("12.00")),
-                fullShare(subscription(2L, "YouTube").withPrice("10.00").withCurrency(Currency.USD)),
-                fullShare(subscription(3L, "Gym")
+                share(aSubscription().withPrice("12.00")),
+                share(aSubscription().withPrice("10.00").withCurrency(Currency.USD)),
+                share(aSubscription()
                         .withPrice("100.00")
                         .withBillingCycle(BillingCycle.YEARLY)
                         .withCurrency(Currency.GBP))));
 
-        DashboardSummaryResponse result = service.getSummary(ALICE);
-
-        assertThat(result.monthlyTotal()).isEqualByComparingTo("30.90");
-        assertThat(result.yearlyTotal()).isEqualByComparingTo("370.80");
-        assertThat(result.currency()).isEqualTo(Currency.EUR);
+        assertThat(service.getDashboard(ALICE, Currency.EUR).summary())
+                .isEqualTo(summary("30.90", "370.80", Currency.EUR, 3));
     }
 
     @Test
-    void getSummary_shouldIncludeFreeTrialAtItsFuturePrice() {
-        stubActiveShares(
-                List.of(fullShare(subscription(4L, "Trial").withPrice("20.00").withFreeTrial())));
+    void getDashboard_shouldIncludeFreeTrialAtItsFuturePrice() {
+        stubActiveShares(List.of(share(aSubscription().withPrice("20.00").withFreeTrial())));
 
-        DashboardSummaryResponse result = service.getSummary(ALICE);
-
-        assertThat(result.monthlyTotal()).isEqualByComparingTo("20.00");
-        assertThat(result.yearlyTotal()).isEqualByComparingTo("240.00");
+        assertThat(service.getDashboard(ALICE, Currency.EUR).summary())
+                .isEqualTo(summary("20.00", "240.00", Currency.EUR, 1));
     }
 
     @Test
-    void getSummary_shouldRoundOnlyTheFinalMonthlyAverageOfYearlySubscription() {
+    void getDashboard_shouldRoundOnlyTheFinalMonthlyAverageOfYearlySubscription() {
+        stubActiveShares(List.of(share(aSubscription().withPrice("100.00").withBillingCycle(BillingCycle.YEARLY))));
+
+        assertThat(service.getDashboard(ALICE, Currency.EUR).summary())
+                .isEqualTo(summary("8.33", "100.00", Currency.EUR, 1));
+    }
+
+    @Test
+    void getDashboard_shouldUseTheUsersShareInsteadOfThePrice() {
+        stubActiveShares(List.of(share(aSubscription().withPrice("10.00"), "3.34")));
+
+        assertThat(service.getDashboard(ALICE, Currency.EUR).summary())
+                .isEqualTo(summary("3.34", "40.08", Currency.EUR, 1));
+    }
+
+    @Test
+    void getDashboard_shouldConvertTotalsIntoTargetCurrency() {
+        stubActiveShares(List.of(share(aSubscription().withPrice("8.90"))));
+
+        assertThat(service.getDashboard(ALICE, Currency.USD).summary())
+                .isEqualTo(summary("10.00", "120.00", Currency.USD, 1));
+    }
+
+    @Test
+    void getDashboard_shouldSplitSummaryIntoIndividualAndSharedSubscriptions() {
         stubActiveShares(List.of(
-                fullShare(subscription(5L, "Yearly").withPrice("100.00").withBillingCycle(BillingCycle.YEARLY))));
+                share(aSubscription().withPrice("12.00")),
+                share(aSubscription().withPrice("10.00").withMaxParticipants(2), "5.00")));
 
-        DashboardSummaryResponse result = service.getSummary(ALICE);
+        DashboardResponse result = service.getDashboard(ALICE, Currency.EUR);
 
-        assertThat(result.monthlyTotal()).isEqualByComparingTo("8.33");
-        assertThat(result.yearlyTotal()).isEqualByComparingTo("100.00");
+        assertThat(result.individualSummary()).isEqualTo(summary("12.00", "144.00", Currency.EUR, 1));
+        assertThat(result.sharedSummary()).isEqualTo(summary("5.00", "60.00", Currency.EUR, 1));
+        assertThat(result.summary()).isEqualTo(summary("17.00", "204.00", Currency.EUR, 2));
     }
 
     @Test
-    void getSummary_shouldUseTheUsersShareInsteadOfThePrice() {
-        stubActiveShares(List.of(share(subscription(6L, "Shared").withPrice("10.00"), "3.34")));
-
-        DashboardSummaryResponse result = service.getSummary(ALICE);
-
-        assertThat(result.monthlyTotal()).isEqualByComparingTo("3.34");
-        assertThat(result.yearlyTotal()).isEqualByComparingTo("40.08");
-    }
-
-    @Test
-    void getUpcomingPayments_shouldIncludeTodayAndDayThirtyButNotPastOrDayThirtyOne() {
+    void getDashboard_shouldListUpcomingPaymentsFromTodayToDayThirty() {
         stubActiveShares(List.of(
-                fullShare(subscription(10L, "Thirty").withNextPaymentDate(TODAY.plusDays(30))),
-                fullShare(subscription(11L, "Later").withNextPaymentDate(TODAY.plusDays(31))),
-                fullShare(subscription(8L, "Past").withNextPaymentDate(TODAY.minusDays(1))),
-                fullShare(subscription(9L, "Today").withNextPaymentDate(TODAY))));
-        stubUserIn(DEFAULT_ZONE);
+                share(aSubscription().withNextPaymentDate(TODAY.minusDays(1))),
+                share(aSubscription().withNextPaymentDate(TODAY)),
+                share(aSubscription().withNextPaymentDate(TODAY.plusDays(30))),
+                share(aSubscription().withNextPaymentDate(TODAY.plusDays(31)))));
 
-        List<UpcomingPaymentResponse> result = service.getUpcomingPayments(ALICE);
-
-        assertThat(result)
+        assertThat(service.getDashboard(ALICE, Currency.EUR).upcoming())
                 .extracting(UpcomingPaymentResponse::nextPaymentDate)
                 .containsExactly(TODAY, TODAY.plusDays(30));
     }
 
     @Test
-    void getUpcomingPayments_shouldKeepOriginalCurrencyAndUsersShare() {
-        long daysLeft = 2;
-        Share share = share(
-                subscription(12L, "British TV")
+    void getDashboard_shouldConvertUpcomingPaymentIntoTargetCurrency() {
+        stubActiveShares(List.of(share(
+                aSubscription()
+                        .withId(1L)
                         .withPrice("10.00")
                         .withCurrency(Currency.GBP)
-                        .withNextPaymentDate(TODAY.plusDays(daysLeft)),
-                "5.00");
-        Subscription shared = share.subscription();
-        stubActiveShares(List.of(share));
-        stubUserIn(DEFAULT_ZONE);
+                        .withNextPaymentDate(TODAY.plusDays(2)),
+                "5.00")));
 
-        List<UpcomingPaymentResponse> result = service.getUpcomingPayments(ALICE);
-
-        assertThat(result).singleElement().satisfies(payment -> {
-            assertThat(payment.subscriptionId()).isEqualTo(shared.getId());
-            assertThat(payment.providerName()).isEqualTo(shared.getProvider().getName());
-            assertThat(payment.amount()).isEqualByComparingTo("5.00");
-            assertThat(payment.currency()).isEqualTo(Currency.GBP);
-            assertThat(payment.nextPaymentDate()).isEqualTo(shared.getNextPaymentDate());
-            assertThat(payment.daysLeft()).isEqualTo(daysLeft);
-        });
+        assertThat(service.getDashboard(ALICE, Currency.USD).upcoming())
+                .containsExactly(new UpcomingPaymentResponse(
+                        1L,
+                        TestProviders.CATALOG_PROVIDER_NAME,
+                        new BigDecimal("6.74"),
+                        Currency.USD,
+                        TODAY.plusDays(2),
+                        2));
     }
 
     @Test
-    void getUpcomingPayments_shouldStartFromUsersToday() {
+    void getDashboard_shouldStartUpcomingPaymentsFromUsersToday() {
+        alice.setTimeZone(TOKYO);
         stubActiveShares(List.of(
-                fullShare(subscription(1L, "Due today").withNextPaymentDate(TODAY)),
-                fullShare(subscription(2L, "Due Tokyo today").withNextPaymentDate(TOKYO_TODAY))));
-        stubUserIn(TOKYO);
+                share(aSubscription().withNextPaymentDate(TODAY)),
+                share(aSubscription().withNextPaymentDate(TOKYO_TODAY))));
 
-        assertThat(service.getUpcomingPayments(ALICE))
+        assertThat(service.getDashboard(ALICE, Currency.EUR).upcoming())
                 .extracting(UpcomingPaymentResponse::nextPaymentDate)
                 .containsExactly(TOKYO_TODAY);
     }
 
     @Test
-    void getSavings_shouldSumCancelledSubscriptionsFromTheEndDateInEur() {
+    void getDashboard_shouldSumSpendingPerCategoryAndSortByYearlyTotal() {
+        Category music = category(1L, "Music");
+        Category streaming = category(2L, "Streaming");
+        stubActiveShares(List.of(
+                share(subscriptionIn(music).withPrice("10.00")),
+                share(subscriptionIn(music).withPrice("10.00").withCurrency(Currency.USD)),
+                share(subscriptionIn(streaming).withPrice("300.00").withBillingCycle(BillingCycle.YEARLY))));
+
+        assertThat(service.getDashboard(ALICE, Currency.EUR).categories())
+                .containsExactly(
+                        categorySpending(2L, "Streaming", "25.00", "300.00", Currency.EUR),
+                        categorySpending(1L, "Music", "18.90", "226.80", Currency.EUR));
+    }
+
+    @Test
+    void getDashboard_shouldSumSavingsOfCancelledSubscriptionsFromTheEndDate() {
         stubCancelledShares(List.of(
                 cancelledShare("10.00", Currency.EUR, TODAY.minusDays(1)),
                 cancelledShare("5.00", Currency.EUR, TODAY.minusMonths(1)),
                 cancelledShare("7.00", Currency.USD, TODAY.minusDays(1))));
-        stubUserIn(DEFAULT_ZONE);
 
-        assertThat(service.getSavings(ALICE)).isEqualTo(new MoneyResponse(new BigDecimal("26.23"), Currency.EUR));
+        assertThat(service.getDashboard(ALICE, Currency.EUR).savings()).isEqualTo(money("26.23", Currency.EUR));
     }
 
     @Test
-    void getSavings_shouldBeZeroBeforeTheEndDate() {
+    void getDashboard_shouldHaveNoSavingsBeforeTheEndDate() {
         stubCancelledShares(List.of(cancelledShare("10.00", Currency.EUR, TODAY.plusDays(3))));
-        stubUserIn(DEFAULT_ZONE);
 
-        assertThat(service.getSavings(ALICE)).isEqualTo(new MoneyResponse(new BigDecimal("0.00"), Currency.EUR));
-    }
-
-    private void stubCancelledShares(List<Share> shares) {
-        when(subscriptionShares.load(ALICE, SubscriptionStatus.CANCELLED)).thenReturn(shares);
-    }
-
-    private void stubUserIn(ZoneId zone) {
-        User user = TestUsers.user(ALICE);
-        user.setTimeZone(zone);
-        when(userRepository.getByUsername(ALICE)).thenReturn(user);
+        assertThat(service.getDashboard(ALICE, Currency.EUR).savings()).isEqualTo(money("0.00", Currency.EUR));
     }
 
     private void stubActiveShares(List<Share> shares) {
         when(subscriptionShares.load(ALICE, SubscriptionStatus.ACTIVE)).thenReturn(shares);
     }
 
-    private static TestSubscriptions.Builder subscription(long id, String providerName) {
-        return aSubscription()
-                .withId(id)
-                .withProvider(SubscriptionProvider.catalog(providerName, TestProviders.category()));
+    private void stubCancelledShares(List<Share> shares) {
+        when(subscriptionShares.load(ALICE, SubscriptionStatus.CANCELLED)).thenReturn(shares);
     }
 
-    private static Share fullShare(TestSubscriptions.Builder subscription) {
+    private static TestSubscriptions.Builder subscriptionIn(Category category) {
+        return aSubscription().withProvider(TestProviders.catalog(category));
+    }
+
+    private static Category category(long id, String name) {
+        Category category = new Category(name);
+        category.setId(id);
+        return category;
+    }
+
+    private static Share share(TestSubscriptions.Builder subscription) {
         Subscription built = subscription.build();
         return new Share(SubscriptionMembership.owner(TestUsers.user(ALICE), built), built.getPrice());
     }
@@ -220,5 +241,18 @@ class DashboardServiceTest {
                         .withNextPaymentDate(endDate)
                         .cancelled(),
                 amount);
+    }
+
+    private static DashboardSummaryResponse summary(String monthly, String yearly, Currency currency, int count) {
+        return new DashboardSummaryResponse(new BigDecimal(monthly), new BigDecimal(yearly), currency, count);
+    }
+
+    private static CategorySpendingResponse categorySpending(
+            long id, String name, String monthly, String yearly, Currency currency) {
+        return new CategorySpendingResponse(id, name, new BigDecimal(monthly), new BigDecimal(yearly), currency);
+    }
+
+    private static MoneyResponse money(String amount, Currency currency) {
+        return new MoneyResponse(new BigDecimal(amount), currency);
     }
 }

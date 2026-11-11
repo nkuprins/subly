@@ -3,6 +3,7 @@ package com.app.subly.repository;
 import static com.app.subly.testdata.TestClock.DEFAULT_ZONE;
 import static com.app.subly.testdata.TestClock.NOW;
 import static com.app.subly.testdata.TestClock.TOKYO;
+import static com.app.subly.testdata.TestSubscriptions.aSubscription;
 import static com.app.subly.testdata.TestUsers.ALICE;
 import static com.app.subly.testdata.TestUsers.BOB;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -104,6 +105,21 @@ class SubscriptionMembershipRepositoryTest extends AbstractRepositoryTest {
                         BOB, SubscriptionStatus.CANCELLED))
                 .extracting(SubscriptionMembership::getId)
                 .containsExactly(memberRow.getId());
+    }
+
+    @Test
+    void findActive_shouldOrderByNextPaymentDate() {
+        Subscription sooner = entityManager.persist(aSubscription()
+                .withProvider(subscription.getProvider())
+                .withNextPaymentDate(subscription.getNextPaymentDate().minusDays(5))
+                .build());
+        SubscriptionMembership soonerRow = entityManager.persist(SubscriptionMembership.owner(alice, sooner));
+        entityManager.flush();
+
+        assertThat(repository.findByUserUsernameAndSubscriptionStatusOrderBySubscriptionNextPaymentDateAsc(
+                        ALICE, SubscriptionStatus.ACTIVE))
+                .extracting(SubscriptionMembership::getId)
+                .containsExactly(soonerRow.getId(), ownerRow.getId());
     }
 
     private List<SubscriptionMembership> findOwnersDueBefore(LocalDate date) {

@@ -1,5 +1,6 @@
 package com.app.subly.controller;
 
+import com.app.subly.dto.dashboard.DashboardResponse;
 import com.app.subly.dto.provider.ProviderRequest;
 import com.app.subly.model.provider.ProviderType;
 import com.app.subly.model.subscription.Currency;
@@ -25,16 +26,16 @@ public class PageController {
     @GetMapping({"/", "/dashboard"})
     public String dashboard(Principal principal, Model model, @RequestParam(defaultValue = "EUR") Currency currency) {
         String username = principal.getName();
+        DashboardResponse dashboard = dashboardService.getDashboard(username, currency);
 
         model.addAttribute("selectedCurrency", currency);
-        model.addAttribute("summary", dashboardService.getSummary(username, currency));
-        model.addAttribute("upcoming", dashboardService.getUpcomingPayments(username, currency));
-        model.addAttribute("savings", dashboardService.getSavings(username, currency));
-        model.addAttribute("categories", dashboardService.getSpendingByCategory(username, currency));
+        model.addAttribute("summary", dashboard.summary());
+        model.addAttribute("individualSummary", dashboard.individualSummary());
+        model.addAttribute("sharedSummary", dashboard.sharedSummary());
+        model.addAttribute("upcoming", dashboard.upcoming());
+        model.addAttribute("savings", dashboard.savings());
+        model.addAttribute("categories", dashboard.categories());
         model.addAttribute("receivedInvitations", invitationService.findReceived(username));
-
-        model.addAttribute("individualSummary", dashboardService.getSummary(username, currency, false));
-        model.addAttribute("sharedSummary", dashboardService.getSummary(username, currency, true));
         return "dashboard";
     }
 

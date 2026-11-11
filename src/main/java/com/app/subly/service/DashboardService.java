@@ -2,6 +2,7 @@ package com.app.subly.service;
 
 import com.app.subly.dto.MoneyResponse;
 import com.app.subly.dto.dashboard.CategorySpendingResponse;
+import com.app.subly.dto.dashboard.DashboardResponse;
 import com.app.subly.dto.dashboard.DashboardSummaryResponse;
 import com.app.subly.dto.dashboard.UpcomingPaymentResponse;
 import com.app.subly.model.category.Category;
@@ -10,17 +11,15 @@ import com.app.subly.model.subscription.Subscription;
 import com.app.subly.model.subscription.SubscriptionStatus;
 import com.app.subly.repository.UserRepository;
 import com.app.subly.service.SubscriptionShares.Share;
-import com.app.subly.util.CurrencyConverter;
 import com.app.subly.util.Money;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Clock;
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,159 +29,83 @@ import org.springframework.transaction.annotation.Transactional;
 public class DashboardService {
 
     private static final BigDecimal MONTHS_IN_YEAR = BigDecimal.valueOf(12);
-
     private static final int UPCOMING_DAYS = 30;
+    private static final Comparator<CategorySpendingResponse> BIGGEST_SPENDING_FIRST =
+            Comparator.comparing(CategorySpendingResponse::yearlyTotal).reversed();
 
     private final SubscriptionShares subscriptionShares;
     private final UserRepository userRepository;
     private final Clock clock;
 
     @Transactional(readOnly = true)
-    public DashboardSummaryResponse getSummary(String username) {
-        return getSummary(username, Currency.EUR);
-    }
-
-    @Transactional(readOnly = true)
-    public DashboardSummaryResponse getSummary(String username, Currency targetCurrency) {
-
-        List<Share> shares = subscriptionShares.load(username, SubscriptionStatus.ACTIVE);
-
-        BigDecimal yearlyTotal = BigDecimal.ZERO;
-
-        for (Share share : shares) {
-            Subscription subscription = share.subscription();
-
-            BigDecimal amount = CurrencyConverter.convert(share.amount(), subscription.getCurrency(), targetCurrency);
-
-            BigDecimal paymentsPerYear =
-                    BigDecimal.valueOf(subscription.getBillingCycle().getPaymentsPerYear());
-
-            yearlyTotal = yearlyTotal.add(amount.multiply(paymentsPerYear));
-        }
-
-        BigDecimal monthlyTotal = yearlyTotal.divide(MONTHS_IN_YEAR, Money.FRACTION_DIGITS, RoundingMode.HALF_UP);
-
-        return new DashboardSummaryResponse(monthlyTotal, Money.round(yearlyTotal), targetCurrency, shares.size());
-    }
-
-    @Transactional(readOnly = true)
-    public DashboardSummaryResponse getSummary(String username, Currency targetCurrency, boolean shared) {
-        BigDecimal yearlyTotal = BigDecimal.ZERO;
-        int count = 0;
-        for (Share share : subscriptionShares.load(username, SubscriptionStatus.ACTIVE)) {
-            Subscription subscription = share.subscription();
-            if ((subscription.getMaxParticipants() > 1) != shared) {
-                continue;
-            }
-            BigDecimal amount = CurrencyConverter.convert(share.amount(), subscription.getCurrency(), targetCurrency);
-            BigDecimal paymentsPerYear =
-                    BigDecimal.valueOf(subscription.getBillingCycle().getPaymentsPerYear());
-            yearlyTotal = yearlyTotal.add(amount.multiply(paymentsPerYear));
-            count++;
-        }
-        BigDecimal monthlyTotal = yearlyTotal.divide(MONTHS_IN_YEAR, Money.FRACTION_DIGITS, RoundingMode.HALF_UP);
-        return new DashboardSummaryResponse(monthlyTotal, Money.round(yearlyTotal), targetCurrency, count);
-    }
-
-    @Transactional(readOnly = true)
-    public List<UpcomingPaymentResponse> getUpcomingPayments(String username) {
-
+    public DashboardResponse getDashboard(String username, Currency targetCurrency) {
         LocalDate today = userRepository.getByUsername(username).today(clock);
-        LocalDate endDate = today.plusDays(UPCOMING_DAYS);
+        List<Share> active = subscriptionShares.load(username, SubscriptionStatus.ACTIVE);
+        List<Share> cancelled = subscriptionShares.load(username, SubscriptionStatus.CANCELLED);
+        Map<Boolean, List<Share>> bySharable = active.stream()
+                .collect(Collectors.partitioningBy(share -> share.subscription().isSharable()));
+        return new DashboardResponse(
+                summarize(active, targetCurrency),
+                summarize(bySharable.get(false), targetCurrency),
+                summarize(bySharable.get(true), targetCurrency),
+                upcomingPayments(active, today, targetCurrency),
+                spendingByCategory(active, targetCurrency),
+                savings(cancelled, today, targetCurrency));
+    }
 
-        return subscriptionShares.load(username, SubscriptionStatus.ACTIVE).stream()
-                .filter(share -> {
-                    LocalDate nextDate = share.subscription().getNextPaymentDate();
+    private static DashboardSummaryResponse summarize(List<Share> shares, Currency targetCurrency) {
+        BigDecimal yearlyTotal = shares.stream()
+                .map(share -> yearlyCost(share, targetCurrency))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        return new DashboardSummaryResponse(monthly(yearlyTotal), yearlyTotal, targetCurrency, shares.size());
+    }
 
-                    return !nextDate.isBefore(today) && !nextDate.isAfter(endDate);
-                })
-                .sorted(Comparator.comparing(share -> share.subscription().getNextPaymentDate()))
-                .map(share -> {
-                    Subscription subscription = share.subscription();
-
-                    return new UpcomingPaymentResponse(
-                            subscription.getId(),
-                            subscription.getProvider().getName(),
-                            share.amount(),
-                            subscription.getCurrency(),
-                            subscription.getNextPaymentDate(),
-                            ChronoUnit.DAYS.between(today, subscription.getNextPaymentDate()));
-                })
+    private static List<UpcomingPaymentResponse> upcomingPayments(
+            List<Share> shares, LocalDate today, Currency targetCurrency) {
+        return shares.stream()
+                .map(share -> UpcomingPaymentResponse.from(
+                        share.subscription(), share.amountIn(targetCurrency), targetCurrency, today))
+                .filter(payment -> payment.daysLeft() >= 0 && payment.daysLeft() <= UPCOMING_DAYS)
                 .toList();
     }
 
-    @Transactional(readOnly = true)
-    public List<UpcomingPaymentResponse> getUpcomingPayments(String username, Currency targetCurrency) {
-
-        return getUpcomingPayments(username).stream()
-                .map(payment -> new UpcomingPaymentResponse(
-                        payment.subscriptionId(),
-                        payment.providerName(),
-                        Money.round(CurrencyConverter.convert(payment.amount(), payment.currency(), targetCurrency)),
-                        targetCurrency,
-                        payment.nextPaymentDate(),
-                        payment.daysLeft()))
-                .toList();
-    }
-
-    @Transactional(readOnly = true)
-    public List<CategorySpendingResponse> getSpendingByCategory(String username) {
-
-        return getSpendingByCategory(username, Currency.EUR);
-    }
-
-    @Transactional(readOnly = true)
-    public List<CategorySpendingResponse> getSpendingByCategory(String username, Currency targetCurrency) {
-
-        Map<CategoryKey, BigDecimal> yearlyByCategory = new HashMap<>();
-
-        for (Share share : subscriptionShares.load(username, SubscriptionStatus.ACTIVE)) {
-
-            Subscription subscription = share.subscription();
-            Category category = subscription.getProvider().getCategory();
-
-            CategoryKey key = new CategoryKey(category.getId(), category.getName());
-
-            BigDecimal amount = CurrencyConverter.convert(share.amount(), subscription.getCurrency(), targetCurrency);
-
-            BigDecimal paymentsPerYear =
-                    BigDecimal.valueOf(subscription.getBillingCycle().getPaymentsPerYear());
-
-            yearlyByCategory.merge(key, amount.multiply(paymentsPerYear), BigDecimal::add);
-        }
-
+    private static List<CategorySpendingResponse> spendingByCategory(List<Share> shares, Currency targetCurrency) {
+        Map<CategoryKey, BigDecimal> yearlyByCategory = shares.stream()
+                .collect(Collectors.toMap(
+                        share -> CategoryKey.of(share.subscription()),
+                        share -> yearlyCost(share, targetCurrency),
+                        BigDecimal::add));
         return yearlyByCategory.entrySet().stream()
-                .map(entry -> new CategorySpendingResponse(
-                        entry.getKey().id(),
-                        entry.getKey().name(),
-                        entry.getValue().divide(MONTHS_IN_YEAR, Money.FRACTION_DIGITS, RoundingMode.HALF_UP),
-                        Money.round(entry.getValue()),
-                        targetCurrency))
-                .sorted(Comparator.comparing(CategorySpendingResponse::yearlyTotal)
-                        .reversed())
+                .map(entry -> entry.getKey().toResponse(entry.getValue(), targetCurrency))
+                .sorted(BIGGEST_SPENDING_FIRST)
                 .toList();
     }
 
-    @Transactional(readOnly = true)
-    public MoneyResponse getSavings(String username) {
-        return getSavings(username, Currency.EUR);
+    private static MoneyResponse savings(List<Share> shares, LocalDate today, Currency targetCurrency) {
+        BigDecimal total = shares.stream()
+                .map(share -> share.savedUntil(today, targetCurrency))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        return new MoneyResponse(total, targetCurrency);
     }
 
-    @Transactional(readOnly = true)
-    public MoneyResponse getSavings(String username, Currency targetCurrency) {
+    private static BigDecimal yearlyCost(Share share, Currency targetCurrency) {
+        int paymentsPerYear = share.subscription().getBillingCycle().getPaymentsPerYear();
+        return share.amountIn(targetCurrency).multiply(BigDecimal.valueOf(paymentsPerYear));
+    }
 
-        LocalDate today = userRepository.getByUsername(username).today(clock);
+    private static BigDecimal monthly(BigDecimal yearly) {
+        return yearly.divide(MONTHS_IN_YEAR, Money.FRACTION_DIGITS, RoundingMode.HALF_UP);
+    }
 
-        BigDecimal total = BigDecimal.ZERO;
+    private record CategoryKey(Long id, String name) {
 
-        for (Share share : subscriptionShares.load(username, SubscriptionStatus.CANCELLED)) {
-
-            total = total.add(CurrencyConverter.convert(
-                    share.savedUntil(today), share.subscription().getCurrency(), targetCurrency));
+        static CategoryKey of(Subscription subscription) {
+            Category category = subscription.getProvider().getCategory();
+            return new CategoryKey(category.getId(), category.getName());
         }
 
-        return new MoneyResponse(Money.round(total), targetCurrency);
+        CategorySpendingResponse toResponse(BigDecimal yearlyTotal, Currency currency) {
+            return new CategorySpendingResponse(id, name, monthly(yearlyTotal), yearlyTotal, currency);
+        }
     }
-
-    private record CategoryKey(Long id, String name) {}
 }
