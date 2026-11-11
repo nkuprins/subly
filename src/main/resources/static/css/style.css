@@ -195,6 +195,21 @@ tbody tr { border-top: 1px solid #eee; }
 .cat-bar-fill { display: block; height: 100%; background: var(--primary); border-radius: 999px; }
 .cat-bar-amount { font-weight: 600; color: var(--text); }
 
+/* Paid per month — vertical bars */
+.paid-chart-panel { margin: 20px 0; }
+.paid-chart-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 10px; }
+.paid-chart { display: grid; grid-template-columns: repeat(12, 1fr); gap: 8px; height: 200px; padding-top: 6px; }
+.paid-col { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; }
+.paid-amount { color: var(--muted); font-size: 11px; white-space: nowrap; }
+.paid-track { flex: 1; display: flex; align-items: flex-end; width: 100%; max-width: 32px; background: rgba(107, 33, 168, .12); border-radius: var(--radius-sm); overflow: hidden; }
+.paid-fill { display: block; width: 100%; background: var(--primary); border-radius: var(--radius-sm) var(--radius-sm) 0 0; }
+.paid-month { color: var(--muted); font-size: 12px; }
+@media (max-width: 600px) {
+    .paid-chart { gap: 4px; }
+    .paid-amount { display: none; }
+    .paid-month { font-size: 10px; }
+}
+
 /* Invitations for you */
 .invite-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
 .invite-row:last-of-type { border-bottom: none; }

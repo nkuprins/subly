@@ -63,15 +63,23 @@ public class PageController {
         model.addAttribute("receivedInvitations", invitationService.findReceived(username));
 
         List<PaidMonthResponse> paidPerMonth = paymentService.getPaidPerMonth(username, currency);
-        // ...
+        model.addAttribute("paidPerMonth", paidPerMonth);
+        // the tallest bar of the chart, every other month is drawn relative to it
+        model.addAttribute(
+                "paidPerMonthMax",
+                paidPerMonth.stream()
+                        .map(month -> month.paid().amount())
+                        .max(BigDecimal::compareTo)
+                        .orElse(BigDecimal.ZERO));
         return "dashboard";
     }
 
-    //    @GetMapping("/payments")
-    //    public String payments(Principal principal, Model model) {
-    //        model.addAttribute("payments", paymentService.findHistory(principal.getName()));
-    //        return "payments";
-    //    }
+    @GetMapping("/payments")
+    public String payments(Principal principal, Model model) {
+        if (principal == null) return "redirect:/login";
+        model.addAttribute("payments", paymentService.findHistory(principal.getName()));
+        return "payments";
+    }
 
     @GetMapping("/subscriptions")
     public String subscriptions(Principal principal, Model model, @RequestParam(defaultValue = "active") String tab) {

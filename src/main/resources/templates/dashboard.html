@@ -90,6 +90,24 @@
         </div>
         <p class="muted" th:if="${#lists.isEmpty(upcoming)}">No payments in the next 30 days</p>
     </section>
+    <section class="panel paid-chart-panel">
+        <div class="paid-chart-head">
+            <h2>Paid per month</h2>
+            <a th:href="@{/payments}" class="link">View history</a>
+        </div>
+        <div class="paid-chart" th:if="${paidPerMonthMax.signum() > 0}">
+            <div th:each="m : ${paidPerMonth}" class="paid-col"
+                 th:title="|${#temporals.format(m.month, 'MMMM yyyy')}: ${m.paid.amount} ${m.paid.currency}|">
+                <span class="paid-amount" th:text="${m.paid.amount}"></span>
+                <span class="paid-track">
+                    <span class="paid-fill"
+                          th:style="|height: ${m.paid.amount.doubleValue() * 100.0 / paidPerMonthMax.doubleValue()}%|"></span>
+                </span>
+                <span class="paid-month" th:text="${#temporals.format(m.month, 'MMM')}"></span>
+            </div>
+        </div>
+        <p class="muted" th:if="${paidPerMonthMax.signum() == 0}">No payments in the last 12 months</p>
+    </section>
 <!--    <section class="panel">-->
 <!--        <h2>Spending by category</h2>-->
 <!--        <div th:each="c : ${categories}" class="category-row">-->
