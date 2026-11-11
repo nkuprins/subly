@@ -52,11 +52,38 @@ class MembershipServiceTest {
         when(subscriptionAccess.getOwnedSubscription(ALICE, SUBSCRIPTION_ID)).thenReturn(subscription);
         stubMembers();
 
-        assertThat(service.findMembers(ALICE, SUBSCRIPTION_ID))
+        assertThat(service.findMembers(ALICE, SUBSCRIPTION_ID).members())
                 .containsExactly(
                         new SubscriptionMemberResponse(1L, ALICE, MembershipRole.OWNER, new BigDecimal("3.34")),
                         new SubscriptionMemberResponse(2L, BOB, MembershipRole.MEMBER, new BigDecimal("3.33")),
                         new SubscriptionMemberResponse(3L, CAROL, MembershipRole.MEMBER, new BigDecimal("3.33")));
+    }
+
+    @Test
+    void findMembers_shouldBeFullWhenEverySeatIsTaken() {
+        when(subscriptionAccess.getOwnedSubscription(ALICE, SUBSCRIPTION_ID))
+                .thenReturn(aSubscription().withMaxParticipants(3).build());
+        stubMembers();
+
+        assertThat(service.findMembers(ALICE, SUBSCRIPTION_ID).full()).isTrue();
+    }
+
+    @Test
+    void findMembers_shouldNotBeFullWhileASeatIsFree() {
+        when(subscriptionAccess.getOwnedSubscription(ALICE, SUBSCRIPTION_ID))
+                .thenReturn(aSubscription().withMaxParticipants(4).build());
+        stubMembers();
+
+        assertThat(service.findMembers(ALICE, SUBSCRIPTION_ID).full()).isFalse();
+    }
+
+    @Test
+    void findMembers_shouldBeFullWhenCancelled() {
+        when(subscriptionAccess.getOwnedSubscription(ALICE, SUBSCRIPTION_ID))
+                .thenReturn(aSubscription().withMaxParticipants(4).cancelled().build());
+        stubMembers();
+
+        assertThat(service.findMembers(ALICE, SUBSCRIPTION_ID).full()).isTrue();
     }
 
     @Test

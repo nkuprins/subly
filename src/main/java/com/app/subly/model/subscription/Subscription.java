@@ -104,6 +104,10 @@ public class Subscription {
         return maxParticipants > 1;
     }
 
+    public boolean isFull(long memberCount) {
+        return memberCount >= maxParticipants;
+    }
+
     public boolean isActive() {
         return status == SubscriptionStatus.ACTIVE;
     }

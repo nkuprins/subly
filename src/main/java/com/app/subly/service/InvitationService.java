@@ -77,7 +77,7 @@ public class InvitationService {
         Long subscriptionId = subscription.getId();
         requireNotMember(subscriptionId, invitation.getUser());
         long memberCount = membershipRepository.countBySubscriptionId(subscriptionId);
-        if (memberCount >= subscription.getMaxParticipants()) {
+        if (subscription.isFull(memberCount)) {
             throw new InvitationCannotBeAcceptedException("Subscription has reached its participant limit");
         }
         SubscriptionMembership membership = SubscriptionMembership.member(invitation.getUser(), subscription);

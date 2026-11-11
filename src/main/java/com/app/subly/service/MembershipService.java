@@ -1,9 +1,11 @@
 package com.app.subly.service;
 
+import com.app.subly.dto.subscription.MemberListResponse;
 import com.app.subly.dto.subscription.SubscriptionMemberResponse;
 import com.app.subly.exception.subscription.MembershipActionForbiddenException;
 import com.app.subly.exception.subscription.SubscriptionMemberNotFoundException;
 import com.app.subly.model.subscription.MembershipRole;
+import com.app.subly.model.subscription.Subscription;
 import com.app.subly.model.subscription.SubscriptionMembership;
 import com.app.subly.repository.SubscriptionMembershipRepository;
 import java.util.List;
@@ -19,9 +21,11 @@ public class MembershipService {
     private final SubscriptionMembershipRepository membershipRepository;
 
     @Transactional(readOnly = true)
-    public List<SubscriptionMemberResponse> findMembers(String ownerUsername, long subscriptionId) {
-        subscriptionAccess.getOwnedSubscription(ownerUsername, subscriptionId);
-        return membersOf(subscriptionId);
+    public MemberListResponse findMembers(String ownerUsername, long subscriptionId) {
+        Subscription subscription = subscriptionAccess.getOwnedSubscription(ownerUsername, subscriptionId);
+        List<SubscriptionMemberResponse> members = membersOf(subscriptionId);
+        boolean full = !subscription.isActive() || subscription.isFull(members.size());
+        return new MemberListResponse(members, full);
     }
 
     @Transactional(readOnly = true)
