@@ -20,7 +20,7 @@ public class ProviderPageController {
 
     @GetMapping("/providers/new")
     public String newProvider(Model model) {
-        model.addAttribute("categories", categoryService.getAllCategories());
+        model.addAttribute("categories", categoryService.findCategories());
         return "provider-form";
     }
 
@@ -36,7 +36,7 @@ public class ProviderPageController {
                     principal.getName(), new ProviderRequest(name, categoryId, logoPath), ProviderType.CUSTOM);
             return "redirect:/subscriptions/new";
         } catch (RuntimeException ex) {
-            model.addAttribute("categories", categoryService.getAllCategories());
+            model.addAttribute("categories", categoryService.findCategories());
             model.addAttribute("error", ex.getMessage());
             return "provider-form";
         }

@@ -38,9 +38,7 @@ public class InvitationService {
         if (invitedUser.getUsername().equals(ownerUsername)) {
             throw new SelfInvitationException();
         }
-        if (membershipRepository.existsBySubscriptionIdAndUserId(subscriptionId, invitedUser.getId())) {
-            throw new AlreadyMemberException(invitedUser.getUsername(), subscriptionId);
-        }
+        requireNotMember(subscriptionId, invitedUser);
         if (invitationRepository.existsBySubscriptionIdAndUserId(subscriptionId, invitedUser.getId())) {
             throw new AlreadyInvitedException(invitedUser.getUsername(), subscriptionId);
         }
@@ -67,44 +65,29 @@ public class InvitationService {
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public void accept(String username, long invitationId) {
         PendingInvitation invitation = invitationRepository.getByIdAndUserUsername(invitationId, username);
-
         Subscription subscription = subscriptionRepository
                 .findLockedById(invitation.getSubscription().getId())
                 .orElseThrow(() -> new InvitationCannotBeAcceptedException("Subscription no longer exists"));
-
         if (!subscription.isActive()) {
             throw new InvitationCannotBeAcceptedException("Subscription is not active");
         }
-
         if (!subscription.isSharable()) {
             throw new InvitationCannotBeAcceptedException("Subscription is not sharable");
         }
-
         Long subscriptionId = subscription.getId();
-        Long userId = invitation.getUser().getId();
-
-        if (membershipRepository.existsBySubscriptionIdAndUserId(subscriptionId, userId)) {
-            throw new AlreadyMemberException(username, subscriptionId);
-        }
-
+        requireNotMember(subscriptionId, invitation.getUser());
         long memberCount = membershipRepository.countBySubscriptionId(subscriptionId);
-
         if (memberCount >= subscription.getMaxParticipants()) {
             throw new InvitationCannotBeAcceptedException("Subscription has reached its participant limit");
         }
-
         SubscriptionMembership membership = SubscriptionMembership.member(invitation.getUser(), subscription);
-
         membershipRepository.save(membership);
-
         invitationRepository.delete(invitation);
     }
 
     @Transactional
     public void decline(String username, long invitationId) {
-
         PendingInvitation invitation = invitationRepository.getByIdAndUserUsername(invitationId, username);
-
         invitationRepository.delete(invitation);
     }
 
@@ -112,5 +95,11 @@ public class InvitationService {
     public void deleteInvitationFor(Long userId) {
         this.invitationRepository.deleteByUser_Id(userId);
         this.invitationRepository.flush();
+    }
+
+    private void requireNotMember(long subscriptionId, User user) {
+        if (membershipRepository.existsBySubscriptionIdAndUserId(subscriptionId, user.getId())) {
+            throw new AlreadyMemberException(user.getUsername(), subscriptionId);
+        }
     }
 }

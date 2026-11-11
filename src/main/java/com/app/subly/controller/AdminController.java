@@ -1,12 +1,12 @@
 package com.app.subly.controller;
 
 import com.app.subly.dto.admin.AdminStatisticsResponse;
+import com.app.subly.dto.category.CategoryResponse;
 import com.app.subly.dto.form.CreateCategoryForm;
 import com.app.subly.dto.form.CreateProviderForm;
 import com.app.subly.dto.provider.ProviderCategoryResponse;
 import com.app.subly.dto.provider.ProviderRequest;
 import com.app.subly.exception.category.CategoryAlreadyExistsException;
-import com.app.subly.model.category.Category;
 import com.app.subly.model.provider.ProviderType;
 import com.app.subly.model.provider.SubscriptionProvider;
 import com.app.subly.service.AdminStatisticsService;
@@ -97,7 +97,7 @@ public class AdminController {
     private void fillAdminPageByContent(Model model, boolean providerCreated) {
 
         List<SubscriptionProvider> providers = providerService.findCatalogProviders();
-        List<Category> categories = categoryService.findCategories();
+        List<CategoryResponse> categories = categoryService.findCategories();
 
         model.addAttribute("providers", providers);
         model.addAttribute("providerCount", providers.size());
@@ -106,8 +106,8 @@ public class AdminController {
         model.addAttribute("categories", categories);
 
         Map<Long, Long> categoryReferences = new HashMap<>();
-        for (Category category : categories) {
-            categoryReferences.put(category.getId(), 0L);
+        for (CategoryResponse category : categories) {
+            categoryReferences.put(category.id(), 0L);
         }
         for (ProviderCategoryResponse reference : providerService.listGroupedProvidersByCategory()) {
             categoryReferences.put(reference.categoryId(), reference.categoryCount());

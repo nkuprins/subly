@@ -23,36 +23,24 @@ public class CategoryService {
 
     @Transactional
     public void addNewCategory(String categoryName) {
-        String name = categoryName.strip();
-        Category category = new Category(name);
-
-        try {
-            repository.saveAndFlush(category);
-        } catch (DataIntegrityViolationException exception) {
-            throw new CategoryAlreadyExistsException(name);
-        }
+        saveUnique(new Category(categoryName.strip()));
     }
 
     @Transactional
     public void editCategoryName(Long id, String newCategoryName) {
-        Category category = repository.findById(id).orElseThrow(() -> new CategoryNotFoundException(id));
+        Category category = repository.getCategory(id);
         String newName = newCategoryName.strip();
 
         if (category.getName().equals(newName)) {
             throw new CategoryUpdateException("The new name must differ from the old name");
         }
 
-        try {
-            category.setName(newName);
-            repository.saveAndFlush(category);
-        } catch (DataIntegrityViolationException exception) {
-            throw new CategoryAlreadyExistsException(newName);
-        }
+        category.setName(newName);
+        saveUnique(category);
     }
 
     public void deleteCategory(Long id) {
-        Category category = repository.findById(id).orElseThrow(() -> new CategoryNotFoundException(id));
-
+        Category category = repository.getCategory(id);
         try {
             repository.delete(category);
         } catch (OptimisticLockingFailureException ex) {
@@ -61,21 +49,24 @@ public class CategoryService {
         }
     }
 
-    public List<CategoryResponse> getAllCategories() {
-        return repository.findAll().stream()
-                .map((category) -> new CategoryResponse(category.getId(), category.getName()))
+    @Transactional(readOnly = true)
+    public List<CategoryResponse> findCategories() {
+        return repository.findAllByOrderByNameAsc().stream()
+                .map(category -> new CategoryResponse(category.getId(), category.getName()))
                 .toList();
     }
 
-    @Transactional(readOnly = true)
-    public List<Category> findCategories() {
-        return repository.findAllByOrderByNameAsc();
+    private void saveUnique(Category category) {
+        try {
+            repository.saveAndFlush(category);
+        } catch (DataIntegrityViolationException exception) {
+            throw new CategoryAlreadyExistsException(category.getName());
+        }
     }
 
     private void createDefaultCategories() {
         log.info("Checking default categories...");
         String[] categories = {"Music", "Gaming", "Health", "Streaming", "Sport", "Other"};
-
         for (String categoryName : categories) {
             try {
                 addNewCategory(categoryName);
