@@ -20,34 +20,33 @@ class SubscriptionShares {
 
     private final SubscriptionMembershipRepository membershipRepository;
 
-    // How much the user pays for each of their subscriptions with the given status.
     List<Share> forUser(String username, SubscriptionStatus status) {
-        // The subscriptions the user is in, and their role in each one.
-        List<SubscriptionMembership> memberships =
-                membershipRepository.findByUserUsernameAndSubscriptionStatusOrderBySubscriptionNextPaymentDateAsc(
-                        username, status);
-
+        List<SubscriptionMembership> memberships = membershipRepository.findMembershipsOf(username, status);
         if (memberships.isEmpty()) {
             return List.of();
         }
 
-        List<Long> subscriptionIds = memberships.stream()
-                .map(membership -> membership.getSubscription().getId())
-                .toList();
-
-        // How many people share each of these subscriptions.
-        Map<Long, Long> memberCounts = membershipRepository.findBySubscriptionIdIn(subscriptionIds).stream()
-                .collect(Collectors.groupingBy(
-                        membership -> membership.getSubscription().getId(), Collectors.counting()));
-
+        Map<Long, Long> memberCounts = countMembers(memberships);
         return memberships.stream()
-                .map(membership -> {
-                    Subscription subscription = membership.getSubscription();
-                    // Split the price between the people. The owner also pays the leftover cent.
-                    long count = memberCounts.getOrDefault(subscription.getId(), 0L);
-                    return new Share(membership, subscription.shareFor(membership.getRole(), count));
-                })
+                .map(membership -> shareOf(membership, memberCounts))
                 .toList();
+    }
+
+    private Map<Long, Long> countMembers(List<SubscriptionMembership> memberships) {
+        List<Long> subscriptionIds =
+                memberships.stream().map(SubscriptionShares::subscriptionId).toList();
+        return membershipRepository.findBySubscriptionIdIn(subscriptionIds).stream()
+                .collect(Collectors.groupingBy(SubscriptionShares::subscriptionId, Collectors.counting()));
+    }
+
+    private static Share shareOf(SubscriptionMembership membership, Map<Long, Long> memberCounts) {
+        Subscription subscription = membership.getSubscription();
+        long memberCount = memberCounts.get(subscription.getId());
+        return new Share(membership, subscription.shareFor(membership.getRole(), memberCount));
+    }
+
+    private static Long subscriptionId(SubscriptionMembership membership) {
+        return membership.getSubscription().getId();
     }
 
     record Share(SubscriptionMembership membership, BigDecimal amount) {

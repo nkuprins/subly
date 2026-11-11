@@ -59,8 +59,7 @@ class SubscriptionSharesTest {
     }
 
     private void stubAliceMemberships(List<SubscriptionMembership> memberships) {
-        when(membershipRepository.findByUserUsernameAndSubscriptionStatusOrderBySubscriptionNextPaymentDateAsc(
-                        ALICE, SubscriptionStatus.ACTIVE))
+        when(membershipRepository.findMembershipsOf(ALICE, SubscriptionStatus.ACTIVE))
                 .thenReturn(memberships);
     }
 

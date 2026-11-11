@@ -23,6 +23,10 @@ public interface SubscriptionMembershipRepository extends JpaRepository<Subscrip
     @EntityGraph(attributePaths = "subscription")
     List<SubscriptionMembership> findByUser_IdAndRole(Long userId, MembershipRole role);
 
+    default List<SubscriptionMembership> findMembershipsOf(String username, SubscriptionStatus status) {
+        return findByUserUsernameAndSubscriptionStatusOrderBySubscriptionNextPaymentDateAsc(username, status);
+    }
+
     @EntityGraph(attributePaths = {"subscription", "subscription.provider"})
     List<SubscriptionMembership> findByUserUsernameAndSubscriptionStatusOrderBySubscriptionNextPaymentDateAsc(
             String username, SubscriptionStatus status);
