@@ -123,14 +123,13 @@
         </span>
         </div>
     </section>
-    <section class="panel" th:if="${not #lists.isEmpty(paidPerMonth)}"
-             th:with="maxPaid=${#aggregates.max(paidPerMonth.![paid.amount])}">
+    <section class="panel" th:if="${not #lists.isEmpty(paidPerMonth)}">
         <h2>Paid per month (last 12 months)</h2>
         <div th:each="m : ${paidPerMonth}" class="cat-bar-row">
             <span class="cat-bar-name" th:text="${m.month}"></span>
             <span class="cat-bar-track">
                 <span class="cat-bar-fill"
-                      th:style="|width: ${maxPaid.signum() > 0 ? m.paid.amount.doubleValue() * 100.0 / maxPaid.doubleValue() : 0}%|"></span>
+                      th:style="|width: ${maxPaidAmount.signum() > 0 ? m.paid.amount.doubleValue() * 100.0 / maxPaidAmount.doubleValue() : 0}%|"></span>
             </span>
             <span class="cat-bar-amount" th:text="|${m.paid.amount} ${m.paid.currency}|"></span>
         </div>
