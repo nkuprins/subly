@@ -76,7 +76,7 @@ public class AdminController {
             Principal principal) {
 
         if (bindingResult.hasErrors()) {
-            model.addAttribute("categories");
+            model.addAttribute("categories", categoryService.findCategories());
             return "admin-provider-form"; // return the user back on the page
         }
 

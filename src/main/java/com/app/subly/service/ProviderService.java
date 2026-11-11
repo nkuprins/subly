@@ -44,7 +44,7 @@ public class ProviderService {
         User user = userRepository.getByUsername(username);
         Category category = findCategory(request.categoryId());
         String name = request.name().strip();
-        SubscriptionProvider provider = type == ProviderType.CATALOG
+        SubscriptionProvider provider = (type == ProviderType.CATALOG)
                 ? SubscriptionProvider.catalog(name, category)
                 : SubscriptionProvider.custom(name, category, user);
         provider.setLogoPath(normalizeLogoPath(request.logoPath()));
