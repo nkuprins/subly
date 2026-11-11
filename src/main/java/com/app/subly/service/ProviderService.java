@@ -75,7 +75,7 @@ public class ProviderService {
         }
     }
 
-    public List<ProviderCategoryResponse> listGroupProvidersByCategory() {
+    public List<ProviderCategoryResponse> listGroupedProvidersByCategory() {
         return this.subscriptionProviderRepository.getAllProvidersCountGroupedByCategory();
     }
 

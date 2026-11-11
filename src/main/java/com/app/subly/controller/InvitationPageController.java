@@ -1,6 +1,7 @@
 package com.app.subly.controller;
 
 import com.app.subly.dto.invitation.InviteRequest;
+import com.app.subly.dto.subscription.VisibleSubscriptionResponse;
 import com.app.subly.service.InvitationService;
 import com.app.subly.service.SubscriptionService;
 import java.security.Principal;
@@ -24,7 +25,6 @@ public class InvitationPageController {
 
     @GetMapping("/subscriptions/{id}/invite")
     public String invitePage(@PathVariable long id, Principal principal, Model model) {
-        if (principal == null) return "redirect:/login";
         try {
             var members = subscriptionService.findMembers(principal.getName(), id);
             int max = subscriptionService.findCurrent(principal.getName()).stream()
@@ -46,7 +46,6 @@ public class InvitationPageController {
     @PostMapping("/subscriptions/{id}/invite")
     public String invite(
             @PathVariable long id, Principal principal, @RequestParam String usernameOrEmail, Model model) {
-        if (principal == null) return "redirect:/login";
         try {
             invitationService.invite(principal.getName(), id, new InviteRequest(usernameOrEmail));
             return "redirect:/subscriptions/" + id + "/invite";
@@ -59,13 +58,37 @@ public class InvitationPageController {
         }
     }
 
+    @GetMapping("/subscriptions/{id}/participants")
+    public String participants(@PathVariable Long id, Principal principal, Model model) {
+        var sub = subscriptionService.findCurrent(principal.getName()).stream()
+                .map(VisibleSubscriptionResponse::subscription)
+                .filter(s -> s.id().equals(id))
+                .findFirst()
+                .orElse(null);
+        if (sub == null) return "redirect:/subscriptions";
+        model.addAttribute("sub", sub);
+        model.addAttribute("participants", subscriptionService.findParticipants(principal.getName(), id));
+        model.addAttribute("shares", subscriptionService.participantShares(principal.getName(), id));
+        return "participants";
+    }
+
+    @PostMapping("/subscriptions/{id}/leave")
+    public String leaveSubscription(@PathVariable Long id, Principal principal, RedirectAttributes redirectAttributes) {
+        try {
+            subscriptionService.leave(principal.getName(), id);
+            redirectAttributes.addFlashAttribute("notice", "You have left the group.");
+        } catch (RuntimeException ex) {
+            redirectAttributes.addFlashAttribute("notice", ex.getMessage());
+        }
+        return "redirect:/subscriptions";
+    }
+
     @PostMapping("/subscriptions/{id}/members/{membershipId}/kick")
     public String kickMember(
             @PathVariable long id,
             @PathVariable long membershipId,
             Principal principal,
             RedirectAttributes redirectAttributes) {
-        if (principal == null) return "redirect:/login";
         try {
             subscriptionService.removeMember(principal.getName(), id, membershipId);
             redirectAttributes.addFlashAttribute("notice", "Member removed successfully.");
@@ -78,7 +101,6 @@ public class InvitationPageController {
     @PostMapping("/invitations/{invitationId}/accept")
     public String acceptInvitation(
             @PathVariable long invitationId, Principal principal, RedirectAttributes redirectAttributes) {
-        if (principal == null) return "redirect:/login";
         try {
             invitationService.accept(principal.getName(), invitationId);
             redirectAttributes.addFlashAttribute("notice", "Invitation accepted. The subscription is now in your list");
@@ -91,7 +113,6 @@ public class InvitationPageController {
     @PostMapping("/invitations/{invitationId}/decline")
     public String declineInvitation(
             @PathVariable long invitationId, Principal principal, RedirectAttributes redirectAttributes) {
-        if (principal == null) return "redirect:/login";
         try {
             invitationService.decline(principal.getName(), invitationId);
             redirectAttributes.addFlashAttribute("notice", "Invitation declined.");

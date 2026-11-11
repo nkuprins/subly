@@ -97,18 +97,19 @@ public class AdminController {
     private void fillAdminPageByContent(Model model, boolean providerCreated) {
 
         List<SubscriptionProvider> providers = providerService.findCatalogProviders();
+        List<Category> categories = categoryService.findCategories();
+
         model.addAttribute("providers", providers);
         model.addAttribute("providerCount", providers.size());
         model.addAttribute("providerCreated", providerCreated);
         model.addAttribute("statistics", adminStatisticsService.getStatistics());
-        List<Category> categories = categoryService.findCategories();
         model.addAttribute("categories", categories);
 
         Map<Long, Long> categoryReferences = new HashMap<>();
         for (Category category : categories) {
             categoryReferences.put(category.getId(), 0L);
         }
-        for (ProviderCategoryResponse reference : providerService.listGroupProvidersByCategory()) {
+        for (ProviderCategoryResponse reference : providerService.listGroupedProvidersByCategory()) {
             categoryReferences.put(reference.categoryId(), reference.categoryCount());
         }
         model.addAttribute("categoryReferences", categoryReferences);
