@@ -1,0 +1,38 @@
+<!Doctype html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Particapants</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+<main class="container page">
+    <div class="page-head">
+        <h1 th:text="|${sub.providerName()} - participants|"></h1>
+    </div>
+    <p class="muted" th:text="|Full price: ${sub.price} ${sub.currency}|"></p>
+    <div class="table-wrap">
+        <table>
+            <thead>
+            <tr>
+                <th>Participant</th>
+                <th>Role</th>
+                <th>Share</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="p : ${participants}">
+                <td th:text="${p.username()}"></td>
+                <td th:text="${p.role()}"></td>
+                <td th:text="|${shares[p.username()]} ${sub.currency}|"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <a th:href="@{/subscriptions}" class="link">Back</a>
+</main>
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

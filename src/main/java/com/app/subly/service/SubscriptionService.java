@@ -89,6 +89,30 @@ public class SubscriptionService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<SubscriptionMemberResponse> findParticipants(String username, long subscriptionId) {
+        requireMember(username, subscriptionId);
+        return membershipRepository.findBySubscriptionIdOrderByIdAsc(subscriptionId).stream()
+                .map(SubscriptionMemberResponse::from)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public java.util.Map<String, java.math.BigDecimal> participantShares(String username, long subscriptionId) {
+        requireMember(username, subscriptionId);
+        var members = membershipRepository.findBySubscriptionIdOrderByIdAsc(subscriptionId);
+        long count = members.size();
+        return members.stream()
+                .collect(java.util.stream.Collectors.toMap(
+                        m -> m.getUser().getUsername(), m -> m.getSubscription().shareFor(m.getRole(), count)));
+    }
+
+    private void requireMember(String username, long subscriptionId) {
+        membershipRepository
+                .findBySubscriptionIdAndUserUsername(subscriptionId, username)
+                .orElseThrow(() -> new SubscriptionNotFoundException(subscriptionId));
+    }
+
     @Transactional
     public SubscriptionResponse update(String username, long subscriptionId, UpdateSubscriptionRequest request) {
         SubscriptionMembership owner =

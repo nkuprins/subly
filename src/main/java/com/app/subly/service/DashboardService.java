@@ -66,6 +66,25 @@ public class DashboardService {
     }
 
     @Transactional(readOnly = true)
+    public DashboardSummaryResponse getSummary(String username, Currency targetCurrency, boolean shared) {
+        BigDecimal yearlyTotal = BigDecimal.ZERO;
+        int count = 0;
+        for (Share share : subscriptionShares.load(username, SubscriptionStatus.ACTIVE)) {
+            Subscription subscription = share.subscription();
+            if ((subscription.getMaxParticipants() > 1) != shared) {
+                continue;
+            }
+            BigDecimal amount = CurrencyConverter.convert(share.amount(), subscription.getCurrency(), targetCurrency);
+            BigDecimal paymentsPerYear =
+                    BigDecimal.valueOf(subscription.getBillingCycle().getPaymentsPerYear());
+            yearlyTotal = yearlyTotal.add(amount.multiply(paymentsPerYear));
+            count++;
+        }
+        BigDecimal monthlyTotal = yearlyTotal.divide(MONTHS_IN_YEAR, Money.FRACTION_DIGITS, RoundingMode.HALF_UP);
+        return new DashboardSummaryResponse(monthlyTotal, Money.round(yearlyTotal), targetCurrency, count);
+    }
+
+    @Transactional(readOnly = true)
     public List<UpcomingPaymentResponse> getUpcomingPayments(String username) {
 
         LocalDate today = userRepository.getByUsername(username).today(clock);
