@@ -3,7 +3,6 @@ package com.app.subly.service;
 import com.app.subly.dto.subscription.ActiveSubscriptionResponse;
 import com.app.subly.dto.subscription.CancelledSubscriptionResponse;
 import com.app.subly.dto.subscription.CreateSubscriptionRequest;
-import com.app.subly.dto.subscription.PaymentDetails;
 import com.app.subly.dto.subscription.SubscriptionResponse;
 import com.app.subly.dto.subscription.UpdateSubscriptionRequest;
 import com.app.subly.entity.provider.SubscriptionProvider;
@@ -45,7 +44,7 @@ public class SubscriptionService {
     @Transactional
     public void create(String username, CreateSubscriptionRequest request) {
         User owner = userRepository.getByUsername(username);
-        requireNotInPast(owner, request);
+        requireNotInPast(owner, request.nextPaymentDate());
         requireCentPerParticipant(request.price(), request.maxParticipants());
         SubscriptionProvider provider = findVisibleProvider(request.providerId(), owner);
         Subscription subscription = new Subscription(
@@ -86,7 +85,7 @@ public class SubscriptionService {
     public void update(String username, long subscriptionId, UpdateSubscriptionRequest request) {
         SubscriptionMembership owner = subscriptionAccess.getOwnerMembership(username, subscriptionId);
         Subscription subscription = owner.getSubscription();
-        requireNotInPast(owner.getUser(), request);
+        requireNotInPast(owner.getUser(), request.nextPaymentDate());
         requireCentPerParticipant(request.price(), subscription.getMaxParticipants());
         subscription.changePaymentDetails(
                 request.price(), request.billingCycle(), request.nextPaymentDate(), request.freeTrial());
@@ -136,9 +135,9 @@ public class SubscriptionService {
                 .orElseThrow(() -> new ProviderNotFoundException(providerId));
     }
 
-    private void requireNotInPast(User user, PaymentDetails request) {
-        if (request.nextPaymentDate().isBefore(user.today(clock))) {
-            throw new PaymentDateInPastException(request.nextPaymentDate());
+    private void requireNotInPast(User user, LocalDate nextPaymentDate) {
+        if (nextPaymentDate.isBefore(user.today(clock))) {
+            throw new PaymentDateInPastException(nextPaymentDate);
         }
     }
 

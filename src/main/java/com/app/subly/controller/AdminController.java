@@ -5,7 +5,6 @@ import com.app.subly.dto.category.CategoryResponse;
 import com.app.subly.dto.form.CreateCategoryForm;
 import com.app.subly.dto.form.CreateProviderForm;
 import com.app.subly.dto.provider.ProviderCategoryResponse;
-import com.app.subly.dto.provider.ProviderRequest;
 import com.app.subly.entity.provider.SubscriptionProvider;
 import com.app.subly.enums.ProviderType;
 import com.app.subly.exception.category.CategoryAlreadyExistsException;
@@ -80,10 +79,7 @@ public class AdminController {
             return "admin-provider-form"; // return the user back on the page
         }
 
-        providerService.create(
-                principal.getName(),
-                new ProviderRequest(form.getName(), form.getCategoryId(), form.getLogoPath()),
-                ProviderType.CATALOG);
+        providerService.create(principal.getName(), form, ProviderType.CATALOG);
 
         return "redirect:/admin";
     }

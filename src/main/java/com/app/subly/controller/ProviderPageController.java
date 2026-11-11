@@ -1,7 +1,6 @@
 package com.app.subly.controller;
 
 import com.app.subly.dto.form.CreateProviderForm;
-import com.app.subly.dto.provider.ProviderRequest;
 import com.app.subly.enums.ProviderType;
 import com.app.subly.service.CategoryService;
 import com.app.subly.service.ProviderService;
@@ -40,10 +39,7 @@ public class ProviderPageController {
             return "provider-form";
         }
 
-        providerService.create(
-                principal.getName(),
-                new ProviderRequest(form.getName(), form.getCategoryId(), form.getLogoPath()),
-                ProviderType.CUSTOM);
+        providerService.create(principal.getName(), form, ProviderType.CUSTOM);
         return "redirect:/subscriptions/new";
     }
 }

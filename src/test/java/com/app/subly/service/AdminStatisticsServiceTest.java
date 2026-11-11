@@ -70,8 +70,7 @@ class AdminStatisticsServiceTest {
         assertThat(result.totalUsers()).isEqualTo(3);
         assertThat(result.activeSubscriptions()).isEqualTo(3);
         assertThat(result.popularServices())
-                .containsExactly(
-                        new PopularServiceResponse(5L, "Netflix", 2L), new PopularServiceResponse(6L, "Spotify", 1L));
+                .containsExactly(new PopularServiceResponse("Netflix", 2L), new PopularServiceResponse("Spotify", 1L));
     }
 
     @Test

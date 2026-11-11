@@ -11,21 +11,18 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import com.app.subly.dto.provider.ProviderRequest;
-import com.app.subly.dto.provider.ProviderResponse;
+import com.app.subly.dto.form.CreateProviderForm;
 import com.app.subly.entity.category.Category;
 import com.app.subly.entity.provider.SubscriptionProvider;
 import com.app.subly.entity.user.User;
 import com.app.subly.enums.ProviderType;
 import com.app.subly.enums.UserRole;
-import com.app.subly.exception.category.InvalidCategoryException;
-import com.app.subly.exception.provider.ProviderNotFoundException;
+import com.app.subly.exception.category.CategoryNotFoundException;
 import com.app.subly.repository.CategoryRepository;
 import com.app.subly.repository.SubscriptionProviderRepository;
 import com.app.subly.repository.UserRepository;
 import com.app.subly.testdata.TestProviders;
 import com.app.subly.testdata.TestUsers;
-import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -38,13 +35,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class ProviderServiceTest {
 
     static final long CATEGORY_ID = 4L;
-    static final long OTHER_CATEGORY_ID = 5L;
-    static final long PROVIDER_ID = 3L;
     static final String LOGO_PATH = "/logo.svg";
-    static final String NEW_NAME = "Renamed";
-    static final String NEW_LOGO_PATH = "/new.svg";
-    static final ProviderRequest UPDATE_REQUEST =
-            new ProviderRequest(padded(NEW_NAME), OTHER_CATEGORY_ID, NEW_LOGO_PATH);
 
     @Mock
     SubscriptionProviderRepository subscriptionProviderRepository;
@@ -62,15 +53,14 @@ class ProviderServiceTest {
     ArgumentCaptor<SubscriptionProvider> providerCaptor;
 
     final Category category = TestProviders.category();
-    final Category otherCategory = new Category("Test otherCategory");
 
     @Test
     void create_shouldSaveCatalogProviderWithoutCreator() {
         stubCategoryAndSave();
 
-        ProviderResponse response = service.create(
+        service.create(
                 ALICE,
-                new ProviderRequest(padded(CATALOG_PROVIDER_NAME), CATEGORY_ID, padded(LOGO_PATH)),
+                new CreateProviderForm(padded(CATALOG_PROVIDER_NAME), CATEGORY_ID, padded(LOGO_PATH)),
                 ProviderType.CATALOG);
 
         SubscriptionProvider saved = savedProvider();
@@ -79,7 +69,6 @@ class ProviderServiceTest {
         assertThat(saved.getName()).isEqualTo(CATALOG_PROVIDER_NAME);
         assertThat(saved.getCategory()).isSameAs(category);
         assertThat(saved.getLogoPath()).isEqualTo(LOGO_PATH);
-        assertThat(response).isEqualTo(ProviderResponse.from(saved));
     }
 
     @Test
@@ -87,8 +76,8 @@ class ProviderServiceTest {
         User user = stubUser(UserRole.USER);
         stubCategoryAndSave();
 
-        ProviderResponse response = service.create(
-                ALICE, new ProviderRequest(padded(CUSTOM_PROVIDER_NAME), CATEGORY_ID, "   "), ProviderType.CUSTOM);
+        service.create(
+                ALICE, new CreateProviderForm(padded(CUSTOM_PROVIDER_NAME), CATEGORY_ID, "   "), ProviderType.CUSTOM);
 
         SubscriptionProvider saved = savedProvider();
         assertThat(saved.getProviderType()).isEqualTo(ProviderType.CUSTOM);
@@ -96,7 +85,6 @@ class ProviderServiceTest {
         assertThat(saved.getName()).isEqualTo(CUSTOM_PROVIDER_NAME);
         assertThat(saved.getCategory()).isSameAs(category);
         assertThat(saved.getLogoPath()).isNull();
-        assertThat(response).isEqualTo(ProviderResponse.from(saved));
     }
 
     @Test
@@ -104,7 +92,7 @@ class ProviderServiceTest {
         User admin = stubUser(UserRole.ADMIN);
         stubCategoryAndSave();
 
-        service.create(ALICE, new ProviderRequest(CUSTOM_PROVIDER_NAME, CATEGORY_ID, null), ProviderType.CUSTOM);
+        service.create(ALICE, new CreateProviderForm(CUSTOM_PROVIDER_NAME, CATEGORY_ID, null), ProviderType.CUSTOM);
 
         SubscriptionProvider saved = savedProvider();
         assertThat(saved.getProviderType()).isEqualTo(ProviderType.CUSTOM);
@@ -113,52 +101,17 @@ class ProviderServiceTest {
 
     @Test
     void create_shouldRejectUnknownCategory() {
-        when(categoryRepository.findById(CATEGORY_ID)).thenReturn(Optional.empty());
-        ProviderRequest request = new ProviderRequest(CUSTOM_PROVIDER_NAME, CATEGORY_ID, null);
+        when(categoryRepository.getCategory(CATEGORY_ID)).thenThrow(new CategoryNotFoundException(CATEGORY_ID));
+        CreateProviderForm form = new CreateProviderForm(CUSTOM_PROVIDER_NAME, CATEGORY_ID, null);
 
-        assertThatThrownBy(() -> service.create(ALICE, request, ProviderType.CUSTOM))
-                .isInstanceOf(InvalidCategoryException.class)
+        assertThatThrownBy(() -> service.create(ALICE, form, ProviderType.CUSTOM))
+                .isInstanceOf(CategoryNotFoundException.class)
                 .hasMessageContaining(String.valueOf(CATEGORY_ID));
         verifyNoInteractions(subscriptionProviderRepository);
     }
 
-    @Test
-    void updateCustomProvider_shouldChangeNameCategoryAndLogo() {
-        SubscriptionProvider provider = stubOwnCustomProvider();
-        when(categoryRepository.findById(OTHER_CATEGORY_ID)).thenReturn(Optional.of(otherCategory));
-
-        ProviderResponse response = service.updateCustomProvider(ALICE, PROVIDER_ID, UPDATE_REQUEST);
-
-        assertThat(provider.getName()).isEqualTo(NEW_NAME);
-        assertThat(provider.getCategory()).isSameAs(otherCategory);
-        assertThat(provider.getLogoPath()).isEqualTo(NEW_LOGO_PATH);
-        assertThat(response).isEqualTo(ProviderResponse.from(provider));
-    }
-
-    @Test
-    void updateCustomProvider_shouldRejectProviderTheUserDoesNotOwn() {
-        when(subscriptionProviderRepository.findByIdAndCreatedByUsername(PROVIDER_ID, ALICE))
-                .thenReturn(Optional.empty());
-
-        assertThatThrownBy(() -> service.updateCustomProvider(ALICE, PROVIDER_ID, UPDATE_REQUEST))
-                .isInstanceOf(ProviderNotFoundException.class)
-                .hasMessageContaining(String.valueOf(PROVIDER_ID));
-        verifyNoInteractions(categoryRepository);
-    }
-
-    @Test
-    void updateCustomProvider_shouldRejectUnknownCategoryWithoutChangingTheProvider() {
-        SubscriptionProvider provider = stubOwnCustomProvider();
-        when(categoryRepository.findById(OTHER_CATEGORY_ID)).thenReturn(Optional.empty());
-
-        assertThatThrownBy(() -> service.updateCustomProvider(ALICE, PROVIDER_ID, UPDATE_REQUEST))
-                .isInstanceOf(InvalidCategoryException.class);
-        assertThat(provider.getName()).isEqualTo(CUSTOM_PROVIDER_NAME);
-        assertThat(provider.getCategory()).isSameAs(category);
-    }
-
     private void stubCategoryAndSave() {
-        when(categoryRepository.findById(CATEGORY_ID)).thenReturn(Optional.of(category));
+        when(categoryRepository.getCategory(CATEGORY_ID)).thenReturn(category);
         when(subscriptionProviderRepository.save(any(SubscriptionProvider.class)))
                 .thenAnswer(returnsFirstArg());
     }
@@ -166,13 +119,6 @@ class ProviderServiceTest {
     private SubscriptionProvider savedProvider() {
         verify(subscriptionProviderRepository).save(providerCaptor.capture());
         return providerCaptor.getValue();
-    }
-
-    private SubscriptionProvider stubOwnCustomProvider() {
-        SubscriptionProvider provider = TestProviders.custom(category, TestUsers.user(ALICE));
-        when(subscriptionProviderRepository.findByIdAndCreatedByUsername(PROVIDER_ID, ALICE))
-                .thenReturn(Optional.of(provider));
-        return provider;
     }
 
     private User stubUser(UserRole role) {

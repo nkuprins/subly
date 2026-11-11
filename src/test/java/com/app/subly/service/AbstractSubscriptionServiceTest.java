@@ -9,7 +9,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 import com.app.subly.dto.subscription.CreateSubscriptionRequest;
-import com.app.subly.dto.subscription.PaymentDetails;
 import com.app.subly.entity.provider.SubscriptionProvider;
 import com.app.subly.entity.subscription.Subscription;
 import com.app.subly.entity.subscription.SubscriptionMembership;
@@ -23,6 +22,7 @@ import com.app.subly.repository.UserRepository;
 import com.app.subly.testdata.TestClock;
 import com.app.subly.testdata.TestProviders;
 import com.app.subly.testdata.TestUsers;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -84,12 +84,17 @@ abstract class AbstractSubscriptionServiceTest {
                 .thenReturn(SubscriptionMembership.owner(alice, subscription));
     }
 
-    static void assertPaymentDetails(Subscription subscription, PaymentDetails request) {
-        assertThat(subscription.getPrice()).isEqualByComparingTo(request.price());
-        assertThat(subscription.getBillingCycle()).isEqualTo(request.billingCycle());
-        assertThat(subscription.getNextPaymentDate()).isEqualTo(request.nextPaymentDate());
-        assertThat(subscription.getBillingAnchorDate()).isEqualTo(request.nextPaymentDate());
-        assertThat(subscription.isFreeTrial()).isEqualTo(request.freeTrial());
+    static void assertPaymentDetails(
+            Subscription subscription,
+            BigDecimal price,
+            BillingCycle billingCycle,
+            LocalDate nextPaymentDate,
+            boolean freeTrial) {
+        assertThat(subscription.getPrice()).isEqualByComparingTo(price);
+        assertThat(subscription.getBillingCycle()).isEqualTo(billingCycle);
+        assertThat(subscription.getNextPaymentDate()).isEqualTo(nextPaymentDate);
+        assertThat(subscription.getBillingAnchorDate()).isEqualTo(nextPaymentDate);
+        assertThat(subscription.isFreeTrial()).isEqualTo(freeTrial);
     }
 
     SubscriptionProvider provider(ProviderType providerType) {
@@ -113,6 +118,7 @@ abstract class AbstractSubscriptionServiceTest {
     }
 
     static CreateSubscriptionRequest createRequest(LocalDate nextPaymentDate) {
-        return new CreateSubscriptionRequest(PROVIDER_ID, DEFAULT_PRICE, BillingCycle.MONTHLY, nextPaymentDate, false);
+        return new CreateSubscriptionRequest(
+                PROVIDER_ID, DEFAULT_PRICE, BillingCycle.MONTHLY, nextPaymentDate, false, 1);
     }
 }

@@ -8,12 +8,7 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
 public record UpcomingPaymentResponse(
-        Long subscriptionId,
-        String providerName,
-        BigDecimal amount,
-        Currency currency,
-        LocalDate nextPaymentDate,
-        long daysLeft) {
+        String providerName, BigDecimal amount, Currency currency, LocalDate nextPaymentDate, long daysLeft) {
 
     public UpcomingPaymentResponse {
         amount = Money.round(amount);
@@ -22,7 +17,6 @@ public record UpcomingPaymentResponse(
     public static UpcomingPaymentResponse from(
             Subscription subscription, BigDecimal amount, Currency currency, LocalDate today) {
         return new UpcomingPaymentResponse(
-                subscription.getId(),
                 subscription.getProvider().getName(),
                 amount,
                 currency,

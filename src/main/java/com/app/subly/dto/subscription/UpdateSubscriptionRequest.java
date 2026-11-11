@@ -14,10 +14,4 @@ public record UpdateSubscriptionRequest(
 
         @NotNull BillingCycle billingCycle,
         @NotNull LocalDate nextPaymentDate,
-        Boolean freeTrial)
-        implements PaymentDetails {
-
-    public UpdateSubscriptionRequest {
-        freeTrial = Boolean.TRUE.equals(freeTrial);
-    }
-}
+        boolean freeTrial) {}

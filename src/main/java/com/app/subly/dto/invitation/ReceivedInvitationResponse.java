@@ -5,28 +5,23 @@ import com.app.subly.entity.subscription.Subscription;
 import com.app.subly.enums.BillingCycle;
 import com.app.subly.enums.Currency;
 import java.math.BigDecimal;
-import java.time.Instant;
 
 public record ReceivedInvitationResponse(
         Long id,
-        Long subscriptionId,
         String providerName,
         String ownerUsername,
         BigDecimal price,
         Currency currency,
-        BillingCycle billingCycle,
-        Instant invitedAt) {
+        BillingCycle billingCycle) {
 
     public static ReceivedInvitationResponse from(PendingInvitation invitation) {
         Subscription subscription = invitation.getSubscription();
         return new ReceivedInvitationResponse(
                 invitation.getId(),
-                subscription.getId(),
                 subscription.getProvider().getName(),
                 invitation.getInvitedBy().getUsername(),
                 subscription.getPrice(),
                 subscription.getCurrency(),
-                subscription.getBillingCycle(),
-                invitation.getInvitedAt());
+                subscription.getBillingCycle());
     }
 }
