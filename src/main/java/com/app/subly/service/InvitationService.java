@@ -93,8 +93,8 @@ public class InvitationService {
 
     @Transactional
     public void deleteInvitationFor(Long userId) {
-        this.invitationRepository.deleteByUser_Id(userId);
-        this.invitationRepository.flush();
+        invitationRepository.deleteByUser_Id(userId);
+        invitationRepository.flush();
     }
 
     private void requireNotMember(long subscriptionId, User user) {

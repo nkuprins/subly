@@ -130,6 +130,10 @@ public class Subscription {
         nextPaymentDate = date.isBefore(today) ? billingAnchorDate.plus(cycles + 1, unit) : date;
     }
 
+    public void moveToNextCycle() {
+        advancePaymentDate(nextPaymentDate.plusDays(1));
+    }
+
     public List<SubscriptionPayment> paymentsDue(List<SubscriptionMembership> members) {
         List<SubscriptionPayment> payments = new ArrayList<>();
         for (SubscriptionMembership member : members) {

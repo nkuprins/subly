@@ -37,9 +37,7 @@ public class MembershipService {
     @Transactional
     public void leave(String username, long subscriptionId) {
         SubscriptionMembership membership = subscriptionAccess.getMembership(username, subscriptionId);
-        if (membership.getRole() != MembershipRole.MEMBER) {
-            throw new MembershipActionForbiddenException("The owner cannot leave their own subscription");
-        }
+        requireMemberRole(membership, "The owner cannot leave their own subscription");
         membershipRepository.delete(membership);
     }
 
@@ -47,13 +45,16 @@ public class MembershipService {
     public void removeMember(String ownerUsername, long subscriptionId, long membershipId) {
         subscriptionAccess.getOwnedSubscription(ownerUsername, subscriptionId);
         SubscriptionMembership target = membershipRepository
-                .findById(membershipId)
-                .filter(membership -> membership.getSubscription().getId().equals(subscriptionId))
+                .findByIdAndSubscriptionId(membershipId, subscriptionId)
                 .orElseThrow(() -> new SubscriptionMemberNotFoundException(membershipId));
-        if (target.getRole() != MembershipRole.MEMBER) {
-            throw new MembershipActionForbiddenException("The owner cannot be removed from the subscription");
-        }
+        requireMemberRole(target, "The owner cannot be removed from the subscription");
         membershipRepository.delete(target);
+    }
+
+    private static void requireMemberRole(SubscriptionMembership membership, String message) {
+        if (membership.getRole() != MembershipRole.MEMBER) {
+            throw new MembershipActionForbiddenException(message);
+        }
     }
 
     private List<SubscriptionMemberResponse> membersOf(long subscriptionId) {

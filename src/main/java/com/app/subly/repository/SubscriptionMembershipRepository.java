@@ -41,5 +41,7 @@ public interface SubscriptionMembershipRepository extends JpaRepository<Subscrip
 
     Optional<SubscriptionMembership> findBySubscriptionIdAndUserUsername(Long subscriptionId, String username);
 
+    Optional<SubscriptionMembership> findByIdAndSubscriptionId(Long id, Long subscriptionId);
+
     long countBySubscriptionId(Long subscriptionId);
 }

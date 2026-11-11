@@ -37,7 +37,7 @@ public class PaymentService {
             List<SubscriptionMembership> members =
                     membershipRepository.findBySubscriptionIdOrderByIdAsc(subscription.getId());
             paymentRepository.saveAll(subscription.paymentsDue(members));
-            subscription.advancePaymentDate(subscription.getNextPaymentDate().plusDays(1));
+            subscription.moveToNextCycle();
         }
     }
 }

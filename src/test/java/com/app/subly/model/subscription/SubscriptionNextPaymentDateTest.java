@@ -53,7 +53,7 @@ class SubscriptionNextPaymentDateTest {
         LocalDate newAnchor = LocalDate.of(2027, 3, 15);
 
         subscription.reschedule(newAnchor);
-        subscription.advancePaymentDate(newAnchor.plusDays(1));
+        subscription.moveToNextCycle();
 
         assertThat(subscription.getBillingAnchorDate()).isEqualTo(newAnchor);
         assertThat(subscription.getNextPaymentDate()).isEqualTo(newAnchor.plusMonths(1));

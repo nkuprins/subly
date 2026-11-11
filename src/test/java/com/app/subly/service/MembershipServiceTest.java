@@ -128,7 +128,8 @@ class MembershipServiceTest {
     @Test
     void removeMember_shouldAllowOwnerToKickMember() {
         when(subscriptionAccess.getOwnedSubscription(ALICE, SUBSCRIPTION_ID)).thenReturn(subscription);
-        when(membershipRepository.findById(bob.getId())).thenReturn(Optional.of(bob));
+        when(membershipRepository.findByIdAndSubscriptionId(bob.getId(), SUBSCRIPTION_ID))
+                .thenReturn(Optional.of(bob));
 
         service.removeMember(ALICE, SUBSCRIPTION_ID, bob.getId());
 
