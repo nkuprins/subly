@@ -21,15 +21,15 @@ class SubscriptionAccess {
                 .orElseThrow(() -> new SubscriptionNotFoundException(subscriptionId));
     }
 
-    Subscription getOwnedSubscription(String username, long subscriptionId) {
-        return getOwnerMembership(username, subscriptionId).getSubscription();
-    }
-
     SubscriptionMembership getOwnerMembership(String username, long subscriptionId) {
         SubscriptionMembership owner = membershipRepository
                 .findBySubscriptionIdAndRole(subscriptionId, MembershipRole.OWNER)
                 .orElseThrow(() -> new SubscriptionNotFoundException(subscriptionId));
         return requireOwnedBy(owner, username, subscriptionId);
+    }
+
+    Subscription getOwnedSubscription(String username, long subscriptionId) {
+        return getOwnerMembership(username, subscriptionId).getSubscription();
     }
 
     private static SubscriptionMembership requireOwnedBy(
