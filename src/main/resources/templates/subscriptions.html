@@ -63,6 +63,8 @@
                 </td>
                 <td>
                     <div class="actions">
+                        <a th:if="${item.subscription.maxParticipants > 1}"
+                           th:href="@{/subscriptions/{id}/participants(id=${item.subscription.id})}" class="link">Participants</a>
                         <a th:if="${item.role.name() == 'OWNER'}"
                            th:href="@{/subscriptions/{id}/edit(id=${item.subscription.id})}" class="link">Edit</a>
                         <a th:if="${item.role.name() == 'OWNER' and item.subscription.maxParticipants > 1}"

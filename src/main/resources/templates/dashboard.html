@@ -63,6 +63,18 @@
             <span class="card-value" th:text="|${savings.amount} ${savings.currency}|"></span>
         </div>
     </section>
+    <section class="cards">
+        <div class="card">
+            <span class="card-label">Individual (monthly)</span>
+            <span class="card-value"
+                  th:text="|${individualSummary.monthlyTotal} ${individualSummary.currency}|"></span>
+        </div>
+        <div class="card">
+            <span class="card-label">Shared (monthly)</span>
+            <span class="card-value"
+                  th:text="|${sharedSummary.monthlyTotal} ${sharedSummary.currency}|"></span>
+        </div>
+    </section>
     <section class="panel" th:if="${not #lists.isEmpty(receivedInvitations)}">
         <h2>Invitations for you</h2>
         <div th:each="inv : ${receivedInvitations}" class="invite-row">
@@ -109,6 +121,18 @@
         </span>
             <span class="cat-bar-amount" th:text="|${c.monthlyTotal} ${c.currency}|">
         </span>
+        </div>
+    </section>
+    <section class="panel" th:if="${not #lists.isEmpty(paidPerMonth)}"
+             th:with="maxPaid=${#aggregates.max(paidPerMonth.![paid.amount])}">
+        <h2>Paid per month (last 12 months)</h2>
+        <div th:each="m : ${paidPerMonth}" class="cat-bar-row">
+            <span class="cat-bar-name" th:text="${m.month}"></span>
+            <span class="cat-bar-track">
+                <span class="cat-bar-fill"
+                      th:style="|width: ${maxPaid.signum() > 0 ? m.paid.amount.doubleValue() * 100.0 / maxPaid.doubleValue() : 0}%|"></span>
+            </span>
+            <span class="cat-bar-amount" th:text="|${m.paid.amount} ${m.paid.currency}|"></span>
         </div>
     </section>
 </main>

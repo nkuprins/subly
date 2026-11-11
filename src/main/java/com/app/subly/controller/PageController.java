@@ -63,15 +63,18 @@ public class PageController {
         model.addAttribute("receivedInvitations", invitationService.findReceived(username));
 
         List<PaidMonthResponse> paidPerMonth = paymentService.getPaidPerMonth(username, currency);
-        // ...
+        model.addAttribute("paidPerMonth", paidPerMonth);
+        model.addAttribute("individualSummary", dashboardService.getSummary(username, currency, false));
+        model.addAttribute("sharedSummary", dashboardService.getSummary(username, currency, true));
         return "dashboard";
     }
 
-    //    @GetMapping("/payments")
-    //    public String payments(Principal principal, Model model) {
-    //        model.addAttribute("payments", paymentService.findHistory(principal.getName()));
-    //        return "payments";
-    //    }
+    @GetMapping("/payments")
+    public String payments(Principal principal, Model model) {
+        if (principal == null) return "redirect:/login";
+        model.addAttribute("payments", paymentService.findHistory(principal.getName()));
+        return "payments";
+    }
 
     @GetMapping("/subscriptions")
     public String subscriptions(Principal principal, Model model, @RequestParam(defaultValue = "active") String tab) {
@@ -140,6 +143,21 @@ public class PageController {
         model.addAttribute("editId", id);
         model.addAttribute("sub", sub);
         return "subscription-form";
+    }
+
+    @GetMapping("/subscriptions/{id}/participants")
+    public String participants(@PathVariable Long id, Principal principal, Model model) {
+        if (principal == null) return "redirect:/login";
+        var sub = subscriptionService.findCurrent(principal.getName()).stream()
+                .map(VisibleSubscriptionResponse::subscription)
+                .filter(s -> s.id().equals(id))
+                .findFirst()
+                .orElse(null);
+        if (sub == null) return "redirect:/subscriptions";
+        model.addAttribute("sub", sub);
+        model.addAttribute("participants", subscriptionService.findParticipants(principal.getName(), id));
+        model.addAttribute("shares", subscriptionService.participantShares(principal.getName(), id));
+        return "participants";
     }
 
     @PostMapping("/subscriptions/{id}")
