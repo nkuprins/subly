@@ -31,11 +31,9 @@ public class Subscription {
     @JoinColumn(name = "provider_id", nullable = false)
     private SubscriptionProvider provider;
 
-    @Setter
     @Column(nullable = false, precision = Money.INTEGER_DIGITS + Money.FRACTION_DIGITS, scale = Money.FRACTION_DIGITS)
     private BigDecimal price;
 
-    @Setter
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private BillingCycle billingCycle;
@@ -46,7 +44,6 @@ public class Subscription {
     @Column(nullable = false)
     private LocalDate billingAnchorDate;
 
-    @Setter
     @Column(nullable = false)
     private boolean freeTrial;
 
@@ -86,6 +83,14 @@ public class Subscription {
     public void reschedule(LocalDate nextPaymentDate) {
         billingAnchorDate = nextPaymentDate;
         this.nextPaymentDate = nextPaymentDate;
+    }
+
+    public void changePaymentDetails(
+            BigDecimal price, BillingCycle billingCycle, LocalDate nextPaymentDate, boolean freeTrial) {
+        this.price = price;
+        this.billingCycle = billingCycle;
+        reschedule(nextPaymentDate);
+        this.freeTrial = freeTrial;
     }
 
     public void makeSharable(int maxParticipants) {

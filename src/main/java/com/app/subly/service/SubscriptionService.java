@@ -91,7 +91,8 @@ public class SubscriptionService {
         Subscription subscription = owner.getSubscription();
         requireNotInPast(owner.getUser(), request);
         requireCentPerParticipant(request.price(), subscription.getMaxParticipants());
-        applyPaymentDetails(subscription, request);
+        subscription.changePaymentDetails(
+                request.price(), request.billingCycle(), request.nextPaymentDate(), request.freeTrial());
         return SubscriptionResponse.from(subscription);
     }
 
@@ -157,12 +158,5 @@ public class SubscriptionService {
         if (price.compareTo(minimum) < 0) {
             throw new PriceTooLowException(price, maxParticipants, minimum);
         }
-    }
-
-    private static void applyPaymentDetails(Subscription subscription, PaymentDetails request) {
-        subscription.setPrice(request.price());
-        subscription.setBillingCycle(request.billingCycle());
-        subscription.reschedule(request.nextPaymentDate());
-        subscription.setFreeTrial(request.freeTrial());
     }
 }
