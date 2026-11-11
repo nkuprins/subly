@@ -1,16 +1,19 @@
 package com.app.subly.controller;
 
+import com.app.subly.dto.form.CreateProviderForm;
 import com.app.subly.dto.provider.ProviderRequest;
 import com.app.subly.model.provider.ProviderType;
 import com.app.subly.service.CategoryService;
 import com.app.subly.service.ProviderService;
+import jakarta.validation.Valid;
 import java.security.Principal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @RequiredArgsConstructor
@@ -20,6 +23,7 @@ public class ProviderPageController {
 
     @GetMapping("/providers/new")
     public String newProvider(Model model) {
+        model.addAttribute("providerForm", new CreateProviderForm());
         model.addAttribute("categories", categoryService.findCategories());
         return "provider-form";
     }
@@ -27,18 +31,19 @@ public class ProviderPageController {
     @PostMapping("/providers")
     public String createProvider(
             Principal principal,
-            @RequestParam String name,
-            @RequestParam Long categoryId,
-            @RequestParam(required = false) String logoPath,
+            @Valid @ModelAttribute("providerForm") CreateProviderForm form,
+            BindingResult bindingResult,
             Model model) {
-        try {
-            providerService.create(
-                    principal.getName(), new ProviderRequest(name, categoryId, logoPath), ProviderType.CUSTOM);
-            return "redirect:/subscriptions/new";
-        } catch (RuntimeException ex) {
+
+        if (bindingResult.hasErrors()) {
             model.addAttribute("categories", categoryService.findCategories());
-            model.addAttribute("error", ex.getMessage());
             return "provider-form";
         }
+
+        providerService.create(
+                principal.getName(),
+                new ProviderRequest(form.getName(), form.getCategoryId(), form.getLogoPath()),
+                ProviderType.CUSTOM);
+        return "redirect:/subscriptions/new";
     }
 }

@@ -20,7 +20,7 @@ public class CreateProviderForm {
             message = "The name must not larger than " + SubscriptionProvider.NAME_MAX_LENGTH + " symbols.")
     String name;
 
-    @NotNull(message = "Please enter a valid category id")
+    @NotNull(message = "Please choose a valid category")
     @Positive(message = "The id must be positive")
     Long categoryId;
 

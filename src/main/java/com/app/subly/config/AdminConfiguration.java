@@ -5,29 +5,27 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
-import lombok.Setter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 
 @ConfigurationProperties(prefix = "app.admin-settings")
-@Component
-@Setter
 @Getter
 @Validated
+@RequiredArgsConstructor
 public class AdminConfiguration {
 
     @NotBlank
-    private String adminUsername;
+    private final String adminUsername;
 
     @NotBlank
-    private String adminName;
+    private final String adminName;
 
     @NotBlank
     @Email
-    private String adminEmail;
+    private final String adminEmail;
 
     @NotBlank
     @Size(min = PasswordRules.MIN_LENGTH, max = PasswordRules.MAX_LENGTH)
-    private String adminPassword;
+    private final String adminPassword;
 }
