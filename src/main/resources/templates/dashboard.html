@@ -1,4 +1,4 @@
-<!Doctype html>
+<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
     <meta charset="UTF-8"/>
@@ -23,20 +23,10 @@
             <label for="currency">Currency</label>
 
             <select id="currency" name="currency">
-                <option value="EUR"
-                        th:selected="${selectedCurrency.name() == 'EUR'}">
-                    EUR (€)
-                </option>
-
-                <option value="USD"
-                        th:selected="${selectedCurrency.name() == 'USD'}">
-                    USD ($)
-                </option>
-
-                <option value="GBP"
-                        th:selected="${selectedCurrency.name() == 'GBP'}">
-                    GBP (£)
-                </option>
+                <option th:each="currency : ${currencies}"
+                        th:value="${currency.name()}"
+                        th:text="|${currency.name()} (${currency.symbol})|"
+                        th:selected="${currency == selectedCurrency}"></option>
             </select>
 
             <button type="submit" class="btn btn-primary">
