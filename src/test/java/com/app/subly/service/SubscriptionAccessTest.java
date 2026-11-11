@@ -78,42 +78,8 @@ class SubscriptionAccessTest {
                 .hasMessageContaining(String.valueOf(SUBSCRIPTION_ID));
     }
 
-    @Test
-    void getOwnerMembershipWithSubscriptionDetails_shouldReturnTheOwnerRow() {
-        stubOwnerRowWithSubscriptionDetails();
-
-        assertThat(access.getOwnerMembershipWithSubscriptionDetails(ALICE, SUBSCRIPTION_ID))
-                .isSameAs(ownerRow);
-    }
-
-    @Test
-    void getOwnerMembershipWithSubscriptionDetails_shouldRejectNonOwner() {
-        stubOwnerRowWithSubscriptionDetails();
-
-        assertThatThrownBy(() -> access.getOwnerMembershipWithSubscriptionDetails(BOB, SUBSCRIPTION_ID))
-                .isInstanceOf(SubscriptionAccessDeniedException.class)
-                .hasMessageContaining(String.valueOf(SUBSCRIPTION_ID));
-    }
-
-    @Test
-    void getOwnerMembershipWithSubscriptionDetails_shouldRejectUnknownSubscription() {
-        when(membershipRepository.findWithSubscriptionDetailsBySubscriptionIdAndRole(
-                        SUBSCRIPTION_ID, MembershipRole.OWNER))
-                .thenReturn(Optional.empty());
-
-        assertThatThrownBy(() -> access.getOwnerMembershipWithSubscriptionDetails(ALICE, SUBSCRIPTION_ID))
-                .isInstanceOf(SubscriptionNotFoundException.class)
-                .hasMessageContaining(String.valueOf(SUBSCRIPTION_ID));
-    }
-
     private void stubOwnerRow() {
         when(membershipRepository.findBySubscriptionIdAndRole(SUBSCRIPTION_ID, MembershipRole.OWNER))
-                .thenReturn(Optional.of(ownerRow));
-    }
-
-    private void stubOwnerRowWithSubscriptionDetails() {
-        when(membershipRepository.findWithSubscriptionDetailsBySubscriptionIdAndRole(
-                        SUBSCRIPTION_ID, MembershipRole.OWNER))
                 .thenReturn(Optional.of(ownerRow));
     }
 }

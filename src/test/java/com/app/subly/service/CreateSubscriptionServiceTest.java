@@ -11,7 +11,6 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.app.subly.dto.subscription.CreateSubscriptionRequest;
-import com.app.subly.dto.subscription.SubscriptionResponse;
 import com.app.subly.exception.provider.ProviderNotFoundException;
 import com.app.subly.model.provider.ProviderType;
 import com.app.subly.model.provider.SubscriptionProvider;
@@ -51,7 +50,7 @@ class CreateSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
         when(subscriptionProviderRepository.findById(PROVIDER_ID)).thenReturn(Optional.of(provider));
         CreateSubscriptionRequest request = createRequest();
 
-        SubscriptionResponse response = service.create(ALICE, request);
+        service.create(ALICE, request);
 
         verify(subscriptionRepository).save(subscriptionCaptor.capture());
         Subscription saved = subscriptionCaptor.getValue();
@@ -64,8 +63,6 @@ class CreateSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
         assertThat(membership.getUser()).isSameAs(alice);
         assertThat(membership.getSubscription()).isSameAs(saved);
         assertThat(membership.getRole()).isEqualTo(MembershipRole.OWNER);
-
-        assertThat(response).isEqualTo(SubscriptionResponse.from(saved));
     }
 
     @Test

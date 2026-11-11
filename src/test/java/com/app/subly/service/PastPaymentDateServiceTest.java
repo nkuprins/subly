@@ -57,7 +57,7 @@ class PastPaymentDateServiceTest extends AbstractSubscriptionServiceTest {
     @Test
     void update_shouldRejectPastDateAndKeepSubscription() {
         Subscription subscription = subscription(catalogProvider());
-        stubOwnerMembershipWithSubscriptionDetails(subscription);
+        stubOwnerMembership(subscription);
         LocalDate originalDate = subscription.getNextPaymentDate();
         UpdateSubscriptionRequest request =
                 new UpdateSubscriptionRequest(DEFAULT_PRICE, BillingCycle.MONTHLY, YESTERDAY, false);

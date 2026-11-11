@@ -45,7 +45,7 @@ public class SubscriptionService {
     private final Clock clock;
 
     @Transactional
-    public SubscriptionResponse create(String username, CreateSubscriptionRequest request) {
+    public void create(String username, CreateSubscriptionRequest request) {
         User owner = userRepository.getByUsername(username);
         requireNotInPast(owner, request);
         requireCentPerParticipant(request.price(), request.maxParticipants());
@@ -57,7 +57,6 @@ public class SubscriptionService {
         }
         subscriptionRepository.save(subscription);
         membershipRepository.save(SubscriptionMembership.owner(owner, subscription));
-        return SubscriptionResponse.from(subscription);
     }
 
     @Transactional(readOnly = true)
@@ -85,15 +84,13 @@ public class SubscriptionService {
     }
 
     @Transactional
-    public SubscriptionResponse update(String username, long subscriptionId, UpdateSubscriptionRequest request) {
-        SubscriptionMembership owner =
-                subscriptionAccess.getOwnerMembershipWithSubscriptionDetails(username, subscriptionId);
+    public void update(String username, long subscriptionId, UpdateSubscriptionRequest request) {
+        SubscriptionMembership owner = subscriptionAccess.getOwnerMembership(username, subscriptionId);
         Subscription subscription = owner.getSubscription();
         requireNotInPast(owner.getUser(), request);
         requireCentPerParticipant(request.price(), subscription.getMaxParticipants());
         subscription.changePaymentDetails(
                 request.price(), request.billingCycle(), request.nextPaymentDate(), request.freeTrial());
-        return SubscriptionResponse.from(subscription);
     }
 
     @Transactional

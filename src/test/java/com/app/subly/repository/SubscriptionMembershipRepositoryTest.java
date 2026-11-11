@@ -52,15 +52,6 @@ class SubscriptionMembershipRepositoryTest extends AbstractRepositoryTest {
     }
 
     @Test
-    void findWithSubscriptionDetailsBySubscriptionIdAndRole_shouldReturnTheOwnerRow() {
-        assertThat(repository.findWithSubscriptionDetailsBySubscriptionIdAndRole(
-                        subscription.getId(), MembershipRole.OWNER))
-                .get()
-                .extracting(SubscriptionMembership::getId)
-                .isEqualTo(ownerRow.getId());
-    }
-
-    @Test
     void findOwnersDueBefore_shouldReturnOnlyTheOwnerRowAfterThePaymentDate() {
         LocalDate paymentDate = subscription.getNextPaymentDate();
 

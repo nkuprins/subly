@@ -89,11 +89,6 @@ abstract class AbstractSubscriptionServiceTest {
                 .thenReturn(SubscriptionMembership.owner(alice, subscription));
     }
 
-    void stubOwnerMembershipWithSubscriptionDetails(Subscription subscription) {
-        when(subscriptionAccess.getOwnerMembershipWithSubscriptionDetails(ALICE, SUBSCRIPTION_ID))
-                .thenReturn(SubscriptionMembership.owner(alice, subscription));
-    }
-
     static void assertPaymentDetails(Subscription subscription, PaymentDetails request) {
         assertThat(subscription.getPrice()).isEqualByComparingTo(request.price());
         assertThat(subscription.getBillingCycle()).isEqualTo(request.billingCycle());
