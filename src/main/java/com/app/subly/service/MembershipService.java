@@ -21,17 +21,12 @@ public class MembershipService {
     private final SubscriptionMembershipRepository membershipRepository;
 
     @Transactional(readOnly = true)
-    public MemberListResponse findMembers(String ownerUsername, long subscriptionId) {
-        Subscription subscription = subscriptionAccess.getOwnedSubscription(ownerUsername, subscriptionId);
+    public MemberListResponse findMembers(String username, long subscriptionId) {
+        Subscription subscription =
+                subscriptionAccess.getMembership(username, subscriptionId).getSubscription();
         List<SubscriptionMemberResponse> members = membersOf(subscriptionId);
         boolean full = !subscription.isActive() || subscription.isFull(members.size());
         return new MemberListResponse(members, full);
-    }
-
-    @Transactional(readOnly = true)
-    public List<SubscriptionMemberResponse> findParticipants(String username, long subscriptionId) {
-        subscriptionAccess.getMembership(username, subscriptionId);
-        return membersOf(subscriptionId);
     }
 
     @Transactional
