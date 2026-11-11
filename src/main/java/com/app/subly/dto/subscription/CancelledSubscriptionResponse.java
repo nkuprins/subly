@@ -1,7 +1,7 @@
 package com.app.subly.dto.subscription;
 
-import com.app.subly.model.subscription.MembershipRole;
-import com.app.subly.model.subscription.SubscriptionMembership;
+import com.app.subly.entity.subscription.SubscriptionMembership;
+import com.app.subly.enums.MembershipRole;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 

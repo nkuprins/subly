@@ -1,6 +1,7 @@
-package com.app.subly.model.subscription;
+package com.app.subly.entity.subscription;
 
-import com.app.subly.model.user.User;
+import com.app.subly.entity.user.User;
+import com.app.subly.enums.MembershipRole;
 import jakarta.persistence.*;
 import java.time.Instant;
 import lombok.AccessLevel;

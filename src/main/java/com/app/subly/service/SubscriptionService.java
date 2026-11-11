@@ -6,15 +6,16 @@ import com.app.subly.dto.subscription.CreateSubscriptionRequest;
 import com.app.subly.dto.subscription.PaymentDetails;
 import com.app.subly.dto.subscription.SubscriptionResponse;
 import com.app.subly.dto.subscription.UpdateSubscriptionRequest;
+import com.app.subly.entity.provider.SubscriptionProvider;
+import com.app.subly.entity.subscription.Subscription;
+import com.app.subly.entity.subscription.SubscriptionMembership;
+import com.app.subly.entity.user.User;
+import com.app.subly.enums.MembershipRole;
+import com.app.subly.enums.SubscriptionStatus;
 import com.app.subly.exception.provider.ProviderNotFoundException;
 import com.app.subly.exception.subscription.PaymentDateInPastException;
 import com.app.subly.exception.subscription.PriceTooLowException;
-import com.app.subly.model.provider.SubscriptionProvider;
-import com.app.subly.model.subscription.MembershipRole;
-import com.app.subly.model.subscription.Subscription;
-import com.app.subly.model.subscription.SubscriptionMembership;
-import com.app.subly.model.subscription.SubscriptionStatus;
-import com.app.subly.model.user.User;
+import com.app.subly.exception.subscription.SubscriptionNotActiveException;
 import com.app.subly.repository.SubscriptionMembershipRepository;
 import com.app.subly.repository.SubscriptionProviderRepository;
 import com.app.subly.repository.SubscriptionRepository;
@@ -25,7 +26,6 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,7 +37,7 @@ public class SubscriptionService {
     private final SubscriptionRepository subscriptionRepository;
     private final SubscriptionAccess subscriptionAccess;
     private final SubscriptionMembershipRepository membershipRepository;
-    private final SubscriptionProviderRepository subscriptionProviderRepository;
+    private final SubscriptionProviderRepository providerRepository;
     private final UserRepository userRepository;
     private final SubscriptionShares subscriptionShares;
     private final Clock clock;
@@ -65,12 +65,13 @@ public class SubscriptionService {
     }
 
     @Transactional(readOnly = true)
-    public Optional<SubscriptionResponse> findActive(String username, long subscriptionId) {
-        return membershipRepository
-                .findBySubscriptionIdAndUserUsername(subscriptionId, username)
-                .map(SubscriptionMembership::getSubscription)
-                .filter(Subscription::isActive)
-                .map(SubscriptionResponse::from);
+    public SubscriptionResponse getActive(String username, long subscriptionId) {
+        Subscription subscription =
+                subscriptionAccess.getMembership(username, subscriptionId).getSubscription();
+        if (!subscription.isActive()) {
+            throw new SubscriptionNotActiveException(subscriptionId);
+        }
+        return SubscriptionResponse.from(subscription);
     }
 
     @Transactional(readOnly = true)
@@ -129,7 +130,7 @@ public class SubscriptionService {
     }
 
     private SubscriptionProvider findVisibleProvider(long providerId, User owner) {
-        return subscriptionProviderRepository
+        return providerRepository
                 .findById(providerId)
                 .filter(provider -> provider.isVisibleTo(owner))
                 .orElseThrow(() -> new ProviderNotFoundException(providerId));

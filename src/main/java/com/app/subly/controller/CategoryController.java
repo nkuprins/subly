@@ -17,13 +17,13 @@ public class CategoryController {
 
     @PutMapping("/edit")
     public OperationResponse editCategory(@Valid @RequestBody UpdateCategoryRequest request) {
-        service.editCategoryName(request.id(), request.newName());
+        service.rename(request.id(), request.newName());
         return new OperationResponse("The category name has been changed successfully");
     }
 
     @DeleteMapping("/delete/{id}")
     public OperationResponse deleteCategory(@PathVariable @Positive Long id) {
-        service.deleteCategory(id);
+        service.delete(id);
         return new OperationResponse("The category has been deleted successfully");
     }
 }

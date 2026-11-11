@@ -1,9 +1,9 @@
 package com.app.subly.dto.invitation;
 
-import com.app.subly.model.invitation.PendingInvitation;
-import com.app.subly.model.subscription.BillingCycle;
-import com.app.subly.model.subscription.Currency;
-import com.app.subly.model.subscription.Subscription;
+import com.app.subly.entity.invitation.PendingInvitation;
+import com.app.subly.entity.subscription.Subscription;
+import com.app.subly.enums.BillingCycle;
+import com.app.subly.enums.Currency;
 import java.math.BigDecimal;
 import java.time.Instant;
 

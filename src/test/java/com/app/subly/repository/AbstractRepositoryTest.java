@@ -2,10 +2,10 @@ package com.app.subly.repository;
 
 import static com.app.subly.testdata.TestSubscriptions.aSubscription;
 
-import com.app.subly.model.category.Category;
-import com.app.subly.model.provider.SubscriptionProvider;
-import com.app.subly.model.subscription.Subscription;
-import com.app.subly.model.user.User;
+import com.app.subly.entity.category.Category;
+import com.app.subly.entity.provider.SubscriptionProvider;
+import com.app.subly.entity.subscription.Subscription;
+import com.app.subly.entity.user.User;
 import com.app.subly.testdata.TestProviders;
 import com.app.subly.testdata.TestUsers;
 import org.springframework.beans.factory.annotation.Autowired;

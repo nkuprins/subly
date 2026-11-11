@@ -1,9 +1,10 @@
-package com.app.subly.model.subscription;
+package com.app.subly.entity.subscription;
 
 import static com.app.subly.testdata.TestSubscriptions.aSubscription;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.app.subly.enums.MembershipRole;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;

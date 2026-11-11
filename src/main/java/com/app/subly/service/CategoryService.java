@@ -1,8 +1,8 @@
 package com.app.subly.service;
 
 import com.app.subly.dto.category.CategoryResponse;
+import com.app.subly.entity.category.Category;
 import com.app.subly.exception.category.*;
-import com.app.subly.model.category.Category;
 import com.app.subly.repository.CategoryRepository;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
@@ -14,21 +14,21 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @Service
 public class CategoryService {
-    private final CategoryRepository repository;
+    private final CategoryRepository categoryRepository;
 
-    public CategoryService(CategoryRepository repository) {
-        this.repository = repository;
+    public CategoryService(CategoryRepository categoryRepository) {
+        this.categoryRepository = categoryRepository;
         createDefaultCategories();
     }
 
     @Transactional
-    public void addNewCategory(String categoryName) {
+    public void create(String categoryName) {
         saveUnique(new Category(categoryName.strip()));
     }
 
     @Transactional
-    public void editCategoryName(Long id, String newCategoryName) {
-        Category category = repository.getCategory(id);
+    public void rename(long id, String newCategoryName) {
+        Category category = categoryRepository.getCategory(id);
         String newName = newCategoryName.strip();
 
         if (category.getName().equals(newName)) {
@@ -39,10 +39,10 @@ public class CategoryService {
         saveUnique(category);
     }
 
-    public void deleteCategory(Long id) {
-        Category category = repository.getCategory(id);
+    public void delete(long id) {
+        Category category = categoryRepository.getCategory(id);
         try {
-            repository.delete(category);
+            categoryRepository.delete(category);
         } catch (OptimisticLockingFailureException ex) {
             throw new CategoryDeletionException(
                     "Cannot delete the category because some table's field references to it");
@@ -50,15 +50,15 @@ public class CategoryService {
     }
 
     @Transactional(readOnly = true)
-    public List<CategoryResponse> findCategories() {
-        return repository.findAllByOrderByNameAsc().stream()
+    public List<CategoryResponse> findAll() {
+        return categoryRepository.findAllByOrderByNameAsc().stream()
                 .map(category -> new CategoryResponse(category.getId(), category.getName()))
                 .toList();
     }
 
     private void saveUnique(Category category) {
         try {
-            repository.saveAndFlush(category);
+            categoryRepository.saveAndFlush(category);
         } catch (DataIntegrityViolationException exception) {
             throw new CategoryAlreadyExistsException(category.getName());
         }
@@ -69,7 +69,7 @@ public class CategoryService {
         String[] categories = {"Music", "Gaming", "Health", "Streaming", "Sport", "Other"};
         for (String categoryName : categories) {
             try {
-                addNewCategory(categoryName);
+                create(categoryName);
                 log.info("Category {}: CREATED", categoryName);
             } catch (CategoryAlreadyExistsException ex) {
                 log.info("Category {}: OK", categoryName);

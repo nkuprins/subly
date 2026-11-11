@@ -1,6 +1,6 @@
 package com.app.subly.util;
 
-import com.app.subly.model.subscription.Currency;
+import com.app.subly.enums.Currency;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 

@@ -1,6 +1,10 @@
-package com.app.subly.model.subscription;
+package com.app.subly.entity.subscription;
 
-import com.app.subly.model.provider.SubscriptionProvider;
+import com.app.subly.entity.provider.SubscriptionProvider;
+import com.app.subly.enums.BillingCycle;
+import com.app.subly.enums.Currency;
+import com.app.subly.enums.MembershipRole;
+import com.app.subly.enums.SubscriptionStatus;
 import com.app.subly.util.Money;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
@@ -110,6 +114,10 @@ public class Subscription {
 
     public boolean isActive() {
         return status == SubscriptionStatus.ACTIVE;
+    }
+
+    public boolean isClosedToNewMembers(long memberCount) {
+        return !isActive() || !isSharable() || isFull(memberCount);
     }
 
     public void cancel(Instant now) {

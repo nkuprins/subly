@@ -1,8 +1,9 @@
-package com.app.subly.model.subscription;
+package com.app.subly.entity.subscription;
 
 import static com.app.subly.testdata.TestSubscriptions.aSubscription;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.app.subly.enums.BillingCycle;
 import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

@@ -12,5 +12,5 @@ import lombok.Setter;
 public class CreateCategoryForm {
     @NotBlank(message = "You must provide a valid, non-empty title")
     @Size(max = 100, message = "Title length must be lower than 100 chars.")
-    String title;
+    private String title;
 }

@@ -1,12 +1,12 @@
 package com.app.subly.controller;
 
 import com.app.subly.dto.user.PasswordRules;
+import com.app.subly.entity.user.User;
 import com.app.subly.exception.user.UserAlreadyExistsException;
-import com.app.subly.model.user.User;
 import com.app.subly.service.UserService;
 import com.app.subly.util.TimeZoneGenerator;
 import java.security.Principal;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class UserPageController {
     private final UserService userService;
 
@@ -66,7 +66,7 @@ public class UserPageController {
             return "register";
         }
         try {
-            userService.addNewUser(username, name, password, email, null);
+            userService.create(username, name, password, email, null);
             return "redirect:/login?registered";
         } catch (UserAlreadyExistsException exception) {
             model.addAttribute("registrationError", exception.getMessage());
@@ -76,7 +76,7 @@ public class UserPageController {
 
     @GetMapping("/edit/me")
     public String returnEditPage(Principal principal, Model model) {
-        User user = userService.getUserByUsername(principal.getName());
+        User user = userService.getByUsername(principal.getName());
         model.addAttribute("user", user);
         model.addAttribute("timeZones", TimeZoneGenerator.getAllFilteredTimeZone());
         return "edit-user";

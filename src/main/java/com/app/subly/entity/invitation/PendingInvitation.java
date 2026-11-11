@@ -1,11 +1,9 @@
-package com.app.subly.model.subscription;
+package com.app.subly.entity.invitation;
 
-import com.app.subly.model.user.User;
-import com.app.subly.util.Money;
+import com.app.subly.entity.subscription.Subscription;
+import com.app.subly.entity.user.User;
 import jakarta.persistence.*;
-import java.math.BigDecimal;
 import java.time.Instant;
-import java.time.LocalDate;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,10 +13,10 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
-@Table(name = "subscription_payments")
+@Table(name = "subscription_pending")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class SubscriptionPayment {
+public class PendingInvitation {
 
     @Id
     @Setter
@@ -26,28 +24,25 @@ public class SubscriptionPayment {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "subscription_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Subscription subscription;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
-
-    @Column(nullable = false, precision = Money.INTEGER_DIGITS + Money.FRACTION_DIGITS, scale = Money.FRACTION_DIGITS)
-    private BigDecimal amount;
-
-    @Column(nullable = false)
-    private LocalDate paidOn;
+    @JoinColumn(name = "invited_by", nullable = false)
+    private User invitedBy;
 
     @CreationTimestamp
     @Column(updatable = false, nullable = false)
-    private Instant createdAt;
+    private Instant invitedAt;
 
-    public SubscriptionPayment(Subscription subscription, User user, BigDecimal amount, LocalDate paidOn) {
-        this.subscription = subscription;
+    public PendingInvitation(User user, Subscription subscription, User invitedBy) {
         this.user = user;
-        this.amount = amount;
-        this.paidOn = paidOn;
+        this.subscription = subscription;
+        this.invitedBy = invitedBy;
     }
 }

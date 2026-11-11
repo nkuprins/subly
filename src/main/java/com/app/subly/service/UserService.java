@@ -1,9 +1,9 @@
 package com.app.subly.service;
 
 import com.app.subly.dto.user.UpdateUserInformationRequest;
+import com.app.subly.entity.user.User;
+import com.app.subly.enums.UserRole;
 import com.app.subly.exception.user.*;
-import com.app.subly.model.user.User;
-import com.app.subly.model.user.UserRole;
 import com.app.subly.repository.UserRepository;
 import java.time.ZoneId;
 import java.util.function.Consumer;
@@ -17,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class UserService {
 
-    private final UserRepository repository;
+    private final UserRepository userRepository;
     private final PasswordEncoder encoder;
 
     private final InvitationService invitationService;
@@ -25,13 +25,13 @@ public class UserService {
     private final ProviderService providerService;
 
     @Transactional
-    public void addNewUser(String username, String name, String password, String email, ZoneId timeZone) {
+    public void create(String username, String name, String password, String email, ZoneId timeZone) {
         // Adds a new user into db from raw data. Throws UserAlreadyExistsException if
         // user exists with this username or email. It is supposed that the length of the name is validated
         // before calling this method.
 
         try {
-            repository.saveAndFlush(
+            userRepository.saveAndFlush(
                     createUserFromRawData(username.strip(), name.strip(), password, email.strip(), timeZone));
         } catch (DataIntegrityViolationException exception) {
             throw new UserAlreadyExistsException("A user with the username or the email already exists");
@@ -39,21 +39,21 @@ public class UserService {
     }
 
     @Transactional
-    public void deleteUserByUsername(String username, String rawPassword) {
+    public void delete(String username, String rawPassword) {
         // Make an attempt to delete a user with the given username
         // UserDoesNotExistException is raised if the user with the username was not found
         // UserIsConnectedException is raised in case some table's column refers to this user.
         // WrongPasswordException is raised if a raw password != password hash
 
-        User user = getUserByUsername(username);
+        User user = getByUsername(username);
 
         if (!encoder.matches(rawPassword, user.getPasswordHash())) {
             throw new WrongPasswordException("The passwords don't match");
         }
 
         try {
-            this.cleanUserConnectedData(user.getId(), username);
-            repository.deleteByUsername(username);
+            cleanUserConnectedData(user.getId(), username);
+            userRepository.deleteByUsername(username);
         } catch (DataIntegrityViolationException exception) {
             throw new UserIsConnectedException(
                     "Cannot delete the user because it is connected with some table's field");
@@ -61,8 +61,8 @@ public class UserService {
     }
 
     @Transactional
-    public void updateUserPassword(String username, String rawOldPassword, String rawNewPassword) {
-        User user = getUserByUsername(username);
+    public void updatePassword(String username, String rawOldPassword, String rawNewPassword) {
+        User user = getByUsername(username);
 
         if (!encoder.matches(rawOldPassword, user.getPasswordHash())) {
             throw new WrongPasswordException("The passwords don't match");
@@ -72,8 +72,8 @@ public class UserService {
     }
 
     @Transactional
-    public void updateUserInformation(String oldUsername, UpdateUserInformationRequest newUserInfo) {
-        User user = getUserByUsername(oldUsername);
+    public void updateInformation(String oldUsername, UpdateUserInformationRequest newUserInfo) {
+        User user = getByUsername(oldUsername);
 
         try {
             if (newUserInfo.isEmailProvided()) {
@@ -95,14 +95,14 @@ public class UserService {
                 user.setTimeZone(newUserInfo.getNewTimeZone());
             }
 
-            repository.flush();
+            userRepository.flush();
         } catch (DataIntegrityViolationException ex) {
             throw new UserAlreadyExistsException("The user with provided email or username already exists");
         }
     }
 
-    public User getUserByUsername(String username) {
-        return repository
+    public User getByUsername(String username) {
+        return userRepository
                 .findByUsername(username)
                 .orElseThrow(() -> new UserDoesNotExistException("No found user with the username"));
     }
@@ -141,8 +141,8 @@ public class UserService {
 
     private void cleanUserConnectedData(Long userId, String username) {
         // deletes all data related to the user
-        this.invitationService.deleteInvitationFor(userId);
-        this.subscriptionService.deleteAllSubscriptionsFor(userId);
-        this.providerService.deleteAllProvidersCreatedBy(username);
+        invitationService.deleteInvitationFor(userId);
+        subscriptionService.deleteAllSubscriptionsFor(userId);
+        providerService.deleteAllProvidersCreatedBy(username);
     }
 }

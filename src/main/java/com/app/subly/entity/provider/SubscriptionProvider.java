@@ -1,7 +1,8 @@
-package com.app.subly.model.provider;
+package com.app.subly.entity.provider;
 
-import com.app.subly.model.category.Category;
-import com.app.subly.model.user.User;
+import com.app.subly.entity.category.Category;
+import com.app.subly.entity.user.User;
+import com.app.subly.enums.ProviderType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;

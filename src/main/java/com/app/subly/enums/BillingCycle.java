@@ -1,4 +1,4 @@
-package com.app.subly.model.subscription;
+package com.app.subly.enums;
 
 import java.time.temporal.ChronoUnit;
 import lombok.Getter;

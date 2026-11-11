@@ -1,4 +1,4 @@
-package com.app.subly.model.user;
+package com.app.subly.entity.user;
 
 import static com.app.subly.testdata.TestClock.CLOCK;
 import static com.app.subly.testdata.TestClock.DEFAULT_ZONE;

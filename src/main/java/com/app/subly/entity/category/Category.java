@@ -1,4 +1,4 @@
-package com.app.subly.model.category;
+package com.app.subly.entity.category;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;

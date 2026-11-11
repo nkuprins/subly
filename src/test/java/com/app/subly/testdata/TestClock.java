@@ -1,6 +1,6 @@
 package com.app.subly.testdata;
 
-import com.app.subly.model.user.User;
+import com.app.subly.entity.user.User;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;

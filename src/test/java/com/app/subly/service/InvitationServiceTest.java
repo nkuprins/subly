@@ -13,13 +13,13 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.app.subly.dto.invitation.InviteRequest;
+import com.app.subly.entity.invitation.PendingInvitation;
+import com.app.subly.entity.subscription.Subscription;
+import com.app.subly.entity.subscription.SubscriptionMembership;
+import com.app.subly.entity.user.User;
+import com.app.subly.enums.MembershipRole;
 import com.app.subly.exception.invitation.InvitationNotFoundException;
 import com.app.subly.exception.subscription.SubscriptionNotJoinableException;
-import com.app.subly.model.invitation.PendingInvitation;
-import com.app.subly.model.subscription.MembershipRole;
-import com.app.subly.model.subscription.Subscription;
-import com.app.subly.model.subscription.SubscriptionMembership;
-import com.app.subly.model.user.User;
 import com.app.subly.repository.PendingInvitationRepository;
 import com.app.subly.repository.SubscriptionMembershipRepository;
 import com.app.subly.repository.SubscriptionRepository;
@@ -115,7 +115,7 @@ class InvitationServiceTest {
 
     @Test
     void invite_shouldRejectNonSharableSubscription() {
-        stubOwnerOf(aSubscription().build());
+        stubOwnerOf(aSubscription().withId(SUBSCRIPTION_ID).build());
 
         assertInviteRejected();
     }
@@ -181,7 +181,7 @@ class InvitationServiceTest {
 
     @Test
     void accept_shouldRejectNonSharableSubscription() {
-        stubInvitationTo(aSubscription().build());
+        stubInvitationTo(aSubscription().withId(SUBSCRIPTION_ID).build());
 
         assertAcceptRejectedWith(SubscriptionNotJoinableException.class);
     }

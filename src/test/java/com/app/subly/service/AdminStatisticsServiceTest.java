@@ -8,11 +8,11 @@ import static org.mockito.Mockito.when;
 
 import com.app.subly.dto.admin.AdminStatisticsResponse;
 import com.app.subly.dto.admin.PopularServiceResponse;
-import com.app.subly.model.provider.ProviderType;
-import com.app.subly.model.provider.SubscriptionProvider;
-import com.app.subly.model.subscription.Subscription;
-import com.app.subly.model.subscription.SubscriptionMembership;
-import com.app.subly.model.subscription.SubscriptionStatus;
+import com.app.subly.entity.provider.SubscriptionProvider;
+import com.app.subly.entity.subscription.Subscription;
+import com.app.subly.entity.subscription.SubscriptionMembership;
+import com.app.subly.enums.ProviderType;
+import com.app.subly.enums.SubscriptionStatus;
 import com.app.subly.repository.SubscriptionMembershipRepository;
 import com.app.subly.repository.SubscriptionRepository;
 import com.app.subly.repository.UserRepository;

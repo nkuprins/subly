@@ -8,11 +8,11 @@ import static com.app.subly.testdata.TestUsers.ALICE;
 import static com.app.subly.testdata.TestUsers.BOB;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.app.subly.model.subscription.MembershipRole;
-import com.app.subly.model.subscription.Subscription;
-import com.app.subly.model.subscription.SubscriptionMembership;
-import com.app.subly.model.subscription.SubscriptionStatus;
-import com.app.subly.model.user.User;
+import com.app.subly.entity.subscription.Subscription;
+import com.app.subly.entity.subscription.SubscriptionMembership;
+import com.app.subly.entity.user.User;
+import com.app.subly.enums.MembershipRole;
+import com.app.subly.enums.SubscriptionStatus;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;

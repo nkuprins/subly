@@ -1,8 +1,8 @@
 package com.app.subly.testdata;
 
-import com.app.subly.model.category.Category;
-import com.app.subly.model.provider.SubscriptionProvider;
-import com.app.subly.model.user.User;
+import com.app.subly.entity.category.Category;
+import com.app.subly.entity.provider.SubscriptionProvider;
+import com.app.subly.entity.user.User;
 
 public final class TestProviders {
 

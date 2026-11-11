@@ -11,10 +11,10 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.app.subly.dto.subscription.SubscriptionMemberResponse;
+import com.app.subly.entity.subscription.Subscription;
+import com.app.subly.entity.subscription.SubscriptionMembership;
+import com.app.subly.enums.MembershipRole;
 import com.app.subly.exception.subscription.SubscriptionNotFoundException;
-import com.app.subly.model.subscription.MembershipRole;
-import com.app.subly.model.subscription.Subscription;
-import com.app.subly.model.subscription.SubscriptionMembership;
 import com.app.subly.repository.SubscriptionMembershipRepository;
 import com.app.subly.testdata.TestUsers;
 import java.math.BigDecimal;

@@ -1,5 +1,6 @@
-package com.app.subly.model.user;
+package com.app.subly.entity.user;
 
+import com.app.subly.enums.UserRole;
 import jakarta.persistence.*;
 import java.time.Clock;
 import java.time.Instant;

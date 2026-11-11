@@ -1,7 +1,7 @@
 package com.app.subly.controller;
 
 import com.app.subly.dto.dashboard.DashboardResponse;
-import com.app.subly.model.subscription.Currency;
+import com.app.subly.enums.Currency;
 import com.app.subly.service.*;
 import java.security.Principal;
 import lombok.RequiredArgsConstructor;

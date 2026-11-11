@@ -1,10 +1,9 @@
 package com.app.subly.service;
 
 import com.app.subly.dto.dashboard.DashboardResponse;
-import com.app.subly.model.subscription.Currency;
-import com.app.subly.model.subscription.SubscriptionStatus;
+import com.app.subly.enums.Currency;
+import com.app.subly.enums.SubscriptionStatus;
 import com.app.subly.repository.UserRepository;
-import com.app.subly.service.SubscriptionShares.Share;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;

@@ -1,8 +1,8 @@
 package com.app.subly.repository;
 
-import com.app.subly.model.subscription.MembershipRole;
-import com.app.subly.model.subscription.SubscriptionMembership;
-import com.app.subly.model.subscription.SubscriptionStatus;
+import com.app.subly.entity.subscription.SubscriptionMembership;
+import com.app.subly.enums.MembershipRole;
+import com.app.subly.enums.SubscriptionStatus;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Collection;

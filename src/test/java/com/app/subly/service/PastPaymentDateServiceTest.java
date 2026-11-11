@@ -12,9 +12,9 @@ import static org.mockito.Mockito.when;
 
 import com.app.subly.dto.subscription.CreateSubscriptionRequest;
 import com.app.subly.dto.subscription.UpdateSubscriptionRequest;
+import com.app.subly.entity.subscription.Subscription;
+import com.app.subly.enums.BillingCycle;
 import com.app.subly.exception.subscription.PaymentDateInPastException;
-import com.app.subly.model.subscription.BillingCycle;
-import com.app.subly.model.subscription.Subscription;
 import com.app.subly.testdata.TestClock;
 import java.time.LocalDate;
 import java.util.Optional;

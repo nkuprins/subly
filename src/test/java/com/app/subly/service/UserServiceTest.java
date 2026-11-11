@@ -13,12 +13,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.app.subly.dto.user.UpdateUserInformationRequest;
+import com.app.subly.entity.user.User;
 import com.app.subly.exception.user.UserAlreadyExistsException;
 import com.app.subly.exception.user.UserDoesNotExistException;
 import com.app.subly.exception.user.UserInfoUpdateException;
 import com.app.subly.exception.user.UserIsConnectedException;
 import com.app.subly.exception.user.WrongPasswordException;
-import com.app.subly.model.user.User;
 import com.app.subly.repository.UserRepository;
 import com.app.subly.testdata.TestUsers;
 import java.util.Optional;
@@ -62,128 +62,126 @@ class UserServiceTest {
     UserService service;
 
     @Test
-    void addNewUser_shouldRejectExistingUser() {
+    void create_shouldRejectExistingUser() {
         when(encoder.encode(PASSWORD)).thenReturn(PASSWORD_HASH);
         when(repository.saveAndFlush(any(User.class))).thenThrow(DataIntegrityViolationException.class);
         String aliceEmail = email(ALICE);
 
-        assertThatThrownBy(() -> service.addNewUser(ALICE, "Alice", PASSWORD, aliceEmail, null))
+        assertThatThrownBy(() -> service.create(ALICE, "Alice", PASSWORD, aliceEmail, null))
                 .isInstanceOf(UserAlreadyExistsException.class);
     }
 
     @Test
-    void getUserByUsername_shouldRejectUnknownUser() {
+    void getByUsername_shouldRejectUnknownUser() {
         when(repository.findByUsername(ALICE)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.getUserByUsername(ALICE)).isInstanceOf(UserDoesNotExistException.class);
+        assertThatThrownBy(() -> service.getByUsername(ALICE)).isInstanceOf(UserDoesNotExistException.class);
     }
 
     @Test
-    void deleteUserByUsername_shouldRejectWrongPassword() {
+    void delete_shouldRejectWrongPassword() {
         stubExistingUser();
         when(encoder.matches(PASSWORD, PASSWORD_HASH)).thenReturn(false);
 
-        assertThatThrownBy(() -> service.deleteUserByUsername(ALICE, PASSWORD))
-                .isInstanceOf(WrongPasswordException.class);
+        assertThatThrownBy(() -> service.delete(ALICE, PASSWORD)).isInstanceOf(WrongPasswordException.class);
     }
 
     @Test
-    void deleteUserByUsername_shouldRejectUserReferencedByOtherRows() {
+    void delete_shouldRejectUserReferencedByOtherRows() {
         stubExistingUser();
         when(encoder.matches(PASSWORD, PASSWORD_HASH)).thenReturn(true);
         doThrow(DataIntegrityViolationException.class).when(repository).deleteByUsername(ALICE);
 
-        assertThatThrownBy(() -> service.deleteUserByUsername(ALICE, PASSWORD))
-                .isInstanceOf(UserIsConnectedException.class);
+        assertThatThrownBy(() -> service.delete(ALICE, PASSWORD)).isInstanceOf(UserIsConnectedException.class);
     }
 
     @Test
-    void deleteUserByUsername_shouldDeleteUserWithMatchingPassword() {
+    void delete_shouldDeleteUserWithMatchingPassword() {
         stubExistingUser();
         when(encoder.matches(PASSWORD, PASSWORD_HASH)).thenReturn(true);
 
-        service.deleteUserByUsername(ALICE, PASSWORD);
+        service.delete(ALICE, PASSWORD);
 
         verify(repository).deleteByUsername(ALICE);
     }
 
     @Test
-    void updateUserPassword_shouldRejectWrongOldPassword() {
+    void updatePassword_shouldRejectWrongOldPassword() {
         User user = stubExistingUser();
         when(encoder.matches(PASSWORD, PASSWORD_HASH)).thenReturn(false);
 
-        assertThatThrownBy(() -> service.updateUserPassword(ALICE, PASSWORD, NEW_PASSWORD))
+        assertThatThrownBy(() -> service.updatePassword(ALICE, PASSWORD, NEW_PASSWORD))
                 .isInstanceOf(WrongPasswordException.class);
         assertThat(user.getPasswordHash()).isEqualTo(PASSWORD_HASH);
     }
 
     @Test
-    void updateUserPassword_shouldStoreTheHashOfTheNewPassword() {
+    void updatePassword_shouldStoreTheHashOfTheNewPassword() {
         User user = stubExistingUser();
         String newHash = "new_hash";
         when(encoder.matches(PASSWORD, PASSWORD_HASH)).thenReturn(true);
         when(encoder.encode(NEW_PASSWORD)).thenReturn(newHash);
 
-        service.updateUserPassword(ALICE, PASSWORD, NEW_PASSWORD);
+        service.updatePassword(ALICE, PASSWORD, NEW_PASSWORD);
 
         assertThat(user.getPasswordHash()).isEqualTo(newHash);
     }
 
     @ParameterizedTest(name = "empty {0}")
     @MethodSource("emptyFieldUpdates")
-    void updateUserInformation_shouldRejectEmptyValue(String field, UpdateUserInformationRequest request) {
+    void updateInformation_shouldRejectEmptyValue(String field, UpdateUserInformationRequest request) {
         stubExistingUser();
 
-        assertThatThrownBy(() -> service.updateUserInformation(ALICE, request))
+        assertThatThrownBy(() -> service.updateInformation(ALICE, request))
                 .isInstanceOf(UserInfoUpdateException.class)
                 .hasMessageContaining("a non-empty " + field);
     }
 
     @Test
-    void updateUserInformation_shouldChangeUsername() {
+    void updateInformation_shouldChangeUsername() {
         User user = stubExistingUser();
 
-        service.updateUserInformation(ALICE, usernameUpdate(NEW_USERNAME));
+        service.updateInformation(ALICE, usernameUpdate(NEW_USERNAME));
 
         verify(repository).flush();
         assertThat(user.getUsername()).isEqualTo(NEW_USERNAME);
     }
 
     @Test
-    void updateUserInformation_shouldChangeName() {
+    void updateInformation_shouldChangeName() {
         User user = stubExistingUser();
 
-        service.updateUserInformation(ALICE, nameUpdate(NEW_NAME));
+        service.updateInformation(ALICE, nameUpdate(NEW_NAME));
 
         assertThat(user.getName()).isEqualTo(NEW_NAME);
     }
 
     @Test
-    void updateUserInformation_shouldChangeEmail() {
+    void updateInformation_shouldChangeEmail() {
         User user = stubExistingUser();
 
-        service.updateUserInformation(ALICE, emailUpdate(NEW_EMAIL));
+        service.updateInformation(ALICE, emailUpdate(NEW_EMAIL));
 
         assertThat(user.getEmail()).isEqualTo(NEW_EMAIL);
     }
 
     @Test
-    void updateUserInformation_shouldRejectExistingEmail() {
+    void updateInformation_shouldRejectExistingEmail() {
         stubExistingUser();
         doThrow(DataIntegrityViolationException.class).when(repository).flush();
         UpdateUserInformationRequest request = emailUpdate(email(BOB));
 
-        assertThatThrownBy(() -> service.updateUserInformation(ALICE, request))
+        assertThatThrownBy(() -> service.updateInformation(ALICE, request))
                 .isInstanceOf(UserAlreadyExistsException.class);
     }
 
     @Test
-    void updateUserInformation_shouldRejectExistingUsername() {
+    void updateInformation_shouldRejectExistingUsername() {
         stubExistingUser();
         doThrow(DataIntegrityViolationException.class).when(repository).flush();
         UpdateUserInformationRequest request = usernameUpdate(BOB);
 
-        assertThatThrownBy(() -> service.updateUserInformation(ALICE, request))
+        assertThatThrownBy(() -> service.updateInformation(ALICE, request))
                 .isInstanceOf(UserAlreadyExistsException.class);
     }
 

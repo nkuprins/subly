@@ -1,4 +1,4 @@
-package com.app.subly.model.subscription;
+package com.app.subly.enums;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

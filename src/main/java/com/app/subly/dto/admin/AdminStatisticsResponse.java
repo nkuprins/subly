@@ -1,6 +1,6 @@
 package com.app.subly.dto.admin;
 
-import com.app.subly.model.subscription.Currency;
+import com.app.subly.enums.Currency;
 import java.math.BigDecimal;
 import java.util.List;
 

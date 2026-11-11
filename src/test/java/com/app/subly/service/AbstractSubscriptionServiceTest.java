@@ -10,12 +10,12 @@ import static org.mockito.Mockito.when;
 
 import com.app.subly.dto.subscription.CreateSubscriptionRequest;
 import com.app.subly.dto.subscription.PaymentDetails;
-import com.app.subly.model.provider.ProviderType;
-import com.app.subly.model.provider.SubscriptionProvider;
-import com.app.subly.model.subscription.BillingCycle;
-import com.app.subly.model.subscription.Subscription;
-import com.app.subly.model.subscription.SubscriptionMembership;
-import com.app.subly.model.user.User;
+import com.app.subly.entity.provider.SubscriptionProvider;
+import com.app.subly.entity.subscription.Subscription;
+import com.app.subly.entity.subscription.SubscriptionMembership;
+import com.app.subly.entity.user.User;
+import com.app.subly.enums.BillingCycle;
+import com.app.subly.enums.ProviderType;
 import com.app.subly.repository.SubscriptionMembershipRepository;
 import com.app.subly.repository.SubscriptionProviderRepository;
 import com.app.subly.repository.SubscriptionRepository;

@@ -1,4 +1,4 @@
-package com.app.subly.model.user;
+package com.app.subly.enums;
 
 public enum UserRole {
     ADMIN,

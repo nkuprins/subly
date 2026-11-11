@@ -3,10 +3,9 @@ package com.app.subly.service;
 import static com.app.subly.testdata.TestSubscriptions.aSubscription;
 import static com.app.subly.testdata.TestUsers.ALICE;
 
-import com.app.subly.model.subscription.Currency;
-import com.app.subly.model.subscription.Subscription;
-import com.app.subly.model.subscription.SubscriptionMembership;
-import com.app.subly.service.SubscriptionShares.Share;
+import com.app.subly.entity.subscription.Subscription;
+import com.app.subly.entity.subscription.SubscriptionMembership;
+import com.app.subly.enums.Currency;
 import com.app.subly.testdata.TestSubscriptions;
 import com.app.subly.testdata.TestUsers;
 import java.math.BigDecimal;

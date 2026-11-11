@@ -1,8 +1,8 @@
 package com.app.subly.repository;
 
 import com.app.subly.dto.provider.ProviderCategoryResponse;
-import com.app.subly.model.provider.ProviderType;
-import com.app.subly.model.provider.SubscriptionProvider;
+import com.app.subly.entity.provider.SubscriptionProvider;
+import com.app.subly.enums.ProviderType;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.EntityGraph;

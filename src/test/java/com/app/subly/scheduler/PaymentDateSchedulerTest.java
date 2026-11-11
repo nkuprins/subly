@@ -1,4 +1,4 @@
-package com.app.subly.service;
+package com.app.subly.scheduler;
 
 import static com.app.subly.testdata.TestClock.DEFAULT_ZONE;
 import static com.app.subly.testdata.TestClock.TODAY;
@@ -11,6 +11,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import com.app.subly.repository.UserRepository;
+import com.app.subly.service.PaymentService;
 import com.app.subly.testdata.TestClock;
 import java.time.Clock;
 import java.time.Duration;

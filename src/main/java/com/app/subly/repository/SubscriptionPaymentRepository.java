@@ -1,6 +1,6 @@
 package com.app.subly.repository;
 
-import com.app.subly.model.subscription.SubscriptionPayment;
+import com.app.subly.entity.subscription.SubscriptionPayment;
 import java.util.List;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;

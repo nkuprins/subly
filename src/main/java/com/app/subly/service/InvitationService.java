@@ -3,11 +3,11 @@ package com.app.subly.service;
 import com.app.subly.dto.invitation.InviteRequest;
 import com.app.subly.dto.invitation.InviteResponse;
 import com.app.subly.dto.invitation.ReceivedInvitationResponse;
+import com.app.subly.entity.invitation.PendingInvitation;
+import com.app.subly.entity.subscription.*;
+import com.app.subly.entity.user.User;
 import com.app.subly.exception.invitation.*;
 import com.app.subly.exception.subscription.SubscriptionNotJoinableException;
-import com.app.subly.model.invitation.PendingInvitation;
-import com.app.subly.model.subscription.*;
-import com.app.subly.model.user.User;
 import com.app.subly.repository.PendingInvitationRepository;
 import com.app.subly.repository.SubscriptionMembershipRepository;
 import com.app.subly.repository.SubscriptionRepository;
@@ -87,14 +87,8 @@ public class InvitationService {
     }
 
     private void requireJoinable(Subscription subscription) {
-        if (!subscription.isActive()) {
-            throw new SubscriptionNotJoinableException("Subscription is not active");
-        }
-        if (!subscription.isSharable()) {
-            throw new SubscriptionNotJoinableException("Subscription is not sharable");
-        }
-        if (subscription.isFull(membershipRepository.countBySubscriptionId(subscription.getId()))) {
-            throw new SubscriptionNotJoinableException("Subscription has reached its participant limit");
+        if (subscription.isClosedToNewMembers(membershipRepository.countBySubscriptionId(subscription.getId()))) {
+            throw new SubscriptionNotJoinableException(subscription.getId());
         }
     }
 

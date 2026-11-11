@@ -1,8 +1,8 @@
 package com.app.subly.service;
 
 import com.app.subly.config.AdminConfiguration;
-import com.app.subly.model.user.User;
-import com.app.subly.model.user.UserRole;
+import com.app.subly.entity.user.User;
+import com.app.subly.enums.UserRole;
 import com.app.subly.repository.UserRepository;
 import org.jspecify.annotations.NonNull;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -14,13 +14,13 @@ import org.springframework.stereotype.Service;
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 
-    private final UserRepository repository;
+    private final UserRepository userRepository;
     private final PasswordEncoder encoder;
     private final AdminConfiguration adminConfiguration;
 
     public CustomUserDetailsService(
-            UserRepository repository, PasswordEncoder encoder, AdminConfiguration adminConfiguration) {
-        this.repository = repository;
+            UserRepository userRepository, PasswordEncoder encoder, AdminConfiguration adminConfiguration) {
+        this.userRepository = userRepository;
         this.encoder = encoder;
         this.adminConfiguration = adminConfiguration;
         createDefaultAdminUser();
@@ -28,8 +28,9 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(@NonNull String username) throws UsernameNotFoundException {
-        User user =
-                repository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("No found user"));
+        User user = userRepository
+                .findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("No found user"));
 
         return org.springframework.security.core.userdetails.User.withUsername(user.getUsername())
                 .password(user.getPasswordHash())
@@ -38,7 +39,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     }
 
     private void createDefaultAdminUser() {
-        if (repository.findByUsername(adminConfiguration.getAdminUsername()).isPresent()) {
+        if (userRepository.findByUsername(adminConfiguration.getAdminUsername()).isPresent()) {
             return;
         }
 
@@ -49,6 +50,6 @@ public class CustomUserDetailsService implements UserDetailsService {
                 adminConfiguration.getAdminEmail(),
                 UserRole.ADMIN);
 
-        repository.save(user);
+        userRepository.save(user);
     }
 }

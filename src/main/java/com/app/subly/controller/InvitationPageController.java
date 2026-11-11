@@ -58,9 +58,7 @@ public class InvitationPageController {
 
     @GetMapping("/subscriptions/{id}/participants")
     public String participants(@PathVariable Long id, Principal principal, Model model) {
-        var sub = subscriptionService.findActive(principal.getName(), id).orElse(null);
-        if (sub == null) return "redirect:/subscriptions";
-        model.addAttribute("sub", sub);
+        model.addAttribute("sub", subscriptionService.getActive(principal.getName(), id));
         model.addAttribute(
                 "participants",
                 membershipService.findMembers(principal.getName(), id).members());

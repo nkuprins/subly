@@ -1,6 +1,7 @@
-package com.app.subly.service;
+package com.app.subly.scheduler;
 
 import com.app.subly.repository.UserRepository;
+import com.app.subly.service.PaymentService;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.ZoneId;

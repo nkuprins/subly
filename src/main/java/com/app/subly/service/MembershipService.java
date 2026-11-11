@@ -2,11 +2,11 @@ package com.app.subly.service;
 
 import com.app.subly.dto.subscription.MemberListResponse;
 import com.app.subly.dto.subscription.SubscriptionMemberResponse;
+import com.app.subly.entity.subscription.Subscription;
+import com.app.subly.entity.subscription.SubscriptionMembership;
+import com.app.subly.enums.MembershipRole;
 import com.app.subly.exception.subscription.MembershipActionForbiddenException;
 import com.app.subly.exception.subscription.SubscriptionMemberNotFoundException;
-import com.app.subly.model.subscription.MembershipRole;
-import com.app.subly.model.subscription.Subscription;
-import com.app.subly.model.subscription.SubscriptionMembership;
 import com.app.subly.repository.SubscriptionMembershipRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +25,7 @@ public class MembershipService {
         Subscription subscription =
                 subscriptionAccess.getMembership(username, subscriptionId).getSubscription();
         List<SubscriptionMemberResponse> members = membersOf(subscriptionId);
-        boolean full = !subscription.isActive() || subscription.isFull(members.size());
+        boolean full = subscription.isClosedToNewMembers(members.size());
         return new MemberListResponse(members, full);
     }
 

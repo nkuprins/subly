@@ -1,7 +1,7 @@
 package com.app.subly.repository;
 
+import com.app.subly.entity.category.Category;
 import com.app.subly.exception.category.CategoryNotFoundException;
-import com.app.subly.model.category.Category;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
