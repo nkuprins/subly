@@ -64,7 +64,6 @@ public class Subscription {
     @Column(updatable = false, nullable = false)
     private Instant createdAt;
 
-    // Placeholder: always EUR until the user can choose a currency.
     @Setter
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

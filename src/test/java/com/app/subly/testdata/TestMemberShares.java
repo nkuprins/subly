@@ -9,10 +9,11 @@ import com.app.subly.enums.Currency;
 import com.app.subly.service.share.MemberShare;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class TestMemberShares {
-
-    private TestMemberShares() {}
 
     public static MemberShare share(TestSubscriptions.Builder subscription) {
         Subscription built = subscription.build();
