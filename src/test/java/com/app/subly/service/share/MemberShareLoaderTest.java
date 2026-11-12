@@ -27,10 +27,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class MemberShareLoaderTest {
 
     @Mock
-    SubscriptionMembershipRepository membershipRepository;
+    private SubscriptionMembershipRepository membershipRepository;
 
     @InjectMocks
-    MemberShareLoader memberShareLoader;
+    private MemberShareLoader memberShareLoader;
 
     @Test
     void forUser_shouldReturnEmptyWithoutLoadingMembersWhenUserHasNoSubscriptions() {

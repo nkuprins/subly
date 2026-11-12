@@ -82,16 +82,12 @@ abstract class AbstractSubscriptionServiceTest {
     }
 
     static void assertPaymentDetails(
-            Subscription subscription,
-            BigDecimal price,
-            BillingCycle billingCycle,
-            LocalDate nextPaymentDate,
-            boolean freeTrial) {
+            Subscription subscription, BigDecimal price, BillingCycle billingCycle, LocalDate nextPaymentDate) {
         assertThat(subscription.getPrice()).isEqualByComparingTo(price);
         assertThat(subscription.getBillingCycle()).isEqualTo(billingCycle);
         assertThat(subscription.getNextPaymentDate()).isEqualTo(nextPaymentDate);
         assertThat(subscription.getBillingAnchorDate()).isEqualTo(nextPaymentDate);
-        assertThat(subscription.isFreeTrial()).isEqualTo(freeTrial);
+        assertThat(subscription.isFreeTrial()).isTrue();
     }
 
     SubscriptionProvider provider(ProviderType providerType) {

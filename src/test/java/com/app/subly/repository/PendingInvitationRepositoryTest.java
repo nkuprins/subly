@@ -15,9 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 class PendingInvitationRepositoryTest extends AbstractRepositoryTest {
 
     @Autowired
-    PendingInvitationRepository invitationRepository;
+    private PendingInvitationRepository invitationRepository;
 
-    PendingInvitation invitation;
+    private PendingInvitation invitation;
 
     @BeforeEach
     void setUp() {

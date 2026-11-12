@@ -39,22 +39,22 @@ class ProviderServiceTest {
     private static final String LOGO_PATH = "/logo.svg";
 
     @Mock
-    SubscriptionProviderRepository subscriptionProviderRepository;
+    private SubscriptionProviderRepository subscriptionProviderRepository;
 
     @Mock
-    CategoryRepository categoryRepository;
+    private CategoryRepository categoryRepository;
 
     @Mock
-    UserRepository userRepository;
+    private UserRepository userRepository;
 
     @InjectMocks
-    ProviderService service;
+    private ProviderService service;
 
     @Captor
-    ArgumentCaptor<SubscriptionProvider> providerCaptor;
+    private ArgumentCaptor<SubscriptionProvider> providerCaptor;
 
-    final Category category = TestProviders.category();
-    final SubscriptionProvider catalog = TestProviders.catalog(category);
+    private final Category category = TestProviders.category();
+    private final SubscriptionProvider catalog = TestProviders.catalog(category);
 
     @Test
     void findCatalogProviders_shouldReturnCatalogProviders() {

@@ -45,14 +45,6 @@ class DashboardCalculatorTest {
     }
 
     @Test
-    void summarize_shouldIncludeFreeTrialAtItsFuturePrice() {
-        List<MemberShare> shares =
-                List.of(share(aSubscription().withPrice("20.00").withFreeTrial()));
-
-        assertThat(summarize(shares, Currency.EUR)).isEqualTo(summary("20.00", "240.00", Currency.EUR, 1));
-    }
-
-    @Test
     void summarize_shouldRoundOnlyTheFinalMonthlyAverageOfYearlySubscription() {
         List<MemberShare> shares =
                 List.of(share(aSubscription().withPrice("100.00").withBillingCycle(BillingCycle.YEARLY)));

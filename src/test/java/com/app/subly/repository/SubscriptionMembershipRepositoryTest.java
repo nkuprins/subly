@@ -26,12 +26,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 class SubscriptionMembershipRepositoryTest extends AbstractRepositoryTest {
 
     @Autowired
-    SubscriptionMembershipRepository repository;
+    private SubscriptionMembershipRepository repository;
 
-    User alice;
-    Subscription subscription;
-    SubscriptionMembership owner;
-    SubscriptionMembership bobMember;
+    private User alice;
+    private Subscription subscription;
+    private SubscriptionMembership owner;
+    private SubscriptionMembership bobMember;
 
     @BeforeEach
     void setUp() {

@@ -29,16 +29,16 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class AdminStatisticsServiceTest {
 
     @Mock
-    UserRepository userRepository;
+    private UserRepository userRepository;
 
     @Mock
-    SubscriptionRepository subscriptionRepository;
+    private SubscriptionRepository subscriptionRepository;
 
     @Mock
-    SubscriptionMembershipRepository membershipRepository;
+    private SubscriptionMembershipRepository membershipRepository;
 
     @InjectMocks
-    AdminStatisticsService service;
+    private AdminStatisticsService service;
 
     @Test
     void getStatistics_shouldCountActiveSubscriptionsAndRankCatalogServices() {
