@@ -18,10 +18,12 @@ import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
@@ -79,7 +81,7 @@ public class AdminController {
     }
 
     @PostMapping("/providers")
-    public String addNewProvider(
+    public ModelAndView addNewProvider(
             @Valid @ModelAttribute("providerForm") CreateProviderForm form,
             BindingResult bindingResult,
             Model model,
@@ -88,15 +90,17 @@ public class AdminController {
         log.info("Creating catalogue provider for username={}", principal.getName());
 
         if (bindingResult.hasErrors()) {
-            log.info("Catalogue provider form has validation errors for username={}", principal.getName());
             model.addAttribute("categories", categoryService.findAll());
-            return "admin-provider-form"; // return the user back on the page
+            ModelAndView modelAndView = new ModelAndView("admin-provider-form", model.asMap());
+            modelAndView.setStatus(HttpStatus.BAD_REQUEST);
+            log.info("Catalogue provider form has validation errors for username={}", principal.getName());
+            return modelAndView; // return the user back on the page
         }
 
         providerService.create(principal.getName(), form, ProviderType.CATALOG);
         log.info("Catalogue provider created successfully for username={}", principal.getName());
 
-        return "redirect:/admin";
+        return new ModelAndView("redirect:/admin");
     }
 
     @GetMapping("/statistics")

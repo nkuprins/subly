@@ -8,12 +8,14 @@ import jakarta.validation.Valid;
 import java.security.Principal;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.servlet.ModelAndView;
 
 @Controller
 @RequiredArgsConstructor
@@ -31,7 +33,7 @@ public class ProviderPageController {
     }
 
     @PostMapping("/providers")
-    public String createProvider(
+    public ModelAndView createProvider(
             Principal principal,
             @Valid @ModelAttribute("providerForm") CreateProviderForm form,
             BindingResult bindingResult,
@@ -42,11 +44,13 @@ public class ProviderPageController {
         if (bindingResult.hasErrors()) {
             log.info("Custom provider form has validation errors for username={}", principal.getName());
             model.addAttribute("categories", categoryService.findAll());
-            return "provider-form";
+            ModelAndView modelAndView = new ModelAndView("provider-form", model.asMap());
+            modelAndView.setStatus(HttpStatus.BAD_REQUEST);
+            return modelAndView;
         }
 
         providerService.create(principal.getName(), form, ProviderType.CUSTOM);
         log.info("Custom provider created successfully for username={}", principal.getName());
-        return "redirect:/subscriptions/new";
+        return new ModelAndView("redirect:/subscriptions/new");
     }
 }
