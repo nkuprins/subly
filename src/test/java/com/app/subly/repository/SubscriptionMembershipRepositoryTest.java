@@ -2,6 +2,7 @@ package com.app.subly.repository;
 
 import static com.app.subly.testdata.TestClock.DEFAULT_ZONE;
 import static com.app.subly.testdata.TestClock.NOW;
+import static com.app.subly.testdata.TestClock.TODAY;
 import static com.app.subly.testdata.TestClock.TOKYO;
 import static com.app.subly.testdata.TestSubscriptions.aSubscription;
 import static com.app.subly.testdata.TestUsers.ALICE;
@@ -10,9 +11,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.app.subly.entity.subscription.Subscription;
 import com.app.subly.entity.subscription.SubscriptionMembership;
+import com.app.subly.entity.subscription.SubscriptionPayment;
 import com.app.subly.entity.user.User;
 import com.app.subly.enums.MembershipRole;
 import com.app.subly.enums.SubscriptionStatus;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
@@ -25,21 +28,18 @@ class SubscriptionMembershipRepositoryTest extends AbstractRepositoryTest {
     @Autowired
     SubscriptionMembershipRepository repository;
 
-    @Autowired
-    SubscriptionRepository subscriptionRepository;
-
     User alice;
     Subscription subscription;
-    SubscriptionMembership ownerRow;
-    SubscriptionMembership memberRow;
+    SubscriptionMembership owner;
+    SubscriptionMembership bobMember;
 
     @BeforeEach
     void setUp() {
         alice = persistUser(ALICE);
-        User member = persistUser(BOB);
+        User bob = persistUser(BOB);
         subscription = persistSubscription(alice);
-        ownerRow = entityManager.persist(SubscriptionMembership.owner(alice, subscription));
-        memberRow = entityManager.persist(SubscriptionMembership.member(member, subscription));
+        owner = entityManager.persist(SubscriptionMembership.owner(alice, subscription));
+        bobMember = entityManager.persist(SubscriptionMembership.member(bob, subscription));
         entityManager.flush();
     }
 
@@ -48,16 +48,21 @@ class SubscriptionMembershipRepositoryTest extends AbstractRepositoryTest {
         assertThat(repository.findBySubscriptionIdAndRole(subscription.getId(), MembershipRole.OWNER))
                 .get()
                 .extracting(SubscriptionMembership::getId)
-                .isEqualTo(ownerRow.getId());
+                .isEqualTo(owner.getId());
     }
 
     @Test
-    void delete_shouldDeleteMembershipsOfTheSubscription() {
-        subscriptionRepository.delete(subscription);
+    void delete_shouldKeepPaymentsOfTheMember() {
+        SubscriptionPayment payment = entityManager.persist(
+                new SubscriptionPayment(subscription, bobMember.getUser(), new BigDecimal("5.00"), TODAY));
         entityManager.flush();
 
-        assertThat(repository.existsById(ownerRow.getId())).isFalse();
-        assertThat(repository.existsById(memberRow.getId())).isFalse();
+        repository.delete(bobMember);
+        entityManager.flush();
+        entityManager.clear();
+
+        assertThat(entityManager.find(SubscriptionPayment.class, payment.getId()))
+                .isNotNull();
     }
 
     @Test
@@ -67,7 +72,7 @@ class SubscriptionMembershipRepositoryTest extends AbstractRepositoryTest {
         assertThat(findOwnersDueBefore(paymentDate)).isEmpty();
         assertThat(findOwnersDueBefore(paymentDate.plusDays(1)))
                 .extracting(SubscriptionMembership::getId)
-                .containsExactly(ownerRow.getId());
+                .containsExactly(owner.getId());
     }
 
     @Test
@@ -87,39 +92,27 @@ class SubscriptionMembershipRepositoryTest extends AbstractRepositoryTest {
     }
 
     @Test
-    void deleteById_shouldDeleteMembershipsOfTheSubscription() {
-        // membership
-        subscriptionRepository.deleteById(subscription.getId());
-        entityManager.flush();
-
-        assertThat(repository.existsById(ownerRow.getId())).isFalse();
-        assertThat(repository.existsById(memberRow.getId())).isFalse();
-    }
-
-    @Test
-    void findCancelled_shouldIncludeMembersOfCancelledSharedSubscriptions() {
+    void findMembershipsOf_shouldIncludeMembersOfCancelledSharedSubscriptions() {
         subscription.cancel(NOW);
         entityManager.flush();
 
-        assertThat(repository.findByUserUsernameAndSubscriptionStatusOrderBySubscriptionNextPaymentDateAsc(
-                        BOB, SubscriptionStatus.CANCELLED))
+        assertThat(repository.findMembershipsOf(BOB, SubscriptionStatus.CANCELLED))
                 .extracting(SubscriptionMembership::getId)
-                .containsExactly(memberRow.getId());
+                .containsExactly(bobMember.getId());
     }
 
     @Test
-    void findActive_shouldOrderByNextPaymentDate() {
+    void findMembershipsOf_shouldOrderByNextPaymentDate() {
         Subscription sooner = entityManager.persist(aSubscription()
                 .withProvider(subscription.getProvider())
                 .withNextPaymentDate(subscription.getNextPaymentDate().minusDays(5))
                 .build());
-        SubscriptionMembership soonerRow = entityManager.persist(SubscriptionMembership.owner(alice, sooner));
+        SubscriptionMembership soonerOwner = entityManager.persist(SubscriptionMembership.owner(alice, sooner));
         entityManager.flush();
 
-        assertThat(repository.findByUserUsernameAndSubscriptionStatusOrderBySubscriptionNextPaymentDateAsc(
-                        ALICE, SubscriptionStatus.ACTIVE))
+        assertThat(repository.findMembershipsOf(ALICE, SubscriptionStatus.ACTIVE))
                 .extracting(SubscriptionMembership::getId)
-                .containsExactly(soonerRow.getId(), ownerRow.getId());
+                .containsExactly(soonerOwner.getId(), owner.getId());
     }
 
     private List<SubscriptionMembership> findOwnersDueBefore(LocalDate date) {

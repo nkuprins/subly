@@ -1,5 +1,6 @@
 package com.app.subly.service;
 
+import static com.app.subly.testdata.TestSubscriptions.SUBSCRIPTION_ID;
 import static com.app.subly.testdata.TestUsers.ALICE;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;

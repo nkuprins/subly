@@ -34,7 +34,7 @@ class MemberShareLoaderTest {
 
     @Test
     void forUser_shouldReturnEmptyWithoutLoadingMembersWhenUserHasNoSubscriptions() {
-        stubAliceMemberships(List.of());
+        stubMembershipsOf(List.of());
 
         assertThat(memberShareLoader.forUser(ALICE, SubscriptionStatus.ACTIVE)).isEmpty();
         verify(membershipRepository, never()).findBySubscriptionIdIn(any());
@@ -47,7 +47,7 @@ class MemberShareLoaderTest {
         SubscriptionMembership aliceInShared = SubscriptionMembership.member(TestUsers.user(ALICE), shared);
         SubscriptionMembership bobOwnsShared = SubscriptionMembership.owner(TestUsers.user(BOB), shared);
         SubscriptionMembership aliceOwnsSolo = SubscriptionMembership.owner(TestUsers.user(ALICE), solo);
-        stubAliceMemberships(List.of(aliceInShared, aliceOwnsSolo));
+        stubMembershipsOf(List.of(aliceInShared, aliceOwnsSolo));
         when(membershipRepository.findBySubscriptionIdIn(List.of(1L, 2L)))
                 .thenReturn(List.of(aliceInShared, bobOwnsShared, aliceOwnsSolo));
 
@@ -57,7 +57,7 @@ class MemberShareLoaderTest {
                         tuple(aliceInShared, new BigDecimal("5.00")), tuple(aliceOwnsSolo, new BigDecimal("6.00")));
     }
 
-    private void stubAliceMemberships(List<SubscriptionMembership> memberships) {
+    private void stubMembershipsOf(List<SubscriptionMembership> memberships) {
         when(membershipRepository.findMembershipsOf(ALICE, SubscriptionStatus.ACTIVE))
                 .thenReturn(memberships);
     }

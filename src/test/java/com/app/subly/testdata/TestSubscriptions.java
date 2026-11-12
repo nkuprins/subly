@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class TestSubscriptions {
 
+    public static final long SUBSCRIPTION_ID = 7L;
     public static final BigDecimal DEFAULT_PRICE = new BigDecimal("35.00");
     public static final LocalDate DEFAULT_NEXT_PAYMENT_DATE = TestClock.TODAY.plusDays(10);
 

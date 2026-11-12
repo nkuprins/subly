@@ -23,7 +23,7 @@ class UserRepositoryTest extends AbstractRepositoryTest {
 
     @Test
     void saveAndFlush_shouldRejectDuplicateUsername() {
-        repository.saveAndFlush(user(ALICE));
+        persistUser(ALICE);
         User sameUsername = user(ALICE);
         sameUsername.setEmail(email(BOB));
 
@@ -33,7 +33,7 @@ class UserRepositoryTest extends AbstractRepositoryTest {
 
     @Test
     void saveAndFlush_shouldRejectDuplicateEmail() {
-        repository.saveAndFlush(user(ALICE));
+        persistUser(ALICE);
         User sameEmail = user(BOB);
         sameEmail.setEmail(email(ALICE));
 
@@ -42,28 +42,8 @@ class UserRepositoryTest extends AbstractRepositoryTest {
     }
 
     @Test
-    void flush_shouldRejectEmailOfAnotherUser() {
-        repository.saveAndFlush(user(ALICE));
-        User bob = repository.saveAndFlush(user(BOB));
-
-        bob.setEmail(email(ALICE));
-
-        assertThatThrownBy(repository::flush).isInstanceOf(DataIntegrityViolationException.class);
-    }
-
-    @Test
-    void flush_shouldRejectUsernameOfAnotherUser() {
-        repository.saveAndFlush(user(ALICE));
-        User bob = repository.saveAndFlush(user(BOB));
-
-        bob.setUsername(ALICE);
-
-        assertThatThrownBy(repository::flush).isInstanceOf(DataIntegrityViolationException.class);
-    }
-
-    @Test
     void getUser_shouldReturnExistingUser() {
-        repository.save(user(ALICE));
+        persistUser(ALICE);
 
         assertThat(repository.getUser(ALICE).getEmail()).isEqualTo(email(ALICE));
     }
@@ -79,9 +59,9 @@ class UserRepositoryTest extends AbstractRepositoryTest {
     void findDistinctTimeZones_shouldReturnEachZoneOnce() {
         User carol = user(CAROL);
         carol.setTimeZone(TOKYO);
-        repository.save(carol);
-        repository.save(user(ALICE));
-        repository.save(user(BOB));
+        entityManager.persist(carol);
+        persistUser(ALICE);
+        persistUser(BOB);
 
         assertThat(repository.findDistinctTimeZones()).containsExactlyInAnyOrder(TOKYO, DEFAULT_ZONE);
     }

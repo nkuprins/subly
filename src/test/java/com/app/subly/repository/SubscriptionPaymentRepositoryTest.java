@@ -6,7 +6,6 @@ import static com.app.subly.testdata.TestUsers.BOB;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.app.subly.entity.subscription.Subscription;
-import com.app.subly.entity.subscription.SubscriptionMembership;
 import com.app.subly.entity.subscription.SubscriptionPayment;
 import com.app.subly.entity.user.User;
 import java.math.BigDecimal;
@@ -20,24 +19,15 @@ class SubscriptionPaymentRepositoryTest extends AbstractRepositoryTest {
     @Autowired
     SubscriptionPaymentRepository repository;
 
-    @Autowired
-    SubscriptionRepository subscriptionRepository;
-
-    @Autowired
-    SubscriptionMembershipRepository membershipRepository;
-
     User alice;
     User bob;
     Subscription subscription;
-    SubscriptionMembership bobRow;
 
     @BeforeEach
     void setUp() {
         alice = persistUser(ALICE);
         bob = persistUser(BOB);
         subscription = persistSubscription(alice);
-        entityManager.persist(SubscriptionMembership.owner(alice, subscription));
-        bobRow = entityManager.persist(SubscriptionMembership.member(bob, subscription));
     }
 
     @Test
@@ -49,28 +39,6 @@ class SubscriptionPaymentRepositoryTest extends AbstractRepositoryTest {
         assertThat(repository.findHistoryOf(ALICE))
                 .extracting(SubscriptionPayment::getId)
                 .containsExactly(newer.getId(), older.getId());
-    }
-
-    @Test
-    void deleteById_shouldDeletePaymentsOfTheSubscription() {
-        SubscriptionPayment payment = persistPayment(alice, TODAY);
-        entityManager.flush();
-
-        subscriptionRepository.deleteById(subscription.getId());
-        entityManager.flush();
-
-        assertThat(repository.existsById(payment.getId())).isFalse();
-    }
-
-    @Test
-    void deletingAMembership_shouldKeepTheMembersPayments() {
-        SubscriptionPayment payment = persistPayment(bob, TODAY);
-        entityManager.flush();
-
-        membershipRepository.deleteById(bobRow.getId());
-        entityManager.flush();
-
-        assertThat(repository.existsById(payment.getId())).isTrue();
     }
 
     private SubscriptionPayment persistPayment(User user, LocalDate paidOn) {

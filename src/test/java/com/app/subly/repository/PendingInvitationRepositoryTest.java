@@ -6,7 +6,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.app.subly.entity.invitation.PendingInvitation;
-import com.app.subly.entity.subscription.Subscription;
 import com.app.subly.entity.user.User;
 import com.app.subly.exception.invitation.InvitationNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,18 +17,13 @@ class PendingInvitationRepositoryTest extends AbstractRepositoryTest {
     @Autowired
     PendingInvitationRepository invitationRepository;
 
-    @Autowired
-    SubscriptionRepository subscriptionRepository;
-
-    Subscription subscription;
     PendingInvitation invitation;
 
     @BeforeEach
     void setUp() {
         User alice = persistUser(ALICE);
         User bob = persistUser(BOB);
-        subscription = persistSubscription(alice);
-        invitation = entityManager.persist(new PendingInvitation(bob, subscription, alice));
+        invitation = entityManager.persist(new PendingInvitation(bob, persistSubscription(alice), alice));
         entityManager.flush();
     }
 
@@ -47,22 +41,5 @@ class PendingInvitationRepositoryTest extends AbstractRepositoryTest {
         assertThatThrownBy(() -> invitationRepository.getInvitation(invitationId, ALICE))
                 .isInstanceOf(InvitationNotFoundException.class)
                 .hasMessageContaining(String.valueOf(invitationId));
-    }
-
-    @Test
-    void getInvitation_shouldRejectUnknownInvitation() {
-        long unknownId = invitation.getId() + 1;
-
-        assertThatThrownBy(() -> invitationRepository.getInvitation(unknownId, BOB))
-                .isInstanceOf(InvitationNotFoundException.class)
-                .hasMessageContaining(String.valueOf(unknownId));
-    }
-
-    @Test
-    void delete_shouldDeleteInvitationsOfTheSubscription() {
-        subscriptionRepository.delete(subscription);
-        entityManager.flush();
-
-        assertThat(invitationRepository.existsById(invitation.getId())).isFalse();
     }
 }

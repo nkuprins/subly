@@ -5,7 +5,6 @@ import static com.app.subly.testdata.TestClock.TODAY;
 import static com.app.subly.testdata.TestClock.TOKYO;
 import static com.app.subly.testdata.TestClock.TOKYO_TODAY;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -21,6 +20,7 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -40,22 +40,15 @@ class PaymentDateSchedulerTest {
     @Mock
     Clock clock;
 
-    Instant now = TestClock.NOW;
+    @InjectMocks
     PaymentDateScheduler scheduler;
+
+    Instant now = TestClock.NOW;
 
     @BeforeEach
     void setUp() {
-        scheduler = new PaymentDateScheduler(userRepository, paymentService, clock);
         when(clock.withZone(any(ZoneId.class))).thenAnswer(call -> Clock.fixed(now, call.getArgument(0)));
         when(userRepository.findDistinctTimeZones()).thenReturn(List.of(DEFAULT_ZONE, TOKYO));
-    }
-
-    @Test
-    void advancePastPaymentDates_shouldUseTheTodayOfEachZone() {
-        scheduler.advancePastPaymentDates();
-
-        verify(paymentService).advancePaymentDates(DEFAULT_ZONE, TODAY);
-        verify(paymentService).advancePaymentDates(TOKYO, TOKYO_TODAY);
     }
 
     @Test
@@ -66,9 +59,9 @@ class PaymentDateSchedulerTest {
         now = MIDNIGHT_IN_DEFAULT_ZONE;
         scheduler.advancePastPaymentDates();
 
-        verify(paymentService, times(1)).advancePaymentDates(DEFAULT_ZONE, TODAY);
-        verify(paymentService, times(1)).advancePaymentDates(DEFAULT_ZONE, TODAY.plusDays(1));
-        verify(paymentService, times(1)).advancePaymentDates(TOKYO, TOKYO_TODAY);
+        verify(paymentService).advancePaymentDates(DEFAULT_ZONE, TODAY);
+        verify(paymentService).advancePaymentDates(DEFAULT_ZONE, TODAY.plusDays(1));
+        verify(paymentService).advancePaymentDates(TOKYO, TOKYO_TODAY);
         verifyNoMoreInteractions(paymentService);
     }
 }
