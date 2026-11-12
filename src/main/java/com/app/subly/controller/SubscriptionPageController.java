@@ -42,7 +42,7 @@ public class SubscriptionPageController {
 
     @GetMapping("/subscriptions/new")
     public String newSubscriptions(Principal principal, Model model) {
-        model.addAttribute("providers", providerService.findVisibleTo(principal.getName()));
+        model.addAttribute("providers", providerService.findVisibleProviders(principal.getName()));
         return "subscription-form";
     }
 

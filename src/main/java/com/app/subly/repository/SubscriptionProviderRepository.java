@@ -3,6 +3,7 @@ package com.app.subly.repository;
 import com.app.subly.dto.provider.ProviderCategoryResponse;
 import com.app.subly.entity.provider.SubscriptionProvider;
 import com.app.subly.enums.ProviderType;
+import com.app.subly.exception.provider.ProviderNotFoundException;
 import java.util.List;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,6 +14,10 @@ public interface SubscriptionProviderRepository extends JpaRepository<Subscripti
     @EntityGraph(attributePaths = "category")
     List<SubscriptionProvider> findAllByProviderTypeOrCreatedByUsernameOrderByNameAsc(
             ProviderType providerType, String username);
+
+    default SubscriptionProvider getProvider(long providerId) {
+        return findById(providerId).orElseThrow(() -> new ProviderNotFoundException(providerId));
+    }
 
     @EntityGraph(attributePaths = "category")
     List<SubscriptionProvider> findAllByProviderTypeOrderByNameAsc(ProviderType providerType);

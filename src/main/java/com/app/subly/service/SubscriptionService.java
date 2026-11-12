@@ -46,7 +46,10 @@ public class SubscriptionService {
         User owner = userRepository.getByUsername(username);
         requireNotInPast(owner, request.nextPaymentDate());
         requireCentPerParticipant(request.price(), request.maxParticipants());
-        SubscriptionProvider provider = findVisibleProvider(request.providerId(), owner);
+        SubscriptionProvider provider = providerRepository.getProvider(request.providerId());
+        if (!provider.isVisibleTo(owner)) {
+            throw new ProviderNotFoundException(request.providerId());
+        }
         Subscription subscription = new Subscription(
                 provider, request.price(), request.billingCycle(), request.nextPaymentDate(), request.freeTrial());
         if (request.maxParticipants() > 1) {
@@ -126,13 +129,6 @@ public class SubscriptionService {
             return;
         }
         subscriptionRepository.deleteAllById(subscriptionIds);
-    }
-
-    private SubscriptionProvider findVisibleProvider(long providerId, User owner) {
-        return providerRepository
-                .findById(providerId)
-                .filter(provider -> provider.isVisibleTo(owner))
-                .orElseThrow(() -> new ProviderNotFoundException(providerId));
     }
 
     private void requireNotInPast(User user, LocalDate nextPaymentDate) {

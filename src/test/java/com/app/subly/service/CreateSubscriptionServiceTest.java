@@ -20,7 +20,6 @@ import com.app.subly.enums.ProviderType;
 import com.app.subly.exception.provider.ProviderNotFoundException;
 import com.app.subly.testdata.TestProviders;
 import com.app.subly.testdata.TestUsers;
-import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -47,7 +46,7 @@ class CreateSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
     @EnumSource(ProviderType.class)
     void create_shouldSaveSubscriptionWithOwnerMembership(ProviderType providerType) {
         SubscriptionProvider provider = provider(providerType);
-        when(subscriptionProviderRepository.findById(PROVIDER_ID)).thenReturn(Optional.of(provider));
+        when(subscriptionProviderRepository.getProvider(PROVIDER_ID)).thenReturn(provider);
         CreateSubscriptionRequest request = createRequest();
 
         service.create(ALICE, request);
@@ -68,7 +67,8 @@ class CreateSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
 
     @Test
     void create_shouldRejectUnknownProvider() {
-        when(subscriptionProviderRepository.findById(PROVIDER_ID)).thenReturn(Optional.empty());
+        when(subscriptionProviderRepository.getProvider(PROVIDER_ID))
+                .thenThrow(new ProviderNotFoundException(PROVIDER_ID));
 
         assertRejected();
     }
@@ -76,8 +76,8 @@ class CreateSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
     @Test
     void create_shouldRejectCustomProviderOfAnotherUser() {
         User bob = TestUsers.userWithId(BOB, BOB_ID);
-        when(subscriptionProviderRepository.findById(PROVIDER_ID))
-                .thenReturn(Optional.of(TestProviders.custom(TestProviders.category(), bob)));
+        when(subscriptionProviderRepository.getProvider(PROVIDER_ID))
+                .thenReturn(TestProviders.custom(TestProviders.category(), bob));
 
         assertRejected();
     }

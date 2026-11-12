@@ -28,7 +28,7 @@ public class ProviderService {
     }
 
     @Transactional(readOnly = true)
-    public List<ProviderResponse> findVisibleTo(String username) {
+    public List<ProviderResponse> findVisibleProviders(String username) {
         return providerRepository
                 .findAllByProviderTypeOrCreatedByUsernameOrderByNameAsc(ProviderType.CATALOG, username)
                 .stream()
@@ -49,7 +49,7 @@ public class ProviderService {
 
     @Transactional
     public void deleteAllProvidersCreatedBy(String username) {
-        List<ProviderResponse> result = findVisibleTo(username);
+        List<ProviderResponse> result = findVisibleProviders(username);
         if (result.isEmpty()) {
             return;
         }
