@@ -7,11 +7,23 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import lombok.*;
 
-public record UpdateSubscriptionRequest(
-        @NotNull @Positive @Digits(integer = Money.INTEGER_DIGITS, fraction = Money.FRACTION_DIGITS)
-        BigDecimal price,
+@Getter
+@AllArgsConstructor
+@ToString
+public class UpdateSubscriptionRequest {
 
-        @NotNull BillingCycle billingCycle,
-        @NotNull LocalDate nextPaymentDate,
-        boolean freeTrial) {}
+    @NotNull
+    @Positive
+    @Digits(integer = Money.INTEGER_DIGITS, fraction = Money.FRACTION_DIGITS)
+    private BigDecimal price;
+
+    @NotNull
+    private BillingCycle billingCycle;
+
+    @NotNull
+    private LocalDate nextPaymentDate;
+
+    private boolean freeTrial;
+}
