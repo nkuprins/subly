@@ -17,12 +17,11 @@ public final class TestMemberShares {
 
     public static MemberShare share(TestSubscriptions.Builder subscription) {
         Subscription built = subscription.build();
-        return new MemberShare(SubscriptionMembership.owner(TestUsers.user(ALICE), built), built.getPrice());
+        return share(built, built.getPrice());
     }
 
     public static MemberShare share(TestSubscriptions.Builder subscription, String amount) {
-        return new MemberShare(
-                SubscriptionMembership.owner(TestUsers.user(ALICE), subscription.build()), new BigDecimal(amount));
+        return share(subscription.build(), new BigDecimal(amount));
     }
 
     public static MemberShare cancelledShare(String amount, Currency currency, LocalDate endDate) {
@@ -32,5 +31,9 @@ public final class TestMemberShares {
                         .withNextPaymentDate(endDate)
                         .cancelled(),
                 amount);
+    }
+
+    private static MemberShare share(Subscription subscription, BigDecimal amount) {
+        return new MemberShare(SubscriptionMembership.owner(TestUsers.user(ALICE), subscription), amount);
     }
 }

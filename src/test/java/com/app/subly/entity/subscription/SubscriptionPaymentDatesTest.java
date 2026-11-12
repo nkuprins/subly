@@ -17,19 +17,21 @@ import org.junit.jupiter.params.provider.CsvSource;
 
 class SubscriptionPaymentDatesTest {
 
-    static final LocalDate PAYMENT_DATE = LocalDate.of(2027, 2, 5);
+    private static final LocalDate PAYMENT_DATE = LocalDate.of(2027, 2, 5);
 
-    @ParameterizedTest(name = "ended {0}, today {1} -> {2} skipped")
+    @ParameterizedTest(name = "ended 2027-02-05, today {0} -> {1} skipped")
     @CsvSource({
-        "2027-02-05, 2027-02-04, 0",
-        "2027-02-05, 2027-02-05, 1",
-        "2027-02-05, 2027-03-04, 1",
-        "2027-02-05, 2027-03-05, 2",
-        "2027-02-05, 2027-03-06, 2",
+        "2027-02-04, 0",
+        "2027-02-05, 1",
+        "2027-03-04, 1",
+        "2027-03-05, 2",
+        "2027-03-06, 2",
     })
-    void skippedPaymentsUntil_shouldCountDatesFromTheEndDateUpToToday(
-            LocalDate endDate, LocalDate today, long expected) {
-        assertThat(monthly(endDate).skippedPaymentsUntil(today)).isEqualTo(expected);
+    void skippedPaymentsUntil_shouldCountDatesFromTheEndDateUpToToday(LocalDate today, long expected) {
+        Subscription subscription =
+                aSubscription().withNextPaymentDate(PAYMENT_DATE).build();
+
+        assertThat(subscription.skippedPaymentsUntil(today)).isEqualTo(expected);
     }
 
     @Test
@@ -39,10 +41,10 @@ class SubscriptionPaymentDatesTest {
                 .withNextPaymentDate(PAYMENT_DATE)
                 .build();
         SubscriptionMembership owner = SubscriptionMembership.owner(TestUsers.user(ALICE), subscription);
-        SubscriptionMembership bob = SubscriptionMembership.member(TestUsers.user(BOB), subscription);
-        SubscriptionMembership carol = SubscriptionMembership.member(TestUsers.user(CAROL), subscription);
+        SubscriptionMembership bobMember = SubscriptionMembership.member(TestUsers.user(BOB), subscription);
+        SubscriptionMembership carolMember = SubscriptionMembership.member(TestUsers.user(CAROL), subscription);
 
-        assertThat(subscription.paymentsDue(List.of(owner, bob, carol)))
+        assertThat(subscription.paymentsDue(List.of(owner, bobMember, carolMember)))
                 .extracting(
                         payment -> payment.getUser().getUsername(),
                         SubscriptionPayment::getPaidOn,
@@ -51,9 +53,5 @@ class SubscriptionPaymentDatesTest {
                         tuple(ALICE, PAYMENT_DATE, new BigDecimal("3.34")),
                         tuple(BOB, PAYMENT_DATE, new BigDecimal("3.33")),
                         tuple(CAROL, PAYMENT_DATE, new BigDecimal("3.33")));
-    }
-
-    private static Subscription monthly(LocalDate nextPaymentDate) {
-        return aSubscription().withNextPaymentDate(nextPaymentDate).build();
     }
 }

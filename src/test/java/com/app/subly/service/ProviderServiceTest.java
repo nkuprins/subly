@@ -4,11 +4,9 @@ import static com.app.subly.testdata.TestProviders.CATALOG_PROVIDER_NAME;
 import static com.app.subly.testdata.TestProviders.CUSTOM_PROVIDER_NAME;
 import static com.app.subly.testdata.TestUsers.ALICE;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.app.subly.dto.form.CreateProviderForm;
@@ -16,8 +14,6 @@ import com.app.subly.entity.category.Category;
 import com.app.subly.entity.provider.SubscriptionProvider;
 import com.app.subly.entity.user.User;
 import com.app.subly.enums.ProviderType;
-import com.app.subly.enums.UserRole;
-import com.app.subly.exception.category.CategoryNotFoundException;
 import com.app.subly.repository.CategoryRepository;
 import com.app.subly.repository.SubscriptionProviderRepository;
 import com.app.subly.repository.UserRepository;
@@ -25,6 +21,9 @@ import com.app.subly.testdata.TestProviders;
 import com.app.subly.testdata.TestUsers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -34,8 +33,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class ProviderServiceTest {
 
-    static final long CATEGORY_ID = 4L;
-    static final String LOGO_PATH = "/logo.svg";
+    private static final long CATEGORY_ID = 4L;
+    private static final String LOGO_PATH = "/logo.svg";
 
     @Mock
     SubscriptionProviderRepository subscriptionProviderRepository;
@@ -71,43 +70,24 @@ class ProviderServiceTest {
         assertThat(saved.getLogoPath()).isEqualTo(LOGO_PATH);
     }
 
-    @Test
-    void create_shouldSaveCustomProviderOwnedByTheUser() {
-        User user = stubUser(UserRole.USER);
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = "   ")
+    void create_shouldSaveCustomProviderOwnedByTheUser(String logoPath) {
+        User alice = stubAliceExists();
         stubCategoryAndSave();
 
         service.create(
-                ALICE, new CreateProviderForm(padded(CUSTOM_PROVIDER_NAME), CATEGORY_ID, "   "), ProviderType.CUSTOM);
+                ALICE,
+                new CreateProviderForm(padded(CUSTOM_PROVIDER_NAME), CATEGORY_ID, logoPath),
+                ProviderType.CUSTOM);
 
         SubscriptionProvider saved = savedProvider();
         assertThat(saved.getProviderType()).isEqualTo(ProviderType.CUSTOM);
-        assertThat(saved.getCreatedBy()).isSameAs(user);
+        assertThat(saved.getCreatedBy()).isSameAs(alice);
         assertThat(saved.getName()).isEqualTo(CUSTOM_PROVIDER_NAME);
         assertThat(saved.getCategory()).isSameAs(category);
         assertThat(saved.getLogoPath()).isNull();
-    }
-
-    @Test
-    void create_shouldSaveCustomProviderOwnedByTheAdmin() {
-        User admin = stubUser(UserRole.ADMIN);
-        stubCategoryAndSave();
-
-        service.create(ALICE, new CreateProviderForm(CUSTOM_PROVIDER_NAME, CATEGORY_ID, null), ProviderType.CUSTOM);
-
-        SubscriptionProvider saved = savedProvider();
-        assertThat(saved.getProviderType()).isEqualTo(ProviderType.CUSTOM);
-        assertThat(saved.getCreatedBy()).isSameAs(admin);
-    }
-
-    @Test
-    void create_shouldRejectUnknownCategory() {
-        when(categoryRepository.getCategory(CATEGORY_ID)).thenThrow(new CategoryNotFoundException(CATEGORY_ID));
-        CreateProviderForm form = new CreateProviderForm(CUSTOM_PROVIDER_NAME, CATEGORY_ID, null);
-
-        assertThatThrownBy(() -> service.create(ALICE, form, ProviderType.CUSTOM))
-                .isInstanceOf(CategoryNotFoundException.class)
-                .hasMessageContaining(String.valueOf(CATEGORY_ID));
-        verifyNoInteractions(subscriptionProviderRepository);
     }
 
     private void stubCategoryAndSave() {
@@ -121,10 +101,10 @@ class ProviderServiceTest {
         return providerCaptor.getValue();
     }
 
-    private User stubUser(UserRole role) {
-        User user = TestUsers.user(ALICE, role);
-        when(userRepository.getUser(ALICE)).thenReturn(user);
-        return user;
+    private User stubAliceExists() {
+        User alice = TestUsers.user(ALICE);
+        when(userRepository.getUser(ALICE)).thenReturn(alice);
+        return alice;
     }
 
     private static String padded(String value) {

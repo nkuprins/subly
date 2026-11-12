@@ -19,9 +19,9 @@ import com.app.subly.repository.UserRepository;
 import com.app.subly.testdata.TestProviders;
 import com.app.subly.testdata.TestUsers;
 import java.util.List;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -37,56 +37,50 @@ class AdminStatisticsServiceTest {
     @Mock
     SubscriptionMembershipRepository membershipRepository;
 
+    @InjectMocks
     AdminStatisticsService service;
-
-    @BeforeEach
-    void setUp() {
-        service = new AdminStatisticsService(userRepository, subscriptionRepository, membershipRepository);
-    }
 
     @Test
     void getStatistics_shouldCountActiveSubscriptionsAndRankCatalogServices() {
-        when(userRepository.count()).thenReturn(3L);
+        SubscriptionProvider netflix = catalogProvider(5L, "Netflix");
+        SubscriptionProvider appleTv = catalogProvider(6L, "Apple TV");
+        when(userRepository.count()).thenReturn(4L);
         when(subscriptionRepository.countByStatus(SubscriptionStatus.ACTIVE)).thenReturn(3L);
-
-        SubscriptionProvider netflix = SubscriptionProvider.catalog("Netflix", TestProviders.category());
-        netflix.setId(5L);
-
-        SubscriptionProvider spotify = SubscriptionProvider.catalog("Spotify", TestProviders.category());
-        spotify.setId(6L);
-
-        Subscription netflix1 = aSubscription().withId(1L).withProvider(netflix).build();
-
-        Subscription netflix2 = aSubscription().withId(2L).withProvider(netflix).build();
-
-        Subscription spotify1 = aSubscription().withId(3L).withProvider(spotify).build();
-
         when(subscriptionRepository.findByStatusAndProviderProviderType(
                         SubscriptionStatus.ACTIVE, ProviderType.CATALOG))
-                .thenReturn(List.of(netflix1, netflix2, spotify1));
+                .thenReturn(List.of(
+                        aSubscription().withProvider(netflix).build(),
+                        aSubscription().withProvider(appleTv).build(),
+                        aSubscription().withProvider(netflix).build()));
 
         AdminStatisticsResponse result = service.getStatistics();
 
-        assertThat(result.totalUsers()).isEqualTo(3);
+        assertThat(result.totalUsers()).isEqualTo(4);
         assertThat(result.activeSubscriptions()).isEqualTo(3);
         assertThat(result.popularServices())
-                .containsExactly(new PopularServiceResponse("Netflix", 2L), new PopularServiceResponse("Spotify", 1L));
+                .containsExactly(new PopularServiceResponse("Netflix", 2L), new PopularServiceResponse("Apple TV", 1L));
     }
 
     @Test
     void getStatistics_shouldAverageEachMemberShareAcrossAllUsers() {
-        when(userRepository.count()).thenReturn(3L);
         Subscription subscription =
                 aSubscription().withId(1L).withPrice("30.00").build();
-        SubscriptionMembership owner = SubscriptionMembership.owner(TestUsers.userWithId(ALICE, 1L), subscription);
-        SubscriptionMembership member = SubscriptionMembership.member(TestUsers.userWithId(BOB, 2L), subscription);
+        SubscriptionMembership owner = SubscriptionMembership.owner(TestUsers.user(ALICE), subscription);
+        SubscriptionMembership bobMember = SubscriptionMembership.member(TestUsers.user(BOB), subscription);
+        when(userRepository.count()).thenReturn(3L);
         when(membershipRepository.findBySubscriptionStatus(SubscriptionStatus.ACTIVE))
-                .thenReturn(List.of(owner, member));
+                .thenReturn(List.of(owner, bobMember));
 
         AdminStatisticsResponse result = service.getStatistics();
 
         // One shared plan costs EUR 30/month, two members pay EUR 15 each,
         // and the third registered user spends EUR 0: (15 + 15 + 0) / 3 = 10.
         assertThat(result.averageMonthlySpendPerUser()).isEqualByComparingTo("10.00");
+    }
+
+    private static SubscriptionProvider catalogProvider(long id, String name) {
+        SubscriptionProvider provider = SubscriptionProvider.catalog(name, TestProviders.category());
+        provider.setId(id);
+        return provider;
     }
 }

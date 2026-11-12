@@ -5,7 +5,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.app.subly.config.SecurityConfig;
-import com.app.subly.testutil.JsonBody;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
@@ -22,8 +21,8 @@ public abstract class AbstractWebMvcTest {
     @Autowired
     protected MockMvc mockMvc;
 
-    protected ResultActions sendJson(MockHttpServletRequestBuilder request, JsonBody body) throws Exception {
-        return mockMvc.perform(request.contentType(APPLICATION_JSON).content(body.json()));
+    protected ResultActions sendJson(MockHttpServletRequestBuilder request, String json) throws Exception {
+        return mockMvc.perform(request.contentType(APPLICATION_JSON).content(json));
     }
 
     protected static ResultMatcher validationError() {

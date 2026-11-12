@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class TestProviders {
 
-    public static final String CATEGORY_NAME = "Test category";
+    private static final String CATEGORY_NAME = "Test category";
     public static final String CATALOG_PROVIDER_NAME = "Test catalog provider";
     public static final String CUSTOM_PROVIDER_NAME = "Test custom provider";
 

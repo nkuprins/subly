@@ -40,13 +40,12 @@ class DashboardServiceTest {
     @Mock
     UserRepository userRepository;
 
-    User alice;
-
     DashboardService service;
+
+    final User alice = TestUsers.user(ALICE);
 
     @BeforeEach
     void setUp() {
-        alice = TestUsers.user(ALICE);
         when(userRepository.getUser(ALICE)).thenReturn(alice);
         service = new DashboardService(memberShareLoader, userRepository, TestClock.CLOCK);
     }
