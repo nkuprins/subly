@@ -101,7 +101,7 @@ public class UserService {
     }
 
     public User getByUsername(String username) {
-        return userRepository.getByUsername(username);
+        return userRepository.getUser(username);
     }
 
     private User createUserFromRawData(String username, String name, String password, String email, ZoneId timeZone) {
@@ -136,7 +136,7 @@ public class UserService {
         return originalCredential.equals(providedCredential);
     }
 
-    private void cleanUserConnectedData(Long userId, String username) {
+    private void cleanUserConnectedData(long userId, String username) {
         // deletes all data related to the user
         invitationService.deleteInvitationFor(userId);
         subscriptionService.deleteAllSubscriptionsFor(userId);

@@ -39,8 +39,8 @@ class SubscriptionProviderRepositoryTest extends AbstractRepositoryTest {
     }
 
     @Test
-    void findAllByProviderTypeOrCreatedByUsernameOrderByNameAsc_shouldReturnCatalogAndOwnProvidersByName() {
-        assertThat(repository.findAllByProviderTypeOrCreatedByUsernameOrderByNameAsc(ProviderType.CATALOG, ALICE))
+    void findByProviderTypeOrCreatedByUsernameOrderByNameAsc_shouldReturnCatalogAndOwnProvidersByName() {
+        assertThat(repository.findByProviderTypeOrCreatedByUsernameOrderByNameAsc(ProviderType.CATALOG, ALICE))
                 .extracting(SubscriptionProvider::getName)
                 .containsExactly(OWN_CUSTOM_NAME, CATALOG_NAME);
     }

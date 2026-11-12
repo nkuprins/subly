@@ -45,7 +45,7 @@ public class SubscriptionService {
 
     @Transactional
     public void create(String username, CreateSubscriptionRequest request) {
-        User owner = userRepository.getByUsername(username);
+        User owner = userRepository.getUser(username);
         requireNotInPast(owner, request.nextPaymentDate());
         requireCentPerParticipant(request.price(), request.maxParticipants());
         SubscriptionProvider provider = providerRepository.getProvider(request.providerId());
@@ -80,7 +80,7 @@ public class SubscriptionService {
 
     @Transactional(readOnly = true)
     public List<CancelledSubscriptionResponse> findCancelled(String username) {
-        LocalDate today = userRepository.getByUsername(username).today(clock);
+        LocalDate today = userRepository.getUser(username).today(clock);
         return memberShareLoader.forUser(username, SubscriptionStatus.CANCELLED).stream()
                 .map(share -> CancelledSubscriptionResponse.from(share.membership(), share.savedUntil(today)))
                 .toList();
@@ -122,11 +122,11 @@ public class SubscriptionService {
     }
 
     @Transactional
-    public void deleteAllSubscriptionsFor(Long userId) {
-        List<Long> subscriptionIds = membershipRepository.findByUser_IdAndRole(userId, MembershipRole.OWNER).stream()
+    public void deleteAllSubscriptionsFor(long userId) {
+        List<Long> subscriptionIds = membershipRepository.findByUserIdAndRole(userId, MembershipRole.OWNER).stream()
                 .map(membership -> membership.getSubscription().getId())
                 .toList();
-        membershipRepository.deleteByUser_Id(userId);
+        membershipRepository.deleteByUserId(userId);
         if (subscriptionIds.isEmpty()) {
             return;
         }

@@ -123,7 +123,7 @@ class ProviderServiceTest {
 
     private User stubUser(UserRole role) {
         User user = TestUsers.user(ALICE, role);
-        when(userRepository.getByUsername(ALICE)).thenReturn(user);
+        when(userRepository.getUser(ALICE)).thenReturn(user);
         return user;
     }
 

@@ -74,7 +74,7 @@ abstract class AbstractSubscriptionServiceTest {
     }
 
     void stubAliceExists() {
-        when(userRepository.getByUsername(ALICE)).thenReturn(alice);
+        when(userRepository.getUser(ALICE)).thenReturn(alice);
     }
 
     void stubOwnedSubscription(Subscription subscription) {

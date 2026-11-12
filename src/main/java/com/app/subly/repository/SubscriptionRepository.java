@@ -12,7 +12,7 @@ import org.springframework.data.jpa.repository.Lock;
 
 public interface SubscriptionRepository extends JpaRepository<Subscription, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    Optional<Subscription> findLockedById(Long id);
+    Optional<Subscription> findLockedById(long id);
 
     long countByStatus(SubscriptionStatus status);
 

@@ -47,7 +47,7 @@ class DashboardServiceTest {
     @BeforeEach
     void setUp() {
         alice = TestUsers.user(ALICE);
-        when(userRepository.getByUsername(ALICE)).thenReturn(alice);
+        when(userRepository.getUser(ALICE)).thenReturn(alice);
         service = new DashboardService(memberShareLoader, userRepository, TestClock.CLOCK);
     }
 

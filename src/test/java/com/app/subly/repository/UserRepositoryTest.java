@@ -62,15 +62,15 @@ class UserRepositoryTest extends AbstractRepositoryTest {
     }
 
     @Test
-    void getByUsername_shouldReturnExistingUser() {
+    void getUser_shouldReturnExistingUser() {
         repository.save(user(ALICE));
 
-        assertThat(repository.getByUsername(ALICE).getEmail()).isEqualTo(email(ALICE));
+        assertThat(repository.getUser(ALICE).getEmail()).isEqualTo(email(ALICE));
     }
 
     @Test
-    void getByUsername_shouldRejectUnknownUser() {
-        assertThatThrownBy(() -> repository.getByUsername("unknown"))
+    void getUser_shouldRejectUnknownUser() {
+        assertThatThrownBy(() -> repository.getUser("unknown"))
                 .isInstanceOf(UserDoesNotExistException.class)
                 .hasMessageContaining("unknown");
     }

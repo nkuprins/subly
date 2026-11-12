@@ -24,13 +24,13 @@ public class ProviderService {
 
     @Transactional(readOnly = true)
     public List<SubscriptionProvider> findCatalogProviders() {
-        return providerRepository.findAllByProviderTypeOrderByNameAsc(ProviderType.CATALOG);
+        return providerRepository.findByProviderTypeOrderByNameAsc(ProviderType.CATALOG);
     }
 
     @Transactional(readOnly = true)
     public List<ProviderResponse> findVisibleProviders(String username) {
         return providerRepository
-                .findAllByProviderTypeOrCreatedByUsernameOrderByNameAsc(ProviderType.CATALOG, username)
+                .findByProviderTypeOrCreatedByUsernameOrderByNameAsc(ProviderType.CATALOG, username)
                 .stream()
                 .map(ProviderResponse::from)
                 .toList();
@@ -42,7 +42,7 @@ public class ProviderService {
         String name = form.getName().strip();
         SubscriptionProvider provider = (type == ProviderType.CATALOG)
                 ? SubscriptionProvider.catalog(name, category)
-                : SubscriptionProvider.custom(name, category, userRepository.getByUsername(username));
+                : SubscriptionProvider.custom(name, category, userRepository.getUser(username));
         provider.setLogoPath(normalizeLogoPath(form.getLogoPath()));
         providerRepository.save(provider);
     }
@@ -53,7 +53,7 @@ public class ProviderService {
     }
 
     public List<ProviderCategoryResponse> findProviderCountsByCategory() {
-        return providerRepository.getAllProvidersCountGroupedByCategory();
+        return providerRepository.findProviderCountsByCategory();
     }
 
     private static String normalizeLogoPath(String logoPath) {

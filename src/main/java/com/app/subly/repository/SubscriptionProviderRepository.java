@@ -12,7 +12,7 @@ import org.springframework.data.jpa.repository.Query;
 public interface SubscriptionProviderRepository extends JpaRepository<SubscriptionProvider, Long> {
 
     @EntityGraph(attributePaths = "category")
-    List<SubscriptionProvider> findAllByProviderTypeOrCreatedByUsernameOrderByNameAsc(
+    List<SubscriptionProvider> findByProviderTypeOrCreatedByUsernameOrderByNameAsc(
             ProviderType providerType, String username);
 
     default SubscriptionProvider getProvider(long providerId) {
@@ -22,7 +22,7 @@ public interface SubscriptionProviderRepository extends JpaRepository<Subscripti
     void deleteByCreatedByUsername(String username);
 
     @EntityGraph(attributePaths = "category")
-    List<SubscriptionProvider> findAllByProviderTypeOrderByNameAsc(ProviderType providerType);
+    List<SubscriptionProvider> findByProviderTypeOrderByNameAsc(ProviderType providerType);
 
     //  SELECT COUNT(*), categories.name FROM subscription_providers JOIN categories ON categories.id = category_id
     // GROUP
@@ -35,5 +35,5 @@ public interface SubscriptionProviderRepository extends JpaRepository<Subscripti
               GROUP BY c.id
 
             """)
-    List<ProviderCategoryResponse> getAllProvidersCountGroupedByCategory();
+    List<ProviderCategoryResponse> findProviderCountsByCategory();
 }

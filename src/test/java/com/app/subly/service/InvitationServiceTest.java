@@ -138,7 +138,7 @@ class InvitationServiceTest {
 
     @Test
     void decline_shouldDeleteInvitationWithoutCreatingMembership() {
-        when(invitationRepository.getByIdAndUserUsername(INVITATION_ID, ALICE)).thenReturn(invitation);
+        when(invitationRepository.getInvitation(INVITATION_ID, ALICE)).thenReturn(invitation);
 
         service.decline(ALICE, INVITATION_ID);
 
@@ -148,7 +148,7 @@ class InvitationServiceTest {
 
     @Test
     void accept_shouldRejectInvitationOfAnotherUser() {
-        when(invitationRepository.getByIdAndUserUsername(INVITATION_ID, BOB))
+        when(invitationRepository.getInvitation(INVITATION_ID, BOB))
                 .thenThrow(new InvitationNotFoundException(INVITATION_ID));
 
         assertThatThrownBy(() -> service.accept(BOB, INVITATION_ID)).isInstanceOf(InvitationNotFoundException.class);
@@ -157,7 +157,7 @@ class InvitationServiceTest {
 
     @Test
     void decline_shouldRejectInvitationOfAnotherUser() {
-        when(invitationRepository.getByIdAndUserUsername(INVITATION_ID, BOB))
+        when(invitationRepository.getInvitation(INVITATION_ID, BOB))
                 .thenThrow(new InvitationNotFoundException(INVITATION_ID));
 
         assertThatThrownBy(() -> service.decline(BOB, INVITATION_ID)).isInstanceOf(InvitationNotFoundException.class);
@@ -201,7 +201,7 @@ class InvitationServiceTest {
     }
 
     private void stubInvitationTo(Subscription lockedSubscription) {
-        when(invitationRepository.getByIdAndUserUsername(INVITATION_ID, ALICE)).thenReturn(invitation);
+        when(invitationRepository.getInvitation(INVITATION_ID, ALICE)).thenReturn(invitation);
         when(subscriptionRepository.findLockedById(SUBSCRIPTION_ID)).thenReturn(Optional.of(lockedSubscription));
     }
 

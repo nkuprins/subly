@@ -34,26 +34,26 @@ class PendingInvitationRepositoryTest extends AbstractRepositoryTest {
     }
 
     @Test
-    void getByIdAndUserUsername_shouldReturnInvitationOfTheInvitedUser() {
-        PendingInvitation found = invitationRepository.getByIdAndUserUsername(invitation.getId(), BOB);
+    void getInvitation_shouldReturnInvitationOfTheInvitedUser() {
+        PendingInvitation found = invitationRepository.getInvitation(invitation.getId(), BOB);
 
         assertThat(found.getId()).isEqualTo(invitation.getId());
     }
 
     @Test
-    void getByIdAndUserUsername_shouldRejectInvitationOfAnotherUser() {
+    void getInvitation_shouldRejectInvitationOfAnotherUser() {
         long invitationId = invitation.getId();
 
-        assertThatThrownBy(() -> invitationRepository.getByIdAndUserUsername(invitationId, ALICE))
+        assertThatThrownBy(() -> invitationRepository.getInvitation(invitationId, ALICE))
                 .isInstanceOf(InvitationNotFoundException.class)
                 .hasMessageContaining(String.valueOf(invitationId));
     }
 
     @Test
-    void getByIdAndUserUsername_shouldRejectUnknownInvitation() {
+    void getInvitation_shouldRejectUnknownInvitation() {
         long unknownId = invitation.getId() + 1;
 
-        assertThatThrownBy(() -> invitationRepository.getByIdAndUserUsername(unknownId, BOB))
+        assertThatThrownBy(() -> invitationRepository.getInvitation(unknownId, BOB))
                 .isInstanceOf(InvitationNotFoundException.class)
                 .hasMessageContaining(String.valueOf(unknownId));
     }

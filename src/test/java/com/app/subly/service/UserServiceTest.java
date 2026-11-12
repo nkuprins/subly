@@ -35,6 +35,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
 
+    private static final long ALICE_ID = 1L;
     private static final String PASSWORD = "secretPassword";
     private static final String NEW_PASSWORD = "newSecretPassword";
     private static final String NEW_EMAIL = "alice.new@example.com";
@@ -184,8 +185,8 @@ class UserServiceTest {
     }
 
     private User stubExistingUser() {
-        User user = TestUsers.user(ALICE);
-        when(repository.getByUsername(ALICE)).thenReturn(user);
+        User user = TestUsers.userWithId(ALICE, ALICE_ID);
+        when(repository.getUser(ALICE)).thenReturn(user);
         return user;
     }
 

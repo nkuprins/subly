@@ -51,21 +51,21 @@ public class InvitationService {
     @Transactional(readOnly = true)
     public List<InviteResponse> findPending(String ownerUsername, long subscriptionId) {
         subscriptionAccess.getOwnedSubscription(ownerUsername, subscriptionId);
-        return invitationRepository.findBySubscriptionIdOrderByInvitedAt(subscriptionId).stream()
+        return invitationRepository.findBySubscriptionIdOrderByInvitedAtAsc(subscriptionId).stream()
                 .map(InviteResponse::from)
                 .toList();
     }
 
     @Transactional(readOnly = true)
     public List<ReceivedInvitationResponse> findReceived(String username) {
-        return invitationRepository.findByUserUsernameOrderByInvitedAt(username).stream()
+        return invitationRepository.findByUserUsernameOrderByInvitedAtAsc(username).stream()
                 .map(ReceivedInvitationResponse::from)
                 .toList();
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public void accept(String username, long invitationId) {
-        PendingInvitation invitation = invitationRepository.getByIdAndUserUsername(invitationId, username);
+        PendingInvitation invitation = invitationRepository.getInvitation(invitationId, username);
         long subscriptionId = invitation.getSubscription().getId();
         Subscription subscription = subscriptionRepository
                 .findLockedById(subscriptionId)
@@ -78,13 +78,13 @@ public class InvitationService {
 
     @Transactional
     public void decline(String username, long invitationId) {
-        PendingInvitation invitation = invitationRepository.getByIdAndUserUsername(invitationId, username);
+        PendingInvitation invitation = invitationRepository.getInvitation(invitationId, username);
         invitationRepository.delete(invitation);
     }
 
     @Transactional
-    public void deleteInvitationFor(Long userId) {
-        invitationRepository.deleteByUser_Id(userId);
+    public void deleteInvitationFor(long userId) {
+        invitationRepository.deleteByUserId(userId);
         invitationRepository.flush();
     }
 

@@ -13,15 +13,15 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface SubscriptionMembershipRepository extends JpaRepository<SubscriptionMembership, Long> {
 
-    boolean existsBySubscriptionIdAndUserId(Long subscriptionId, Long userId);
+    boolean existsBySubscriptionIdAndUserId(long subscriptionId, long userId);
 
     @EntityGraph(attributePaths = {"user", "subscription"})
-    Optional<SubscriptionMembership> findBySubscriptionIdAndRole(Long subscriptionId, MembershipRole role);
+    Optional<SubscriptionMembership> findBySubscriptionIdAndRole(long subscriptionId, MembershipRole role);
 
     List<SubscriptionMembership> findBySubscriptionIdIn(Collection<Long> subscriptionIds);
 
     @EntityGraph(attributePaths = "subscription")
-    List<SubscriptionMembership> findByUser_IdAndRole(Long userId, MembershipRole role);
+    List<SubscriptionMembership> findByUserIdAndRole(long userId, MembershipRole role);
 
     default List<SubscriptionMembership> findMembershipsOf(String username, SubscriptionStatus status) {
         return findByUserUsernameAndSubscriptionStatusOrderBySubscriptionNextPaymentDateAsc(username, status);
@@ -38,14 +38,14 @@ public interface SubscriptionMembershipRepository extends JpaRepository<Subscrip
     @EntityGraph(attributePaths = "subscription")
     List<SubscriptionMembership> findBySubscriptionStatus(SubscriptionStatus status);
 
-    void deleteByUser_Id(Long userId);
+    void deleteByUserId(long userId);
 
     @EntityGraph(attributePaths = "user")
-    List<SubscriptionMembership> findBySubscriptionIdOrderByIdAsc(Long subscriptionId);
+    List<SubscriptionMembership> findBySubscriptionIdOrderByIdAsc(long subscriptionId);
 
-    Optional<SubscriptionMembership> findBySubscriptionIdAndUserUsername(Long subscriptionId, String username);
+    Optional<SubscriptionMembership> findBySubscriptionIdAndUserUsername(long subscriptionId, String username);
 
-    Optional<SubscriptionMembership> findByIdAndSubscriptionId(Long id, Long subscriptionId);
+    Optional<SubscriptionMembership> findByIdAndSubscriptionId(long id, long subscriptionId);
 
-    long countBySubscriptionId(Long subscriptionId);
+    long countBySubscriptionId(long subscriptionId);
 }

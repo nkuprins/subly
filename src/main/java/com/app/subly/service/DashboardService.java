@@ -26,7 +26,7 @@ public class DashboardService {
 
     @Transactional(readOnly = true)
     public DashboardResponse getDashboard(String username, Currency targetCurrency) {
-        LocalDate today = userRepository.getByUsername(username).today(clock);
+        LocalDate today = userRepository.getUser(username).today(clock);
         List<MemberShare> active = memberShareLoader.forUser(username, SubscriptionStatus.ACTIVE);
         List<MemberShare> cancelled = memberShareLoader.forUser(username, SubscriptionStatus.CANCELLED);
         Map<Boolean, List<MemberShare>> bySharable = active.stream()
