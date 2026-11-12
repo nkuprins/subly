@@ -4,7 +4,6 @@ import com.app.subly.dto.provider.ProviderCategoryResponse;
 import com.app.subly.entity.provider.SubscriptionProvider;
 import com.app.subly.enums.ProviderType;
 import java.util.List;
-import java.util.Optional;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -14,8 +13,6 @@ public interface SubscriptionProviderRepository extends JpaRepository<Subscripti
     @EntityGraph(attributePaths = "category")
     List<SubscriptionProvider> findAllByProviderTypeOrCreatedByUsernameOrderByNameAsc(
             ProviderType providerType, String username);
-
-    Optional<SubscriptionProvider> findByIdAndCreatedByUsername(long id, String username);
 
     @EntityGraph(attributePaths = "category")
     List<SubscriptionProvider> findAllByProviderTypeOrderByNameAsc(ProviderType providerType);

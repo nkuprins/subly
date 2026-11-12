@@ -65,9 +65,10 @@ public class InvitationService {
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public void accept(String username, long invitationId) {
         PendingInvitation invitation = invitationRepository.getByIdAndUserUsername(invitationId, username);
+        long subscriptionId = invitation.getSubscription().getId();
         Subscription subscription = subscriptionRepository
-                .findLockedById(invitation.getSubscription().getId())
-                .orElseThrow(() -> new InvitationCannotBeAcceptedException("Subscription no longer exists"));
+                .findLockedById(subscriptionId)
+                .orElseThrow(() -> new SubscriptionNotJoinableException(subscriptionId));
         requireJoinable(subscription);
         SubscriptionMembership membership = SubscriptionMembership.member(invitation.getUser(), subscription);
         membershipRepository.save(membership);

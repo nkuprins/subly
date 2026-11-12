@@ -56,7 +56,8 @@ class CreateSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
         Subscription saved = subscriptionCaptor.getValue();
         assertThat(saved.getProvider()).isSameAs(provider);
         verify(subscriptionProviderRepository, never()).save(any());
-        assertPaymentDetails(saved, request);
+        assertPaymentDetails(
+                saved, request.price(), request.billingCycle(), request.nextPaymentDate(), request.freeTrial());
 
         verify(membershipRepository).save(membershipCaptor.capture());
         SubscriptionMembership membership = membershipCaptor.getValue();

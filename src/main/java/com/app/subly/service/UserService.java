@@ -41,7 +41,6 @@ public class UserService {
     @Transactional
     public void delete(String username, String rawPassword) {
         // Make an attempt to delete a user with the given username
-        // UserDoesNotExistException is raised if the user with the username was not found
         // UserIsConnectedException is raised in case some table's column refers to this user.
         // WrongPasswordException is raised if a raw password != password hash
 
@@ -102,9 +101,7 @@ public class UserService {
     }
 
     public User getByUsername(String username) {
-        return userRepository
-                .findByUsername(username)
-                .orElseThrow(() -> new UserDoesNotExistException("No found user with the username"));
+        return userRepository.getByUsername(username);
     }
 
     private User createUserFromRawData(String username, String name, String password, String email, ZoneId timeZone) {

@@ -44,7 +44,6 @@ public class AdminStatisticsService {
                 .entrySet()
                 .stream()
                 .map(entry -> new PopularServiceResponse(
-                        entry.getKey(),
                         entry.getValue().get(0).getProvider().getName(),
                         entry.getValue().size()))
                 .sorted(Comparator.comparingLong(PopularServiceResponse::activeSubscriptionCount)

@@ -21,18 +21,14 @@ class SubscriptionProviderRepositoryTest extends AbstractRepositoryTest {
     @Autowired
     SubscriptionProviderRepository repository;
 
-    SubscriptionProvider catalog;
-    SubscriptionProvider aliceCustom;
-    SubscriptionProvider bobCustom;
-
     @BeforeEach
     void setUp() {
         Category category = persistCategory();
         User alice = persistUser(ALICE);
         User bob = persistUser(BOB);
-        catalog = entityManager.persist(SubscriptionProvider.catalog(CATALOG_NAME, category));
-        aliceCustom = entityManager.persist(SubscriptionProvider.custom(OWN_CUSTOM_NAME, category, alice));
-        bobCustom = entityManager.persist(SubscriptionProvider.custom(OTHERS_CUSTOM_NAME, category, bob));
+        entityManager.persist(SubscriptionProvider.catalog(CATALOG_NAME, category));
+        entityManager.persist(SubscriptionProvider.custom(OWN_CUSTOM_NAME, category, alice));
+        entityManager.persist(SubscriptionProvider.custom(OTHERS_CUSTOM_NAME, category, bob));
         entityManager.flush();
     }
 
@@ -41,15 +37,5 @@ class SubscriptionProviderRepositoryTest extends AbstractRepositoryTest {
         assertThat(repository.findAllByProviderTypeOrCreatedByUsernameOrderByNameAsc(ProviderType.CATALOG, ALICE))
                 .extracting(SubscriptionProvider::getName)
                 .containsExactly(OWN_CUSTOM_NAME, CATALOG_NAME);
-    }
-
-    @Test
-    void findByIdAndCreatedByUsername_shouldFindOnlyOwnCustomProvider() {
-        assertThat(repository.findByIdAndCreatedByUsername(aliceCustom.getId(), ALICE))
-                .isPresent();
-        assertThat(repository.findByIdAndCreatedByUsername(catalog.getId(), ALICE))
-                .isEmpty();
-        assertThat(repository.findByIdAndCreatedByUsername(bobCustom.getId(), ALICE))
-                .isEmpty();
     }
 }

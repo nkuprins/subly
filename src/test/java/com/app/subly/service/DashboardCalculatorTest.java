@@ -96,7 +96,6 @@ class DashboardCalculatorTest {
 
         assertThat(upcomingPayments(shares, TODAY, Currency.USD))
                 .containsExactly(new UpcomingPaymentResponse(
-                        1L,
                         TestProviders.CATALOG_PROVIDER_NAME,
                         new BigDecimal("6.74"),
                         Currency.USD,
@@ -115,8 +114,8 @@ class DashboardCalculatorTest {
 
         assertThat(spendingByCategory(shares, Currency.EUR))
                 .containsExactly(
-                        categorySpending(2L, "Streaming", "25.00", "300.00", Currency.EUR),
-                        categorySpending(1L, "Music", "18.90", "226.80", Currency.EUR));
+                        categorySpending("Streaming", "25.00", "300.00", Currency.EUR),
+                        categorySpending("Music", "18.90", "226.80", Currency.EUR));
     }
 
     @Test
@@ -151,8 +150,8 @@ class DashboardCalculatorTest {
     }
 
     private static CategorySpendingResponse categorySpending(
-            long id, String name, String monthly, String yearly, Currency currency) {
-        return new CategorySpendingResponse(id, name, new BigDecimal(monthly), new BigDecimal(yearly), currency);
+            String name, String monthly, String yearly, Currency currency) {
+        return new CategorySpendingResponse(name, new BigDecimal(monthly), new BigDecimal(yearly), currency);
     }
 
     private static MoneyResponse money(String amount, Currency currency) {

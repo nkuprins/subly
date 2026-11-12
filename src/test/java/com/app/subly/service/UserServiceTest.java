@@ -15,13 +15,11 @@ import static org.mockito.Mockito.when;
 import com.app.subly.dto.user.UpdateUserInformationRequest;
 import com.app.subly.entity.user.User;
 import com.app.subly.exception.user.UserAlreadyExistsException;
-import com.app.subly.exception.user.UserDoesNotExistException;
 import com.app.subly.exception.user.UserInfoUpdateException;
 import com.app.subly.exception.user.UserIsConnectedException;
 import com.app.subly.exception.user.WrongPasswordException;
 import com.app.subly.repository.UserRepository;
 import com.app.subly.testdata.TestUsers;
-import java.util.Optional;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -69,13 +67,6 @@ class UserServiceTest {
 
         assertThatThrownBy(() -> service.create(ALICE, "Alice", PASSWORD, aliceEmail, null))
                 .isInstanceOf(UserAlreadyExistsException.class);
-    }
-
-    @Test
-    void getByUsername_shouldRejectUnknownUser() {
-        when(repository.findByUsername(ALICE)).thenReturn(Optional.empty());
-
-        assertThatThrownBy(() -> service.getByUsername(ALICE)).isInstanceOf(UserDoesNotExistException.class);
     }
 
     @Test
@@ -194,7 +185,7 @@ class UserServiceTest {
 
     private User stubExistingUser() {
         User user = TestUsers.user(ALICE);
-        when(repository.findByUsername(ALICE)).thenReturn(Optional.of(user));
+        when(repository.getByUsername(ALICE)).thenReturn(user);
         return user;
     }
 

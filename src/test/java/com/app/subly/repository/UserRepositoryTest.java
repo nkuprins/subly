@@ -11,10 +11,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.app.subly.entity.user.User;
+import com.app.subly.exception.user.UserDoesNotExistException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 class UserRepositoryTest extends AbstractRepositoryTest {
 
@@ -71,7 +71,7 @@ class UserRepositoryTest extends AbstractRepositoryTest {
     @Test
     void getByUsername_shouldRejectUnknownUser() {
         assertThatThrownBy(() -> repository.getByUsername("unknown"))
-                .isInstanceOf(UsernameNotFoundException.class)
+                .isInstanceOf(UserDoesNotExistException.class)
                 .hasMessageContaining("unknown");
     }
 

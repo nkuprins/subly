@@ -67,7 +67,7 @@ final class DashboardCalculator {
         }
 
         CategorySpendingResponse toResponse(BigDecimal yearlyTotal, Currency currency) {
-            return new CategorySpendingResponse(id, name, Money.monthlyFromYearly(yearlyTotal), yearlyTotal, currency);
+            return new CategorySpendingResponse(name, Money.monthlyFromYearly(yearlyTotal), yearlyTotal, currency);
         }
     }
 }

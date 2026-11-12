@@ -67,7 +67,6 @@ class PaymentServiceTest {
 
         assertThat(service.findHistory(ALICE))
                 .containsExactly(new PaymentResponse(
-                        3L,
                         spotifyInDollars.getProvider().getName(),
                         TODAY.minusDays(3),
                         new BigDecimal("4.50"),

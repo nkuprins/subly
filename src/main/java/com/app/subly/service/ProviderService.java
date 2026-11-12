@@ -1,13 +1,11 @@
 package com.app.subly.service;
 
+import com.app.subly.dto.form.CreateProviderForm;
 import com.app.subly.dto.provider.ProviderCategoryResponse;
-import com.app.subly.dto.provider.ProviderRequest;
 import com.app.subly.dto.provider.ProviderResponse;
 import com.app.subly.entity.category.Category;
 import com.app.subly.entity.provider.SubscriptionProvider;
 import com.app.subly.enums.ProviderType;
-import com.app.subly.exception.category.InvalidCategoryException;
-import com.app.subly.exception.provider.ProviderNotFoundException;
 import com.app.subly.repository.CategoryRepository;
 import com.app.subly.repository.SubscriptionProviderRepository;
 import com.app.subly.repository.UserRepository;
@@ -39,25 +37,14 @@ public class ProviderService {
     }
 
     @Transactional
-    public ProviderResponse create(String username, ProviderRequest request, ProviderType type) {
-        Category category = findCategory(request.categoryId());
-        String name = request.name().strip();
+    public void create(String username, CreateProviderForm form, ProviderType type) {
+        Category category = categoryRepository.getCategory(form.getCategoryId());
+        String name = form.getName().strip();
         SubscriptionProvider provider = (type == ProviderType.CATALOG)
                 ? SubscriptionProvider.catalog(name, category)
                 : SubscriptionProvider.custom(name, category, userRepository.getByUsername(username));
-        provider.setLogoPath(normalizeLogoPath(request.logoPath()));
-        return ProviderResponse.from(providerRepository.save(provider));
-    }
-
-    @Transactional
-    public ProviderResponse updateCustomProvider(String username, long providerId, ProviderRequest request) {
-        SubscriptionProvider provider = providerRepository
-                .findByIdAndCreatedByUsername(providerId, username)
-                .orElseThrow(() -> new ProviderNotFoundException(providerId));
-        provider.setCategory(findCategory(request.categoryId()));
-        provider.setName(request.name().strip());
-        provider.setLogoPath(normalizeLogoPath(request.logoPath()));
-        return ProviderResponse.from(provider);
+        provider.setLogoPath(normalizeLogoPath(form.getLogoPath()));
+        providerRepository.save(provider);
     }
 
     @Transactional
@@ -74,10 +61,6 @@ public class ProviderService {
 
     public List<ProviderCategoryResponse> findProviderCountsByCategory() {
         return providerRepository.getAllProvidersCountGroupedByCategory();
-    }
-
-    private Category findCategory(long categoryId) {
-        return categoryRepository.findById(categoryId).orElseThrow(() -> new InvalidCategoryException(categoryId));
     }
 
     private static String normalizeLogoPath(String logoPath) {
