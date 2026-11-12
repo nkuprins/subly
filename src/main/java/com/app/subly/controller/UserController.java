@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
+@Slf4j
 public class UserController {
 
     private final UserService service;
@@ -30,8 +32,10 @@ public class UserController {
             @RequestBody @Valid DeleteCurrentUserRequest deleteRequest,
             HttpServletRequest request,
             HttpServletResponse response) {
+        log.info("Deleting account for username={}", details.getUsername());
         service.delete(details.getUsername(), deleteRequest.password());
         logoutCurrentSession(request, response);
+        log.info("Successfully deleted account for username={}", details.getUsername());
         return new OperationResponse("The user account has been deleted");
     }
 
@@ -41,8 +45,10 @@ public class UserController {
             @Valid @RequestBody ChangePasswordRequest changeRequest,
             HttpServletRequest request,
             HttpServletResponse response) {
+        log.info("Updating password for username={}", details.getUsername());
         service.updatePassword(details.getUsername(), changeRequest.oldPassword(), changeRequest.newPassword());
         logoutCurrentSession(request, response);
+        log.info("Successfully updated password for username={}", details.getUsername());
         return new OperationResponse("The password has been changed successfully. Please log in again.");
     }
 
@@ -52,8 +58,10 @@ public class UserController {
             @Valid @RequestBody UpdateUserInformationRequest updateRequest,
             HttpServletRequest request,
             HttpServletResponse response) {
+        log.info("Updating account information for username={}", details.getUsername());
         service.updateInformation(details.getUsername(), updateRequest);
         logoutCurrentSession(request, response);
+        log.info("Successfully updated account information for username={}", details.getUsername());
         return new OperationResponse("The information has been saved. Please log in again to apply changes.");
     }
 

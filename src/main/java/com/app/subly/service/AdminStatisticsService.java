@@ -19,11 +19,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AdminStatisticsService {
 
     private final UserRepository userRepository;
@@ -32,6 +34,7 @@ public class AdminStatisticsService {
 
     @Transactional(readOnly = true)
     public AdminStatisticsResponse getStatistics() {
+        log.debug("Calculating admin statistics");
         long totalUsers = userRepository.count();
 
         long activeSubscriptions = subscriptionRepository.countByStatus(SubscriptionStatus.ACTIVE);
@@ -55,8 +58,10 @@ public class AdminStatisticsService {
 
         BigDecimal averageMonthlySpend = calculateAverageMonthlySpend(totalUsers);
 
-        return new AdminStatisticsResponse(
+        AdminStatisticsResponse statistics = new AdminStatisticsResponse(
                 totalUsers, activeSubscriptions, averageMonthlySpend, Currency.EUR, popularServices);
+        log.debug("Calculated admin statistics: users={} activeSubscriptions={}", totalUsers, activeSubscriptions);
+        return statistics;
     }
 
     private BigDecimal calculateAverageMonthlySpend(long totalUsers) {

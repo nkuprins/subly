@@ -11,6 +11,8 @@ import com.app.subly.repository.SubscriptionProviderRepository;
 import com.app.subly.repository.UserRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,13 +24,20 @@ public class ProviderService {
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
 
+    private static final Logger logger = LoggerFactory.getLogger(ProviderService.class);
+
     @Transactional(readOnly = true)
     public List<SubscriptionProvider> findCatalogProviders() {
-        return providerRepository.findByProviderTypeOrderByNameAsc(ProviderType.CATALOG);
+        logger.debug("Finding catalogue providers");
+        List<SubscriptionProvider> providers =
+                providerRepository.findByProviderTypeOrderByNameAsc(ProviderType.CATALOG);
+        logger.debug("Found {} catalogue providers", providers.size());
+        return providers;
     }
 
     @Transactional(readOnly = true)
     public List<ProviderResponse> findVisibleProviders(String username) {
+        logger.debug("Getting visible providers for '{}'", username);
         return providerRepository
                 .findByProviderTypeOrCreatedByUsernameOrderByNameAsc(ProviderType.CATALOG, username)
                 .stream()
@@ -38,6 +47,7 @@ public class ProviderService {
 
     @Transactional
     public void create(String username, CreateProviderForm form, ProviderType type) {
+        logger.debug("Creating provider for username={} type={}", username, type);
         Category category = categoryRepository.getCategory(form.getCategoryId());
         String name = form.getName().strip();
         SubscriptionProvider provider = (type == ProviderType.CATALOG)
@@ -45,6 +55,7 @@ public class ProviderService {
                 : SubscriptionProvider.custom(name, category, userRepository.getUser(username));
         provider.setLogoPath(normalizeLogoPath(form.getLogoPath()));
         providerRepository.save(provider);
+        logger.debug("Created provider for username={} type={}", username, type);
     }
 
     @Transactional
@@ -53,6 +64,7 @@ public class ProviderService {
     }
 
     public List<ProviderCategoryResponse> findProviderCountsByCategory() {
+        logger.debug("Finding provider counts by category");
         return providerRepository.findProviderCountsByCategory();
     }
 

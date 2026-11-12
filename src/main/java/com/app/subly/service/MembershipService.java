@@ -11,11 +11,13 @@ import com.app.subly.repository.SubscriptionMembershipRepository;
 import com.app.subly.service.access.SubscriptionAccess;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MembershipService {
 
     private final SubscriptionAccess subscriptionAccess;
@@ -23,6 +25,7 @@ public class MembershipService {
 
     @Transactional(readOnly = true)
     public MemberListResponse findMembers(String username, long subscriptionId) {
+        log.debug("Getting all members for username={} subscriptionId={}", username, subscriptionId);
         Subscription subscription =
                 subscriptionAccess.getMembership(username, subscriptionId).getSubscription();
         List<SubscriptionMemberResponse> members = membersOf(subscriptionId);

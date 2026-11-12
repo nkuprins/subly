@@ -15,12 +15,14 @@ import com.app.subly.repository.UserRepository;
 import com.app.subly.service.access.SubscriptionAccess;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class InvitationService {
 
     private final SubscriptionAccess subscriptionAccess;
@@ -50,6 +52,7 @@ public class InvitationService {
 
     @Transactional(readOnly = true)
     public List<InviteResponse> findPending(String ownerUsername, long subscriptionId) {
+        log.debug("Getting pending for username={} subscriptionId={}", ownerUsername, subscriptionId);
         subscriptionAccess.getOwnedSubscription(ownerUsername, subscriptionId);
         return invitationRepository.findBySubscriptionIdOrderByInvitedAtAsc(subscriptionId).stream()
                 .map(InviteResponse::from)

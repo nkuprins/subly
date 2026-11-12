@@ -17,6 +17,12 @@ spring:
         jdbc:
           batch_size: 50
           time_zone: UTC
+logging:
+  level:
+    root: INFO
+    com.app.subly: DEBUG
+
+
 app:
   admin-settings:
     admin-username: admin

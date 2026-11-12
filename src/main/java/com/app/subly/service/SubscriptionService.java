@@ -28,11 +28,13 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class SubscriptionService {
 
     private final SubscriptionRepository subscriptionRepository;
@@ -68,6 +70,7 @@ public class SubscriptionService {
 
     @Transactional(readOnly = true)
     public List<ActiveSubscriptionResponse> findActive(String username) {
+        log.debug("Getting active subscriptions for the user '{}'", username);
         return memberShareLoader.forUser(username, SubscriptionStatus.ACTIVE).stream()
                 .map(share -> ActiveSubscriptionResponse.from(share.membership(), share.amount()))
                 .toList();
@@ -85,6 +88,7 @@ public class SubscriptionService {
 
     @Transactional(readOnly = true)
     public List<CancelledSubscriptionResponse> findCancelled(String username) {
+        log.debug("Getting cancelled subscriptions for the user '{}'", username);
         LocalDate today = userRepository.getUser(username).today(clock);
         return memberShareLoader.forUser(username, SubscriptionStatus.CANCELLED).stream()
                 .map(share -> CancelledSubscriptionResponse.from(share.membership(), share.savedUntil(today)))
@@ -95,10 +99,10 @@ public class SubscriptionService {
     public void update(String username, long subscriptionId, UpdateSubscriptionRequest request) {
         SubscriptionMembership owner = subscriptionAccess.getOwnerMembership(username, subscriptionId);
         Subscription subscription = owner.getSubscription();
-        requireNotInPast(owner.getUser(), request.nextPaymentDate());
-        requireCentPerParticipant(request.price(), subscription.getMaxParticipants());
+        requireNotInPast(owner.getUser(), request.getNextPaymentDate());
+        requireCentPerParticipant(request.getPrice(), subscription.getMaxParticipants());
         subscription.changePaymentDetails(
-                request.price(), request.billingCycle(), request.nextPaymentDate(), request.freeTrial());
+                request.getPrice(), request.getBillingCycle(), request.getNextPaymentDate(), request.isFreeTrial());
     }
 
     @Transactional

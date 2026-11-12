@@ -11,11 +11,13 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PaymentService {
 
     private final SubscriptionPaymentRepository paymentRepository;
@@ -23,9 +25,12 @@ public class PaymentService {
 
     @Transactional(readOnly = true)
     public List<PaymentResponse> findHistory(String username) {
-        return paymentRepository.findHistoryOf(username).stream()
+        log.debug("Finding payment history for username={}", username);
+        List<PaymentResponse> history = paymentRepository.findHistoryOf(username).stream()
                 .map(PaymentResponse::from)
                 .toList();
+        log.debug("Found {} payment records for username={}", history.size(), username);
+        return history;
     }
 
     @Transactional

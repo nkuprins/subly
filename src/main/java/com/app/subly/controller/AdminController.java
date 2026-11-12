@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -25,6 +26,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequiredArgsConstructor
+@Slf4j
 public class AdminController {
 
     private final ProviderService providerService;
@@ -33,7 +35,9 @@ public class AdminController {
 
     @GetMapping("/admin")
     public String catalogue(Model model, @RequestParam(defaultValue = "false") boolean providerCreated) {
+        log.info("Preparing admin catalogue page, providerCreated={}", providerCreated);
         this.fillAdminPageByContent(model, providerCreated);
+        log.info("Successfully prepared admin catalogue page");
         return "admin";
     }
 
@@ -43,7 +47,10 @@ public class AdminController {
             BindingResult bindingResult,
             RedirectAttributes attributes) {
 
+        log.info("Creating category from admin page");
+
         if (bindingResult.hasErrors()) {
+            log.info("Category creation form has validation errors");
             attributes.addFlashAttribute("categoryCreationForm", categoryForm);
             attributes.addFlashAttribute(
                     "categoryCreationError", bindingResult.getFieldError().getDefaultMessage());
@@ -52,7 +59,9 @@ public class AdminController {
 
         try {
             this.categoryService.create(categoryForm.getTitle());
+            log.info("Category created successfully");
         } catch (CategoryAlreadyExistsException ex) {
+            log.info("Category creation rejected because the category already exists");
             attributes.addFlashAttribute("categoryCreationForm", categoryForm);
             attributes.addFlashAttribute("categoryCreationError", "The category with this name already exists");
         }
@@ -62,6 +71,7 @@ public class AdminController {
 
     @GetMapping("/admin/providers/new")
     public String newProvider(Model model) {
+        log.info("Preparing admin provider creation page");
         model.addAttribute("providerForm", new CreateProviderForm());
         model.addAttribute("categories", categoryService.findAll());
         return "admin-provider-form";
@@ -74,12 +84,16 @@ public class AdminController {
             Model model,
             Principal principal) {
 
+        log.info("Creating catalogue provider for username={}", principal.getName());
+
         if (bindingResult.hasErrors()) {
+            log.info("Catalogue provider form has validation errors for username={}", principal.getName());
             model.addAttribute("categories", categoryService.findAll());
             return "admin-provider-form"; // return the user back on the page
         }
 
         providerService.create(principal.getName(), form, ProviderType.CATALOG);
+        log.info("Catalogue provider created successfully for username={}", principal.getName());
 
         return "redirect:/admin";
     }
@@ -87,10 +101,13 @@ public class AdminController {
     @GetMapping("/admin/statistics")
     @ResponseBody
     public AdminStatisticsResponse getStatistics() {
+        log.info("Retrieving admin statistics");
         return adminStatisticsService.getStatistics();
     }
 
     private void fillAdminPageByContent(Model model, boolean providerCreated) {
+
+        log.debug("Loading admin catalogue data");
 
         List<SubscriptionProvider> providers = providerService.findCatalogProviders();
         List<CategoryResponse> categories = categoryService.findAll();

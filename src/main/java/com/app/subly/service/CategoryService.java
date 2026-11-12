@@ -28,6 +28,7 @@ public class CategoryService {
 
     @Transactional
     public void rename(long id, String newCategoryName) {
+        log.debug("Renaming category id={}", id);
         Category category = categoryRepository.getCategory(id);
         String newName = newCategoryName.strip();
 
@@ -37,12 +38,15 @@ public class CategoryService {
 
         category.setName(newName);
         saveUnique(category);
+        log.debug("Renamed category id={}", id);
     }
 
     public void delete(long id) {
+        log.debug("Deleting category id={}", id);
         Category category = categoryRepository.getCategory(id);
         try {
             categoryRepository.delete(category);
+            log.debug("Deleted category id={}", id);
         } catch (OptimisticLockingFailureException ex) {
             throw new CategoryDeletionException(
                     "Cannot delete the category because some table's field references to it");
@@ -51,9 +55,12 @@ public class CategoryService {
 
     @Transactional(readOnly = true)
     public List<CategoryResponse> findAll() {
-        return categoryRepository.findAllByOrderByNameAsc().stream()
+        log.debug("Finding all categories");
+        List<CategoryResponse> categories = categoryRepository.findAllByOrderByNameAsc().stream()
                 .map(category -> new CategoryResponse(category.getId(), category.getName()))
                 .toList();
+        log.debug("Found {} categories", categories.size());
+        return categories;
     }
 
     private void saveUnique(Category category) {
