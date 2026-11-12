@@ -5,7 +5,7 @@ import com.app.subly.enums.BillingCycle;
 import com.app.subly.enums.Currency;
 import com.app.subly.enums.MembershipRole;
 import com.app.subly.enums.SubscriptionStatus;
-import com.app.subly.util.Money;
+import com.app.subly.util.MoneyMath;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -35,7 +35,10 @@ public class Subscription {
     @JoinColumn(name = "provider_id", nullable = false)
     private SubscriptionProvider provider;
 
-    @Column(nullable = false, precision = Money.INTEGER_DIGITS + Money.FRACTION_DIGITS, scale = Money.FRACTION_DIGITS)
+    @Column(
+            nullable = false,
+            precision = MoneyMath.INTEGER_DIGITS + MoneyMath.FRACTION_DIGITS,
+            scale = MoneyMath.FRACTION_DIGITS)
     private BigDecimal price;
 
     @Enumerated(EnumType.STRING)
@@ -165,7 +168,8 @@ public class Subscription {
             throw new IllegalStateException("Subscription " + id + " has no members");
         }
 
-        BigDecimal baseShare = price.divide(BigDecimal.valueOf(memberCount), Money.FRACTION_DIGITS, RoundingMode.DOWN);
+        BigDecimal baseShare =
+                price.divide(BigDecimal.valueOf(memberCount), MoneyMath.FRACTION_DIGITS, RoundingMode.DOWN);
 
         BigDecimal leftover = price.subtract(baseShare.multiply(BigDecimal.valueOf(memberCount)));
         return role == MembershipRole.OWNER ? baseShare.add(leftover) : baseShare;

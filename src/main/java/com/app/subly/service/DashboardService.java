@@ -6,7 +6,7 @@ import com.app.subly.enums.SubscriptionStatus;
 import com.app.subly.repository.UserRepository;
 import com.app.subly.service.calculator.DashboardCalculator;
 import com.app.subly.service.share.MemberShare;
-import com.app.subly.service.share.MemberShares;
+import com.app.subly.service.share.MemberShareLoader;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
@@ -20,15 +20,15 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class DashboardService {
 
-    private final MemberShares memberShares;
+    private final MemberShareLoader memberShareLoader;
     private final UserRepository userRepository;
     private final Clock clock;
 
     @Transactional(readOnly = true)
     public DashboardResponse getDashboard(String username, Currency targetCurrency) {
         LocalDate today = userRepository.getByUsername(username).today(clock);
-        List<MemberShare> active = memberShares.forUser(username, SubscriptionStatus.ACTIVE);
-        List<MemberShare> cancelled = memberShares.forUser(username, SubscriptionStatus.CANCELLED);
+        List<MemberShare> active = memberShareLoader.forUser(username, SubscriptionStatus.ACTIVE);
+        List<MemberShare> cancelled = memberShareLoader.forUser(username, SubscriptionStatus.CANCELLED);
         Map<Boolean, List<MemberShare>> bySharable = active.stream()
                 .collect(Collectors.partitioningBy(share -> share.subscription().isSharable()));
         return new DashboardResponse(

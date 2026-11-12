@@ -24,19 +24,19 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class MemberSharesTest {
+class MemberShareLoaderTest {
 
     @Mock
     SubscriptionMembershipRepository membershipRepository;
 
     @InjectMocks
-    MemberShares memberShares;
+    MemberShareLoader memberShareLoader;
 
     @Test
     void forUser_shouldReturnEmptyWithoutLoadingMembersWhenUserHasNoSubscriptions() {
         stubAliceMemberships(List.of());
 
-        assertThat(memberShares.forUser(ALICE, SubscriptionStatus.ACTIVE)).isEmpty();
+        assertThat(memberShareLoader.forUser(ALICE, SubscriptionStatus.ACTIVE)).isEmpty();
         verify(membershipRepository, never()).findBySubscriptionIdIn(any());
     }
 
@@ -51,7 +51,7 @@ class MemberSharesTest {
         when(membershipRepository.findBySubscriptionIdIn(List.of(1L, 2L)))
                 .thenReturn(List.of(aliceInShared, bobOwnsShared, aliceOwnsSolo));
 
-        assertThat(memberShares.forUser(ALICE, SubscriptionStatus.ACTIVE))
+        assertThat(memberShareLoader.forUser(ALICE, SubscriptionStatus.ACTIVE))
                 .extracting(MemberShare::membership, MemberShare::amount)
                 .containsExactly(
                         tuple(aliceInShared, new BigDecimal("5.00")), tuple(aliceOwnsSolo, new BigDecimal("6.00")));

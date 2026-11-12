@@ -27,7 +27,7 @@ class ListSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
     void findActive_shouldReturnSubscriptionsWithMembershipRolesAndUsersShare() {
         SubscriptionMembership ownerMembership = SubscriptionMembership.owner(alice, subscription(customProvider()));
         SubscriptionMembership memberMembership = SubscriptionMembership.member(alice, subscription(catalogProvider()));
-        when(memberShares.forUser(ALICE, SubscriptionStatus.ACTIVE))
+        when(memberShareLoader.forUser(ALICE, SubscriptionStatus.ACTIVE))
                 .thenReturn(List.of(
                         new MemberShare(ownerMembership, new BigDecimal("6.00")),
                         new MemberShare(memberMembership, new BigDecimal("3.00"))));
@@ -59,7 +59,7 @@ class ListSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
         SubscriptionMembership ended = SubscriptionMembership.owner(alice, cancelled(1L, TODAY.minusMonths(1)));
         SubscriptionMembership endsLater = SubscriptionMembership.owner(alice, cancelled(2L, TODAY.plusDays(3)));
         stubAliceExists();
-        when(memberShares.forUser(ALICE, SubscriptionStatus.CANCELLED))
+        when(memberShareLoader.forUser(ALICE, SubscriptionStatus.CANCELLED))
                 .thenReturn(List.of(
                         new MemberShare(ended, new BigDecimal("5.00")),
                         new MemberShare(endsLater, new BigDecimal("5.00"))));

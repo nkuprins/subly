@@ -8,7 +8,7 @@ import com.app.subly.entity.category.Category;
 import com.app.subly.entity.subscription.Subscription;
 import com.app.subly.enums.Currency;
 import com.app.subly.service.share.MemberShare;
-import com.app.subly.util.Money;
+import com.app.subly.util.MoneyMath;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Comparator;
@@ -29,7 +29,7 @@ public final class DashboardCalculator {
         BigDecimal yearlyTotal =
                 shares.stream().map(share -> share.yearlyIn(targetCurrency)).reduce(BigDecimal.ZERO, BigDecimal::add);
         return new DashboardSummaryResponse(
-                Money.monthlyFromYearly(yearlyTotal), yearlyTotal, targetCurrency, shares.size());
+                MoneyMath.monthlyFromYearly(yearlyTotal), yearlyTotal, targetCurrency, shares.size());
     }
 
     public static List<UpcomingPaymentResponse> upcomingPayments(
@@ -68,7 +68,7 @@ public final class DashboardCalculator {
         }
 
         CategorySpendingResponse toResponse(BigDecimal yearlyTotal, Currency currency) {
-            return new CategorySpendingResponse(name, Money.monthlyFromYearly(yearlyTotal), yearlyTotal, currency);
+            return new CategorySpendingResponse(name, MoneyMath.monthlyFromYearly(yearlyTotal), yearlyTotal, currency);
         }
     }
 }

@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public final class MemberShares {
+public final class MemberShareLoader {
 
     private final SubscriptionMembershipRepository membershipRepository;
 
@@ -30,9 +30,9 @@ public final class MemberShares {
 
     private Map<Long, Long> countMembers(List<SubscriptionMembership> memberships) {
         List<Long> subscriptionIds =
-                memberships.stream().map(MemberShares::subscriptionId).toList();
+                memberships.stream().map(MemberShareLoader::subscriptionId).toList();
         return membershipRepository.findBySubscriptionIdIn(subscriptionIds).stream()
-                .collect(Collectors.groupingBy(MemberShares::subscriptionId, Collectors.counting()));
+                .collect(Collectors.groupingBy(MemberShareLoader::subscriptionId, Collectors.counting()));
     }
 
     private static MemberShare shareOf(SubscriptionMembership membership, Map<Long, Long> memberCounts) {
