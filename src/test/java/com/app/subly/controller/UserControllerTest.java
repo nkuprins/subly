@@ -21,7 +21,6 @@ import com.app.subly.entity.user.User;
 import com.app.subly.exception.user.UserAlreadyExistsException;
 import com.app.subly.exception.user.WrongPasswordException;
 import com.app.subly.service.UserService;
-import com.app.subly.testutil.JsonBody;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.HttpStatus;
@@ -34,11 +33,11 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 @WithMockUser(username = ALICE)
 class UserControllerTest extends AbstractWebMvcTest {
 
-    static final String DELETE_URL = "/users/delete/me";
-    static final String PASSWORD_URL = "/users/update/password/me";
-    static final String INFO_URL = "/users/update/info/me";
-    static final String PASSWORD = "largepassword123456";
-    static final String NEW_PASSWORD = "superlargepassword123456";
+    private static final String DELETE_URL = "/users/delete/me";
+    private static final String PASSWORD_URL = "/users/update/password/me";
+    private static final String INFO_URL = "/users/update/info/me";
+    private static final String PASSWORD = "largepassword123456";
+    private static final String NEW_PASSWORD = "superlargepassword123456";
 
     @MockitoBean
     UserService service;
@@ -84,7 +83,7 @@ class UserControllerTest extends AbstractWebMvcTest {
 
     @Test
     void updateUserInformation_shouldReturn400WhenNoFieldIsProvided() throws Exception {
-        sendJson(patch(INFO_URL).with(csrf()), JsonBody.empty())
+        sendJson(patch(INFO_URL).with(csrf()), "{}")
                 .andExpect(validationError())
                 .andExpect(jsonPath("$.errors[0].message").value("You must provide at least one property to change."));
 
@@ -145,19 +144,27 @@ class UserControllerTest extends AbstractWebMvcTest {
         sendJson(patch(INFO_URL).with(csrf()), usernameChange("alice_new")).andExpect(status().isUnauthorized());
     }
 
-    private static JsonBody passwordBody() {
-        return JsonBody.empty().with("password", PASSWORD);
+    private static String passwordBody() {
+        return """
+                {"password": "%s"}
+                """.formatted(PASSWORD);
     }
 
-    private static JsonBody passwordChange(String newPassword) {
-        return JsonBody.empty().with("oldPassword", PASSWORD).with("newPassword", newPassword);
+    private static String passwordChange(String newPassword) {
+        return """
+                {"oldPassword": "%s", "newPassword": "%s"}
+                """.formatted(PASSWORD, newPassword);
     }
 
-    private static JsonBody usernameChange(String username) {
-        return JsonBody.empty().with("newUsername", username);
+    private static String usernameChange(String username) {
+        return """
+                {"newUsername": "%s"}
+                """.formatted(username);
     }
 
-    private static JsonBody emailChange(String email) {
-        return JsonBody.empty().with("newEmail", email);
+    private static String emailChange(String email) {
+        return """
+                {"newEmail": "%s"}
+                """.formatted(email);
     }
 }

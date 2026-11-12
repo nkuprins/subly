@@ -1,5 +1,6 @@
 package com.app.subly.service.access;
 
+import static com.app.subly.testdata.TestSubscriptions.SUBSCRIPTION_ID;
 import static com.app.subly.testdata.TestSubscriptions.aSubscription;
 import static com.app.subly.testdata.TestUsers.ALICE;
 import static com.app.subly.testdata.TestUsers.BOB;
@@ -23,23 +24,21 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class SubscriptionAccessTest {
 
-    static final long SUBSCRIPTION_ID = 7L;
-
     @Mock
     SubscriptionMembershipRepository membershipRepository;
 
     @InjectMocks
     SubscriptionAccess access;
 
-    final SubscriptionMembership ownerRow =
+    final SubscriptionMembership owner =
             SubscriptionMembership.owner(TestUsers.user(ALICE), aSubscription().build());
 
     @Test
     void getMembership_shouldReturnTheUsersMembership() {
         when(membershipRepository.findBySubscriptionIdAndUserUsername(SUBSCRIPTION_ID, ALICE))
-                .thenReturn(Optional.of(ownerRow));
+                .thenReturn(Optional.of(owner));
 
-        assertThat(access.getMembership(ALICE, SUBSCRIPTION_ID)).isSameAs(ownerRow);
+        assertThat(access.getMembership(ALICE, SUBSCRIPTION_ID)).isSameAs(owner);
     }
 
     @Test
@@ -54,14 +53,14 @@ class SubscriptionAccessTest {
 
     @Test
     void getOwnedSubscription_shouldReturnTheSubscriptionOfTheOwner() {
-        stubOwnerRow();
+        stubOwnerMembership();
 
-        assertThat(access.getOwnedSubscription(ALICE, SUBSCRIPTION_ID)).isSameAs(ownerRow.getSubscription());
+        assertThat(access.getOwnedSubscription(ALICE, SUBSCRIPTION_ID)).isSameAs(owner.getSubscription());
     }
 
     @Test
     void getOwnerMembership_shouldRejectNonOwner() {
-        stubOwnerRow();
+        stubOwnerMembership();
 
         assertThatThrownBy(() -> access.getOwnerMembership(BOB, SUBSCRIPTION_ID))
                 .isInstanceOf(SubscriptionAccessDeniedException.class)
@@ -78,8 +77,8 @@ class SubscriptionAccessTest {
                 .hasMessageContaining(String.valueOf(SUBSCRIPTION_ID));
     }
 
-    private void stubOwnerRow() {
+    private void stubOwnerMembership() {
         when(membershipRepository.findBySubscriptionIdAndRole(SUBSCRIPTION_ID, MembershipRole.OWNER))
-                .thenReturn(Optional.of(ownerRow));
+                .thenReturn(Optional.of(owner));
     }
 }

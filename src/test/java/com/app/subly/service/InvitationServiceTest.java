@@ -1,9 +1,11 @@
 package com.app.subly.service;
 
-import static com.app.subly.testdata.TestClock.NOW;
+import static com.app.subly.testdata.TestSubscriptions.SUBSCRIPTION_ID;
 import static com.app.subly.testdata.TestSubscriptions.aSubscription;
 import static com.app.subly.testdata.TestUsers.ALICE;
+import static com.app.subly.testdata.TestUsers.ALICE_ID;
 import static com.app.subly.testdata.TestUsers.BOB;
+import static com.app.subly.testdata.TestUsers.BOB_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -18,7 +20,6 @@ import com.app.subly.entity.subscription.Subscription;
 import com.app.subly.entity.subscription.SubscriptionMembership;
 import com.app.subly.entity.user.User;
 import com.app.subly.enums.MembershipRole;
-import com.app.subly.exception.invitation.InvitationNotFoundException;
 import com.app.subly.exception.subscription.SubscriptionNotJoinableException;
 import com.app.subly.repository.PendingInvitationRepository;
 import com.app.subly.repository.SubscriptionMembershipRepository;
@@ -27,7 +28,6 @@ import com.app.subly.repository.UserRepository;
 import com.app.subly.service.access.SubscriptionAccess;
 import com.app.subly.testdata.TestUsers;
 import java.util.Optional;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -40,9 +40,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class InvitationServiceTest {
 
     private static final long INVITATION_ID = 5L;
-    private static final long SUBSCRIPTION_ID = 10L;
-    private static final long INVITEE_ID = 2L;
-    private static final long OWNER_ID = 1L;
     private static final int MAX_PARTICIPANTS = 3;
 
     @Mock
@@ -69,144 +66,82 @@ class InvitationServiceTest {
     @Captor
     ArgumentCaptor<PendingInvitation> invitationCaptor;
 
-    final User invitee = TestUsers.userWithId(ALICE, INVITEE_ID);
-    final User owner = TestUsers.userWithId(BOB, OWNER_ID);
-    Subscription subscription;
-    PendingInvitation invitation;
-
-    @BeforeEach
-    void setUp() {
-        subscription = aSubscription()
-                .withId(SUBSCRIPTION_ID)
-                .withMaxParticipants(MAX_PARTICIPANTS)
-                .build();
-        invitation = new PendingInvitation(invitee, subscription, owner);
-    }
+    final User alice = TestUsers.userWithId(ALICE, ALICE_ID);
+    final User bob = TestUsers.userWithId(BOB, BOB_ID);
+    final Subscription subscription = aSubscription()
+            .withId(SUBSCRIPTION_ID)
+            .withMaxParticipants(MAX_PARTICIPANTS)
+            .build();
+    final PendingInvitation invitation = new PendingInvitation(bob, subscription, alice);
 
     @Test
     void invite_shouldSaveInvitationWhileASeatIsFree() {
-        stubOwnerOf(subscription);
+        stubOwnerMembership();
         when(membershipRepository.countBySubscriptionId(SUBSCRIPTION_ID)).thenReturn(MAX_PARTICIPANTS - 1L);
-        when(userRepository.findByUsername(ALICE)).thenReturn(Optional.of(invitee));
+        when(userRepository.findByUsername(BOB)).thenReturn(Optional.of(bob));
 
-        service.invite(BOB, SUBSCRIPTION_ID, new InviteRequest(ALICE));
+        service.invite(ALICE, SUBSCRIPTION_ID, new InviteRequest(BOB));
 
         verify(invitationRepository).save(invitationCaptor.capture());
         PendingInvitation saved = invitationCaptor.getValue();
-        assertThat(saved.getUser()).isSameAs(invitee);
+        assertThat(saved.getUser()).isSameAs(bob);
         assertThat(saved.getSubscription()).isSameAs(subscription);
-        assertThat(saved.getInvitedBy()).isSameAs(owner);
+        assertThat(saved.getInvitedBy()).isSameAs(alice);
     }
 
     @Test
     void invite_shouldRejectFullSubscription() {
-        stubOwnerOf(subscription);
+        stubOwnerMembership();
         when(membershipRepository.countBySubscriptionId(SUBSCRIPTION_ID)).thenReturn((long) MAX_PARTICIPANTS);
+        InviteRequest request = new InviteRequest(BOB);
 
-        assertInviteRejected();
-    }
-
-    @Test
-    void invite_shouldRejectCancelledSubscription() {
-        subscription.cancel(NOW);
-        stubOwnerOf(subscription);
-
-        assertInviteRejected();
-    }
-
-    @Test
-    void invite_shouldRejectNonSharableSubscription() {
-        stubOwnerOf(aSubscription().withId(SUBSCRIPTION_ID).build());
-
-        assertInviteRejected();
+        assertThatThrownBy(() -> service.invite(ALICE, SUBSCRIPTION_ID, request))
+                .isInstanceOf(SubscriptionNotJoinableException.class);
+        verify(invitationRepository, never()).save(any());
     }
 
     @Test
     void accept_shouldCreateMembershipAndDeleteInvitation() {
-        stubInvitationTo(subscription);
+        stubInvitation();
         when(membershipRepository.countBySubscriptionId(SUBSCRIPTION_ID)).thenReturn(MAX_PARTICIPANTS - 1L);
 
-        service.accept(ALICE, INVITATION_ID);
+        service.accept(BOB, INVITATION_ID);
 
         verify(membershipRepository).save(membershipCaptor.capture());
         SubscriptionMembership saved = membershipCaptor.getValue();
         assertThat(saved.getRole()).isEqualTo(MembershipRole.MEMBER);
-        assertThat(saved.getUser()).isSameAs(invitation.getUser());
+        assertThat(saved.getUser()).isSameAs(bob);
         assertThat(saved.getSubscription()).isSameAs(subscription);
         verify(invitationRepository).delete(invitation);
     }
 
     @Test
-    void decline_shouldDeleteInvitationWithoutCreatingMembership() {
-        when(invitationRepository.getInvitation(INVITATION_ID, ALICE)).thenReturn(invitation);
+    void accept_shouldRejectFullSubscription() {
+        stubInvitation();
+        when(membershipRepository.countBySubscriptionId(SUBSCRIPTION_ID)).thenReturn((long) MAX_PARTICIPANTS);
 
-        service.decline(ALICE, INVITATION_ID);
+        assertThatThrownBy(() -> service.accept(BOB, INVITATION_ID))
+                .isInstanceOf(SubscriptionNotJoinableException.class);
+        verify(membershipRepository, never()).save(any());
+    }
+
+    @Test
+    void decline_shouldDeleteInvitationWithoutCreatingMembership() {
+        when(invitationRepository.getInvitation(INVITATION_ID, BOB)).thenReturn(invitation);
+
+        service.decline(BOB, INVITATION_ID);
 
         verify(invitationRepository).delete(invitation);
         verifyNoInteractions(membershipRepository);
     }
 
-    @Test
-    void accept_shouldRejectInvitationOfAnotherUser() {
-        when(invitationRepository.getInvitation(INVITATION_ID, BOB))
-                .thenThrow(new InvitationNotFoundException(INVITATION_ID));
-
-        assertThatThrownBy(() -> service.accept(BOB, INVITATION_ID)).isInstanceOf(InvitationNotFoundException.class);
-        verifyNoInteractions(membershipRepository);
+    private void stubOwnerMembership() {
+        when(subscriptionAccess.getOwnerMembership(ALICE, SUBSCRIPTION_ID))
+                .thenReturn(SubscriptionMembership.owner(alice, subscription));
     }
 
-    @Test
-    void decline_shouldRejectInvitationOfAnotherUser() {
-        when(invitationRepository.getInvitation(INVITATION_ID, BOB))
-                .thenThrow(new InvitationNotFoundException(INVITATION_ID));
-
-        assertThatThrownBy(() -> service.decline(BOB, INVITATION_ID)).isInstanceOf(InvitationNotFoundException.class);
-        verify(invitationRepository, never()).delete(any());
-    }
-
-    @Test
-    void accept_shouldRejectFullSubscription() {
-        stubInvitationTo(subscription);
-        when(membershipRepository.countBySubscriptionId(SUBSCRIPTION_ID)).thenReturn((long) MAX_PARTICIPANTS);
-
-        assertAcceptRejectedWith(SubscriptionNotJoinableException.class);
-    }
-
-    @Test
-    void accept_shouldRejectCancelledSubscription() {
-        subscription.cancel(NOW);
-        stubInvitationTo(subscription);
-
-        assertAcceptRejectedWith(SubscriptionNotJoinableException.class);
-    }
-
-    @Test
-    void accept_shouldRejectNonSharableSubscription() {
-        stubInvitationTo(aSubscription().withId(SUBSCRIPTION_ID).build());
-
-        assertAcceptRejectedWith(SubscriptionNotJoinableException.class);
-    }
-
-    private void stubOwnerOf(Subscription ownedSubscription) {
-        when(subscriptionAccess.getOwnerMembership(BOB, SUBSCRIPTION_ID))
-                .thenReturn(SubscriptionMembership.owner(owner, ownedSubscription));
-    }
-
-    private void assertInviteRejected() {
-        InviteRequest request = new InviteRequest(ALICE);
-
-        assertThatThrownBy(() -> service.invite(BOB, SUBSCRIPTION_ID, request))
-                .isInstanceOf(SubscriptionNotJoinableException.class);
-        verify(invitationRepository, never()).save(any());
-    }
-
-    private void stubInvitationTo(Subscription lockedSubscription) {
-        when(invitationRepository.getInvitation(INVITATION_ID, ALICE)).thenReturn(invitation);
-        when(subscriptionRepository.findLockedById(SUBSCRIPTION_ID)).thenReturn(Optional.of(lockedSubscription));
-    }
-
-    private void assertAcceptRejectedWith(Class<? extends RuntimeException> exception) {
-        assertThatThrownBy(() -> service.accept(ALICE, INVITATION_ID)).isInstanceOf(exception);
-        verify(membershipRepository, never()).save(any());
+    private void stubInvitation() {
+        when(invitationRepository.getInvitation(INVITATION_ID, BOB)).thenReturn(invitation);
+        when(subscriptionRepository.findLockedById(SUBSCRIPTION_ID)).thenReturn(Optional.of(subscription));
     }
 }

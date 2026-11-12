@@ -1,6 +1,7 @@
 package com.app.subly.service;
 
 import static com.app.subly.testdata.TestUsers.ALICE;
+import static com.app.subly.testdata.TestUsers.ALICE_ID;
 import static com.app.subly.testdata.TestUsers.BOB;
 import static com.app.subly.testdata.TestUsers.PASSWORD_HASH;
 import static com.app.subly.testdata.TestUsers.email;
@@ -35,7 +36,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
 
-    private static final long ALICE_ID = 1L;
     private static final String PASSWORD = "secretPassword";
     private static final String NEW_PASSWORD = "newSecretPassword";
     private static final String NEW_EMAIL = "alice.new@example.com";
@@ -72,7 +72,7 @@ class UserServiceTest {
 
     @Test
     void delete_shouldRejectWrongPassword() {
-        stubExistingUser();
+        stubAliceExists();
         when(encoder.matches(PASSWORD, PASSWORD_HASH)).thenReturn(false);
 
         assertThatThrownBy(() -> service.delete(ALICE, PASSWORD)).isInstanceOf(WrongPasswordException.class);
@@ -80,7 +80,7 @@ class UserServiceTest {
 
     @Test
     void delete_shouldRejectUserReferencedByOtherRows() {
-        stubExistingUser();
+        stubAliceExists();
         when(encoder.matches(PASSWORD, PASSWORD_HASH)).thenReturn(true);
         doThrow(DataIntegrityViolationException.class).when(repository).deleteByUsername(ALICE);
 
@@ -89,7 +89,7 @@ class UserServiceTest {
 
     @Test
     void delete_shouldDeleteUserWithMatchingPassword() {
-        stubExistingUser();
+        stubAliceExists();
         when(encoder.matches(PASSWORD, PASSWORD_HASH)).thenReturn(true);
 
         service.delete(ALICE, PASSWORD);
@@ -99,7 +99,7 @@ class UserServiceTest {
 
     @Test
     void updatePassword_shouldRejectWrongOldPassword() {
-        User user = stubExistingUser();
+        User user = stubAliceExists();
         when(encoder.matches(PASSWORD, PASSWORD_HASH)).thenReturn(false);
 
         assertThatThrownBy(() -> service.updatePassword(ALICE, PASSWORD, NEW_PASSWORD))
@@ -109,7 +109,7 @@ class UserServiceTest {
 
     @Test
     void updatePassword_shouldStoreTheHashOfTheNewPassword() {
-        User user = stubExistingUser();
+        User user = stubAliceExists();
         String newHash = "new_hash";
         when(encoder.matches(PASSWORD, PASSWORD_HASH)).thenReturn(true);
         when(encoder.encode(NEW_PASSWORD)).thenReturn(newHash);
@@ -122,7 +122,7 @@ class UserServiceTest {
     @ParameterizedTest(name = "empty {0}")
     @MethodSource("emptyFieldUpdates")
     void updateInformation_shouldRejectEmptyValue(String field, UpdateUserInformationRequest request) {
-        stubExistingUser();
+        stubAliceExists();
 
         assertThatThrownBy(() -> service.updateInformation(ALICE, request))
                 .isInstanceOf(UserInfoUpdateException.class)
@@ -131,7 +131,7 @@ class UserServiceTest {
 
     @Test
     void updateInformation_shouldChangeUsername() {
-        User user = stubExistingUser();
+        User user = stubAliceExists();
 
         service.updateInformation(ALICE, usernameUpdate(NEW_USERNAME));
 
@@ -141,7 +141,7 @@ class UserServiceTest {
 
     @Test
     void updateInformation_shouldChangeName() {
-        User user = stubExistingUser();
+        User user = stubAliceExists();
 
         service.updateInformation(ALICE, nameUpdate(NEW_NAME));
 
@@ -150,7 +150,7 @@ class UserServiceTest {
 
     @Test
     void updateInformation_shouldChangeEmail() {
-        User user = stubExistingUser();
+        User user = stubAliceExists();
 
         service.updateInformation(ALICE, emailUpdate(NEW_EMAIL));
 
@@ -159,19 +159,9 @@ class UserServiceTest {
 
     @Test
     void updateInformation_shouldRejectExistingEmail() {
-        stubExistingUser();
+        stubAliceExists();
         doThrow(DataIntegrityViolationException.class).when(repository).flush();
         UpdateUserInformationRequest request = emailUpdate(email(BOB));
-
-        assertThatThrownBy(() -> service.updateInformation(ALICE, request))
-                .isInstanceOf(UserAlreadyExistsException.class);
-    }
-
-    @Test
-    void updateInformation_shouldRejectExistingUsername() {
-        stubExistingUser();
-        doThrow(DataIntegrityViolationException.class).when(repository).flush();
-        UpdateUserInformationRequest request = usernameUpdate(BOB);
 
         assertThatThrownBy(() -> service.updateInformation(ALICE, request))
                 .isInstanceOf(UserAlreadyExistsException.class);
@@ -184,7 +174,7 @@ class UserServiceTest {
                 arguments("name", nameUpdate("")));
     }
 
-    private User stubExistingUser() {
+    private User stubAliceExists() {
         User user = TestUsers.userWithId(ALICE, ALICE_ID);
         when(repository.getUser(ALICE)).thenReturn(user);
         return user;

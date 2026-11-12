@@ -5,21 +5,18 @@ import com.app.subly.enums.UserRole;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
-// Idea: use builder like in subscription if benefits
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class TestUsers {
 
     public static final String ALICE = "alice";
     public static final String BOB = "bob";
     public static final String CAROL = "carol";
+    public static final long ALICE_ID = 1L;
+    public static final long BOB_ID = 2L;
     public static final String PASSWORD_HASH = "hash";
 
     public static User user(String username) {
-        return user(username, UserRole.USER);
-    }
-
-    public static User user(String username, UserRole role) {
-        return new User(username, username, PASSWORD_HASH, email(username), role);
+        return new User(username, username, PASSWORD_HASH, email(username), UserRole.USER);
     }
 
     public static User userWithId(String username, long id) {

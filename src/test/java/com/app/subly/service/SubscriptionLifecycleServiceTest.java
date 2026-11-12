@@ -2,6 +2,7 @@ package com.app.subly.service;
 
 import static com.app.subly.testdata.TestClock.NOW;
 import static com.app.subly.testdata.TestSubscriptions.DEFAULT_NEXT_PAYMENT_DATE;
+import static com.app.subly.testdata.TestSubscriptions.SUBSCRIPTION_ID;
 import static com.app.subly.testdata.TestUsers.ALICE;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -14,7 +15,7 @@ import org.junit.jupiter.api.Test;
 
 class SubscriptionLifecycleServiceTest extends AbstractSubscriptionServiceTest {
 
-    static final LocalDate PAST_PAYMENT_DATE = DEFAULT_NEXT_PAYMENT_DATE.minusMonths(2);
+    private static final LocalDate PAST_PAYMENT_DATE = DEFAULT_NEXT_PAYMENT_DATE.minusMonths(2);
 
     @Test
     void cancel_shouldCancelActiveSubscription() {

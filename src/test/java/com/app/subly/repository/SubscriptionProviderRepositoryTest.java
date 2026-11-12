@@ -16,11 +16,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 class SubscriptionProviderRepositoryTest extends AbstractRepositoryTest {
 
-    static final String OWN_CUSTOM_NAME = "A own";
-    static final String CATALOG_NAME = "B catalog";
-    static final String OTHERS_CUSTOM_NAME = "C other";
+    private static final String OWN_CUSTOM_NAME = "A own";
+    private static final String CATALOG_NAME = "B catalog";
+    private static final String OTHERS_CUSTOM_NAME = "C other";
 
-    static final long UNKNOWN_PROVIDER_ID = -1L;
+    private static final long UNKNOWN_PROVIDER_ID = -1L;
 
     @Autowired
     SubscriptionProviderRepository repository;

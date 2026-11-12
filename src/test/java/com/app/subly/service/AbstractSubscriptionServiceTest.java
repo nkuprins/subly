@@ -1,20 +1,19 @@
 package com.app.subly.service;
 
-import static com.app.subly.testdata.TestSubscriptions.DEFAULT_NEXT_PAYMENT_DATE;
-import static com.app.subly.testdata.TestSubscriptions.DEFAULT_PRICE;
+import static com.app.subly.testdata.TestSubscriptions.SUBSCRIPTION_ID;
 import static com.app.subly.testdata.TestSubscriptions.aSubscription;
 import static com.app.subly.testdata.TestUsers.ALICE;
+import static com.app.subly.testdata.TestUsers.ALICE_ID;
 import static com.app.subly.testdata.TestUsers.BOB;
+import static com.app.subly.testdata.TestUsers.BOB_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
-import com.app.subly.dto.subscription.CreateSubscriptionRequest;
 import com.app.subly.entity.provider.SubscriptionProvider;
 import com.app.subly.entity.subscription.Subscription;
 import com.app.subly.entity.subscription.SubscriptionMembership;
 import com.app.subly.entity.user.User;
 import com.app.subly.enums.BillingCycle;
-import com.app.subly.enums.Currency;
 import com.app.subly.enums.ProviderType;
 import com.app.subly.repository.SubscriptionMembershipRepository;
 import com.app.subly.repository.SubscriptionProviderRepository;
@@ -34,11 +33,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 abstract class AbstractSubscriptionServiceTest {
-
-    static final long SUBSCRIPTION_ID = 7L;
-    static final long PROVIDER_ID = 1L;
-    static final long ALICE_ID = 1L;
-    static final long BOB_ID = 2L;
 
     @Mock
     SubscriptionRepository subscriptionRepository;
@@ -114,14 +108,5 @@ abstract class AbstractSubscriptionServiceTest {
 
     Subscription subscription(SubscriptionProvider provider) {
         return aSubscription().withProvider(provider).build();
-    }
-
-    static CreateSubscriptionRequest createRequest() {
-        return createRequest(DEFAULT_NEXT_PAYMENT_DATE);
-    }
-
-    static CreateSubscriptionRequest createRequest(LocalDate nextPaymentDate) {
-        return new CreateSubscriptionRequest(
-                PROVIDER_ID, DEFAULT_PRICE, Currency.USD, BillingCycle.MONTHLY, nextPaymentDate, false, 1);
     }
 }
