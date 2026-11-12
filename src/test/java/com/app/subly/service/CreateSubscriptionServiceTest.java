@@ -22,8 +22,10 @@ import com.app.subly.enums.MembershipRole;
 import com.app.subly.enums.ProviderType;
 import com.app.subly.exception.provider.ProviderNotFoundException;
 import com.app.subly.exception.subscription.PaymentDateInPastException;
+import com.app.subly.exception.subscription.PriceTooLowException;
 import com.app.subly.testdata.TestClock;
 import com.app.subly.testdata.TestProviders;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,6 +37,7 @@ import org.mockito.Captor;
 class CreateSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
 
     private static final long PROVIDER_ID = 3L;
+    private static final int MAX_PARTICIPANTS = 3;
 
     @Captor
     ArgumentCaptor<Subscription> subscriptionCaptor;
@@ -102,8 +105,32 @@ class CreateSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
         verifyNoInteractions(subscriptionRepository, membershipRepository);
     }
 
+    @Test
+    void create_shouldSaveSharableSubscriptionAtOneCentPerParticipant() {
+        when(subscriptionProviderRepository.getProvider(PROVIDER_ID)).thenReturn(catalogProvider());
+
+        service.create(ALICE, createRequest(DEFAULT_NEXT_PAYMENT_DATE, new BigDecimal("0.03"), MAX_PARTICIPANTS));
+
+        verify(subscriptionRepository).save(subscriptionCaptor.capture());
+        assertThat(subscriptionCaptor.getValue().getMaxParticipants()).isEqualTo(MAX_PARTICIPANTS);
+    }
+
+    @Test
+    void create_shouldRejectPriceBelowOneCentPerParticipant() {
+        CreateSubscriptionRequest request =
+                createRequest(DEFAULT_NEXT_PAYMENT_DATE, new BigDecimal("0.02"), MAX_PARTICIPANTS);
+
+        assertThatThrownBy(() -> service.create(ALICE, request)).isInstanceOf(PriceTooLowException.class);
+        verifyNoInteractions(subscriptionRepository, membershipRepository);
+    }
+
     private static CreateSubscriptionRequest createRequest(LocalDate nextPaymentDate) {
+        return createRequest(nextPaymentDate, DEFAULT_PRICE, 1);
+    }
+
+    private static CreateSubscriptionRequest createRequest(
+            LocalDate nextPaymentDate, BigDecimal price, int maxParticipants) {
         return new CreateSubscriptionRequest(
-                PROVIDER_ID, DEFAULT_PRICE, Currency.USD, BillingCycle.MONTHLY, nextPaymentDate, true, 1);
+                PROVIDER_ID, price, Currency.USD, BillingCycle.MONTHLY, nextPaymentDate, true, maxParticipants);
     }
 }

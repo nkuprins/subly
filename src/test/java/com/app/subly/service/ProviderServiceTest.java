@@ -4,12 +4,12 @@ import static com.app.subly.testdata.TestProviders.CATALOG_PROVIDER_NAME;
 import static com.app.subly.testdata.TestProviders.CUSTOM_PROVIDER_NAME;
 import static com.app.subly.testdata.TestUsers.ALICE;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.AdditionalAnswers.returnsFirstArg;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.app.subly.dto.form.CreateProviderForm;
+import com.app.subly.dto.provider.ProviderCategoryResponse;
+import com.app.subly.dto.provider.ProviderResponse;
 import com.app.subly.entity.category.Category;
 import com.app.subly.entity.provider.SubscriptionProvider;
 import com.app.subly.entity.user.User;
@@ -19,6 +19,7 @@ import com.app.subly.repository.SubscriptionProviderRepository;
 import com.app.subly.repository.UserRepository;
 import com.app.subly.testdata.TestProviders;
 import com.app.subly.testdata.TestUsers;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -34,6 +35,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class ProviderServiceTest {
 
     private static final long CATEGORY_ID = 4L;
+    private static final long PROVIDER_ID = 3L;
     private static final String LOGO_PATH = "/logo.svg";
 
     @Mock
@@ -52,10 +54,47 @@ class ProviderServiceTest {
     ArgumentCaptor<SubscriptionProvider> providerCaptor;
 
     final Category category = TestProviders.category();
+    final SubscriptionProvider catalog = TestProviders.catalog(category);
+
+    @Test
+    void findCatalogProviders_shouldReturnCatalogProviders() {
+        when(subscriptionProviderRepository.findByProviderTypeOrderByNameAsc(ProviderType.CATALOG))
+                .thenReturn(List.of(catalog));
+
+        assertThat(service.findCatalogProviders()).containsExactly(catalog);
+    }
+
+    @Test
+    void findVisibleProviders_shouldMapProvidersToResponses() {
+        catalog.setId(PROVIDER_ID);
+        catalog.setLogoPath(LOGO_PATH);
+        when(subscriptionProviderRepository.findByProviderTypeOrCreatedByUsernameOrderByNameAsc(
+                        ProviderType.CATALOG, ALICE))
+                .thenReturn(List.of(catalog));
+
+        assertThat(service.findVisibleProviders(ALICE))
+                .containsExactly(
+                        new ProviderResponse(PROVIDER_ID, CATALOG_PROVIDER_NAME, LOGO_PATH, ProviderType.CATALOG));
+    }
+
+    @Test
+    void deleteAllProvidersCreatedBy_shouldDeleteProvidersOfTheUser() {
+        service.deleteAllProvidersCreatedBy(ALICE);
+
+        verify(subscriptionProviderRepository).deleteByCreatedByUsername(ALICE);
+    }
+
+    @Test
+    void findProviderCountsByCategory_shouldReturnCountsPerCategory() {
+        ProviderCategoryResponse count = new ProviderCategoryResponse(CATEGORY_ID, 2L);
+        when(subscriptionProviderRepository.findProviderCountsByCategory()).thenReturn(List.of(count));
+
+        assertThat(service.findProviderCountsByCategory()).containsExactly(count);
+    }
 
     @Test
     void create_shouldSaveCatalogProviderWithoutCreator() {
-        stubCategoryAndSave();
+        stubCategory();
 
         service.create(
                 ALICE,
@@ -75,7 +114,7 @@ class ProviderServiceTest {
     @ValueSource(strings = "   ")
     void create_shouldSaveCustomProviderOwnedByTheUser(String logoPath) {
         User alice = stubAliceExists();
-        stubCategoryAndSave();
+        stubCategory();
 
         service.create(
                 ALICE,
@@ -90,10 +129,8 @@ class ProviderServiceTest {
         assertThat(saved.getLogoPath()).isNull();
     }
 
-    private void stubCategoryAndSave() {
+    private void stubCategory() {
         when(categoryRepository.getCategory(CATEGORY_ID)).thenReturn(category);
-        when(subscriptionProviderRepository.save(any(SubscriptionProvider.class)))
-                .thenAnswer(returnsFirstArg());
     }
 
     private SubscriptionProvider savedProvider() {
