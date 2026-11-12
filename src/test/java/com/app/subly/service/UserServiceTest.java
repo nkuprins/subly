@@ -62,7 +62,6 @@ class UserServiceTest {
 
     @Test
     void create_shouldRejectExistingUser() {
-        when(encoder.encode(PASSWORD)).thenReturn(PASSWORD_HASH);
         when(repository.saveAndFlush(any(User.class))).thenThrow(DataIntegrityViolationException.class);
         String aliceEmail = email(ALICE);
 

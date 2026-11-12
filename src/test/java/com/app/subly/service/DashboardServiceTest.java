@@ -55,7 +55,6 @@ class DashboardServiceTest {
         stubActiveShares(List.of(
                 share(aSubscription().withPrice("12.00")),
                 share(aSubscription().withPrice("10.00").withMaxParticipants(2), "5.00")));
-        stubCancelledShares(List.of());
 
         DashboardResponse result = service.getDashboard(ALICE, Currency.EUR);
 
@@ -70,7 +69,6 @@ class DashboardServiceTest {
         stubActiveShares(List.of(
                 share(aSubscription().withNextPaymentDate(TODAY)),
                 share(aSubscription().withNextPaymentDate(TOKYO_TODAY))));
-        stubCancelledShares(List.of());
 
         assertThat(service.getDashboard(ALICE, Currency.EUR).upcoming())
                 .extracting(UpcomingPaymentResponse::nextPaymentDate)

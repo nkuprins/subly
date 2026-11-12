@@ -2,10 +2,12 @@ package com.app.subly.entity.subscription;
 
 import static com.app.subly.testdata.TestSubscriptions.aSubscription;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import com.app.subly.testdata.TestSubscriptions;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -27,6 +29,13 @@ class SubscriptionJoinableTest {
                 arguments("every seat taken", sharable(), MAX_PARTICIPANTS, true),
                 arguments("cancelled", sharable().cancelled(), MAX_PARTICIPANTS - 1, true),
                 arguments("not sharable", aSubscription(), 0, true));
+    }
+
+    @Test
+    void makeSharable_shouldRejectFewerThanTwoParticipants() {
+        Subscription subscription = aSubscription().build();
+
+        assertThatThrownBy(() -> subscription.makeSharable(1)).isInstanceOf(IllegalArgumentException.class);
     }
 
     private static TestSubscriptions.Builder sharable() {

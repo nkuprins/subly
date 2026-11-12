@@ -54,4 +54,15 @@ class SubscriptionPaymentDatesTest {
                         tuple(BOB, PAYMENT_DATE, new BigDecimal("3.33")),
                         tuple(CAROL, PAYMENT_DATE, new BigDecimal("3.33")));
     }
+
+    @Test
+    void paymentsDue_shouldSkipMemberWithZeroShare() {
+        Subscription subscription = aSubscription().withPrice("0.01").build();
+        SubscriptionMembership owner = SubscriptionMembership.owner(TestUsers.user(ALICE), subscription);
+        SubscriptionMembership bobMember = SubscriptionMembership.member(TestUsers.user(BOB), subscription);
+
+        assertThat(subscription.paymentsDue(List.of(owner, bobMember)))
+                .extracting(payment -> payment.getUser().getUsername(), SubscriptionPayment::getAmount)
+                .containsExactly(tuple(ALICE, new BigDecimal("0.01")));
+    }
 }

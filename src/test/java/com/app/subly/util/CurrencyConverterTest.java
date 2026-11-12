@@ -19,4 +19,15 @@ class CurrencyConverterTest {
     void toEur_shouldConvertAtTheFixedRateWithoutRounding(BigDecimal amount, Currency currency, BigDecimal expected) {
         assertThat(CurrencyConverter.toEur(amount, currency)).isEqualByComparingTo(expected);
     }
+
+    @ParameterizedTest(name = "{0} {1} -> {3} {2}")
+    @CsvSource({
+        "10.00, USD, USD, 10.00",
+        "10.00, USD, EUR, 8.90",
+        "8.90,  EUR, USD, 10.00",
+        "12.00, EUR, GBP, 10.00",
+    })
+    void convert_shouldConvertThroughEur(BigDecimal amount, Currency from, Currency to, BigDecimal expected) {
+        assertThat(CurrencyConverter.convert(amount, from, to)).isEqualByComparingTo(expected);
+    }
 }

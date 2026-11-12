@@ -24,7 +24,6 @@ public class SubscriptionProvider {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Setter
     @Column(nullable = false, length = NAME_MAX_LENGTH)
     private String name;
 
@@ -36,7 +35,6 @@ public class SubscriptionProvider {
     @JoinColumn(name = "created_by")
     private User createdBy;
 
-    @Setter
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;

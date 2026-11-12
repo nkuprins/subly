@@ -6,6 +6,9 @@ import static com.app.subly.testdata.TestUsers.ALICE;
 import static com.app.subly.testdata.TestUsers.BOB;
 import static com.app.subly.testdata.TestUsers.CAROL;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -14,6 +17,8 @@ import com.app.subly.entity.subscription.Subscription;
 import com.app.subly.entity.subscription.SubscriptionMembership;
 import com.app.subly.entity.user.User;
 import com.app.subly.enums.MembershipRole;
+import com.app.subly.exception.subscription.MembershipActionForbiddenException;
+import com.app.subly.exception.subscription.SubscriptionMemberNotFoundException;
 import com.app.subly.repository.SubscriptionMembershipRepository;
 import com.app.subly.service.access.SubscriptionAccess;
 import com.app.subly.testdata.TestUsers;
@@ -28,6 +33,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class MembershipServiceTest {
+
+    private static final long UNKNOWN_MEMBERSHIP_ID = 99L;
 
     @Mock
     SubscriptionAccess subscriptionAccess;
@@ -91,14 +98,44 @@ class MembershipServiceTest {
     }
 
     @Test
+    void leave_shouldRejectOwner() {
+        stubMembership(ALICE, owner);
+
+        assertThatThrownBy(() -> service.leave(ALICE, SUBSCRIPTION_ID))
+                .isInstanceOf(MembershipActionForbiddenException.class);
+        verify(membershipRepository, never()).delete(any());
+    }
+
+    @Test
     void removeMember_shouldAllowOwnerToKickMember() {
-        when(subscriptionAccess.getOwnedSubscription(ALICE, SUBSCRIPTION_ID)).thenReturn(subscription);
         when(membershipRepository.findByIdAndSubscriptionId(bobMember.getId(), SUBSCRIPTION_ID))
                 .thenReturn(Optional.of(bobMember));
 
         service.removeMember(ALICE, SUBSCRIPTION_ID, bobMember.getId());
 
+        verify(subscriptionAccess).getOwnedSubscription(ALICE, SUBSCRIPTION_ID);
         verify(membershipRepository).delete(bobMember);
+    }
+
+    @Test
+    void removeMember_shouldRejectOwner() {
+        Long ownerId = owner.getId();
+        when(membershipRepository.findByIdAndSubscriptionId(ownerId, SUBSCRIPTION_ID))
+                .thenReturn(Optional.of(owner));
+
+        assertThatThrownBy(() -> service.removeMember(ALICE, SUBSCRIPTION_ID, ownerId))
+                .isInstanceOf(MembershipActionForbiddenException.class);
+        verify(membershipRepository, never()).delete(any());
+    }
+
+    @Test
+    void removeMember_shouldRejectUnknownMember() {
+        when(membershipRepository.findByIdAndSubscriptionId(UNKNOWN_MEMBERSHIP_ID, SUBSCRIPTION_ID))
+                .thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.removeMember(ALICE, SUBSCRIPTION_ID, UNKNOWN_MEMBERSHIP_ID))
+                .isInstanceOf(SubscriptionMemberNotFoundException.class);
+        verify(membershipRepository, never()).delete(any());
     }
 
     private void stubMembership(String username, SubscriptionMembership membership) {
