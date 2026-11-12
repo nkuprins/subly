@@ -13,22 +13,20 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequiredArgsConstructor
 @Slf4j
+@RequestMapping("/subscriptions")
 public class SubscriptionPageController {
     private final SubscriptionService subscriptionService;
     private final ProviderService providerService;
 
     private static final String CANCELLED_TAB = "cancelled";
 
-    @GetMapping("/subscriptions")
+    @GetMapping()
     public String subscriptions(Principal principal, Model model, @RequestParam(defaultValue = "active") String tab) {
         log.info("Preparing subscription page");
         String username = principal.getName();
@@ -44,13 +42,13 @@ public class SubscriptionPageController {
         return "subscriptions";
     }
 
-    @GetMapping("/subscriptions/new")
+    @GetMapping("/new")
     public String newSubscriptions(Principal principal, Model model) {
         model.addAttribute("providers", providerService.findVisibleTo(principal.getName()));
         return "subscription-form";
     }
 
-    @PostMapping("/subscriptions")
+    @PostMapping()
     public String createSubscription(
             Principal principal,
             @RequestParam Long providerId,
@@ -76,7 +74,7 @@ public class SubscriptionPageController {
         return "redirect:/subscriptions";
     }
 
-    @PostMapping("/subscriptions/{id}/cancel")
+    @PostMapping("/{id}/cancel")
     public String cancelSubscription(@PathVariable Long id, Principal principal, RedirectAttributes redirect) {
         log.info("Canceling the subscription with id={}", id);
         subscriptionService.cancel(principal.getName(), id);
@@ -85,7 +83,7 @@ public class SubscriptionPageController {
         return "redirect:/subscriptions";
     }
 
-    @PostMapping("/subscriptions/{id}/reactivate")
+    @PostMapping("/{id}/reactivate")
     public String reactivateSubscription(@PathVariable Long id, Principal principal, RedirectAttributes redirect) {
         log.info("Reactivating the subscription with id={}", id);
         subscriptionService.reactivate(principal.getName(), id);
@@ -94,7 +92,7 @@ public class SubscriptionPageController {
         return "redirect:/subscriptions";
     }
 
-    @GetMapping("/subscriptions/{id}/edit")
+    @GetMapping("/{id}/edit")
     public String editSubscriptions(@PathVariable Long id, Principal principal, Model model) {
         log.info("Filling editing page for the subscription id={}", id);
         model.addAttribute("editId", id);
@@ -102,7 +100,7 @@ public class SubscriptionPageController {
         return "subscription-form";
     }
 
-    @PostMapping("/subscriptions/{id}")
+    @PostMapping("/{id}")
     public String updateSubscription(
             @PathVariable Long id,
             Principal principal,
@@ -120,7 +118,7 @@ public class SubscriptionPageController {
         return "redirect:/subscriptions";
     }
 
-    @PostMapping("/subscriptions/{id}/delete")
+    @PostMapping("/{id}/delete")
     public String deleteSubscription(
             @PathVariable Long id, Principal principal, @RequestParam(defaultValue = "active") String tab) {
         log.info("Deleting subscription id={}", id);
