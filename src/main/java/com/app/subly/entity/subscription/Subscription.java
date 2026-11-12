@@ -64,10 +64,9 @@ public class Subscription {
     @Column(updatable = false, nullable = false)
     private Instant createdAt;
 
-    @Setter
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Currency currency = Currency.EUR;
+    private Currency currency;
 
     @Column(nullable = false)
     private int maxParticipants = 1;
@@ -75,11 +74,13 @@ public class Subscription {
     public Subscription(
             SubscriptionProvider provider,
             BigDecimal price,
+            Currency currency,
             BillingCycle billingCycle,
             LocalDate nextPaymentDate,
             boolean freeTrial) {
         this.provider = provider;
         this.price = price;
+        this.currency = currency;
         this.billingCycle = billingCycle;
         billingAnchorDate = nextPaymentDate;
         this.nextPaymentDate = nextPaymentDate;

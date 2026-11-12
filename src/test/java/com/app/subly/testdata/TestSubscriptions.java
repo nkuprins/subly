@@ -78,9 +78,9 @@ public final class TestSubscriptions {
         }
 
         public Subscription build() {
-            Subscription subscription = new Subscription(provider, price, billingCycle, nextPaymentDate, freeTrial);
+            Subscription subscription =
+                    new Subscription(provider, price, currency, billingCycle, nextPaymentDate, freeTrial);
             subscription.setId(id);
-            subscription.setCurrency(currency);
             if (maxParticipants != null) {
                 subscription.makeSharable(maxParticipants);
             }

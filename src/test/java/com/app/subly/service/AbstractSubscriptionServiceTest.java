@@ -14,6 +14,7 @@ import com.app.subly.entity.subscription.Subscription;
 import com.app.subly.entity.subscription.SubscriptionMembership;
 import com.app.subly.entity.user.User;
 import com.app.subly.enums.BillingCycle;
+import com.app.subly.enums.Currency;
 import com.app.subly.enums.ProviderType;
 import com.app.subly.repository.SubscriptionMembershipRepository;
 import com.app.subly.repository.SubscriptionProviderRepository;
@@ -121,6 +122,6 @@ abstract class AbstractSubscriptionServiceTest {
 
     static CreateSubscriptionRequest createRequest(LocalDate nextPaymentDate) {
         return new CreateSubscriptionRequest(
-                PROVIDER_ID, DEFAULT_PRICE, BillingCycle.MONTHLY, nextPaymentDate, false, 1);
+                PROVIDER_ID, DEFAULT_PRICE, Currency.USD, BillingCycle.MONTHLY, nextPaymentDate, false, 1);
     }
 }

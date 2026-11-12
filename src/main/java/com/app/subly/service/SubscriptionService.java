@@ -53,7 +53,12 @@ public class SubscriptionService {
             throw new ProviderNotFoundException(request.providerId());
         }
         Subscription subscription = new Subscription(
-                provider, request.price(), request.billingCycle(), request.nextPaymentDate(), request.freeTrial());
+                provider,
+                request.price(),
+                request.currency(),
+                request.billingCycle(),
+                request.nextPaymentDate(),
+                request.freeTrial());
         if (request.maxParticipants() > 1) {
             subscription.makeSharable(request.maxParticipants());
         }
