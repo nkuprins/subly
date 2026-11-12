@@ -54,6 +54,14 @@
                     <input type="number" id="price" name="price" step="0.01" min="0" required
                            th:value="${sub != null ? sub.price : ''}"/>
                 </div>
+                <div class="field" th:if="${editId == null}">
+                    <label for="currency">Currency</label>
+                    <select id="currency" name="currency">
+                        <option value="EUR">EUR</option>
+                        <option value="USD">USD</option>
+                        <option value="GBP">GBP</option>
+                    </select>
+                </div>
                 <div class="field">
                     <label for="billingCycle">Billing cycle</label>
                     <select id="billingCycle" name="billingCycle">
