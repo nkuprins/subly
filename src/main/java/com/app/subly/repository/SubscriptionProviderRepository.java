@@ -19,6 +19,8 @@ public interface SubscriptionProviderRepository extends JpaRepository<Subscripti
         return findById(providerId).orElseThrow(() -> new ProviderNotFoundException(providerId));
     }
 
+    void deleteByCreatedByUsername(String username);
+
     @EntityGraph(attributePaths = "category")
     List<SubscriptionProvider> findAllByProviderTypeOrderByNameAsc(ProviderType providerType);
 

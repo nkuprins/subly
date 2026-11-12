@@ -56,4 +56,15 @@ class SubscriptionProviderRepositoryTest extends AbstractRepositoryTest {
                 .isInstanceOf(ProviderNotFoundException.class)
                 .hasMessageContaining(String.valueOf(UNKNOWN_PROVIDER_ID));
     }
+
+    @Test
+    void deleteByCreatedByUsername_shouldDeleteOnlyProvidersOfThatUser() {
+        repository.deleteByCreatedByUsername(ALICE);
+        entityManager.flush();
+        entityManager.clear();
+
+        assertThat(repository.findAll())
+                .extracting(SubscriptionProvider::getName)
+                .containsExactlyInAnyOrder(CATALOG_NAME, OTHERS_CUSTOM_NAME);
+    }
 }

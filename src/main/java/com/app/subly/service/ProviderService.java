@@ -49,14 +49,7 @@ public class ProviderService {
 
     @Transactional
     public void deleteAllProvidersCreatedBy(String username) {
-        List<ProviderResponse> result = findVisibleProviders(username);
-        if (result.isEmpty()) {
-            return;
-        }
-
-        for (ProviderResponse response : result) {
-            if (response.providerType().equals(ProviderType.CUSTOM)) providerRepository.deleteById(response.id());
-        }
+        providerRepository.deleteByCreatedByUsername(username);
     }
 
     public List<ProviderCategoryResponse> findProviderCountsByCategory() {
