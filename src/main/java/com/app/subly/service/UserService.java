@@ -8,6 +8,7 @@ import com.app.subly.repository.UserRepository;
 import java.time.ZoneId;
 import java.util.function.Consumer;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserService {
 
     private final UserRepository userRepository;
@@ -40,6 +42,7 @@ public class UserService {
 
     @Transactional
     public void delete(String username, String rawPassword) {
+        log.debug("Deleting account for username={}", username);
         // Make an attempt to delete a user with the given username
         // UserIsConnectedException is raised in case some table's column refers to this user.
         // WrongPasswordException is raised if a raw password != password hash
@@ -53,6 +56,7 @@ public class UserService {
         try {
             cleanUserConnectedData(user.getId(), username);
             userRepository.deleteByUsername(username);
+            log.debug("Deleted account for username={}", username);
         } catch (DataIntegrityViolationException exception) {
             throw new UserIsConnectedException(
                     "Cannot delete the user because it is connected with some table's field");
@@ -61,6 +65,7 @@ public class UserService {
 
     @Transactional
     public void updatePassword(String username, String rawOldPassword, String rawNewPassword) {
+        log.debug("Updating password for username={}", username);
         User user = getByUsername(username);
 
         if (!encoder.matches(rawOldPassword, user.getPasswordHash())) {
@@ -68,10 +73,12 @@ public class UserService {
         }
 
         user.setPasswordHash(encoder.encode(rawNewPassword));
+        log.debug("Updated password for username={}", username);
     }
 
     @Transactional
     public void updateInformation(String oldUsername, UpdateUserInformationRequest newUserInfo) {
+        log.debug("Updating account information for username={}", oldUsername);
         User user = getByUsername(oldUsername);
 
         try {
@@ -95,12 +102,14 @@ public class UserService {
             }
 
             userRepository.flush();
+            log.debug("Updated account information for username={}", oldUsername);
         } catch (DataIntegrityViolationException ex) {
             throw new UserAlreadyExistsException("The user with provided email or username already exists");
         }
     }
 
     public User getByUsername(String username) {
+        log.debug("Finding user by username={}", username);
         return userRepository.getByUsername(username);
     }
 
