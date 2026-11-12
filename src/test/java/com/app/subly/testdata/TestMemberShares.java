@@ -6,7 +6,7 @@ import static com.app.subly.testdata.TestUsers.ALICE;
 import com.app.subly.entity.subscription.Subscription;
 import com.app.subly.entity.subscription.SubscriptionMembership;
 import com.app.subly.enums.Currency;
-import com.app.subly.util.MemberShare;
+import com.app.subly.service.share.MemberShare;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 

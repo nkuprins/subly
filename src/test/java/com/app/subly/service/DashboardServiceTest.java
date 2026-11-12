@@ -19,9 +19,10 @@ import com.app.subly.entity.user.User;
 import com.app.subly.enums.Currency;
 import com.app.subly.enums.SubscriptionStatus;
 import com.app.subly.repository.UserRepository;
+import com.app.subly.service.share.MemberShare;
+import com.app.subly.service.share.MemberShares;
 import com.app.subly.testdata.TestClock;
 import com.app.subly.testdata.TestUsers;
-import com.app.subly.util.MemberShare;
 import java.math.BigDecimal;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,7 +35,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class DashboardServiceTest {
 
     @Mock
-    SubscriptionShares subscriptionShares;
+    MemberShares memberShares;
 
     @Mock
     UserRepository userRepository;
@@ -47,7 +48,7 @@ class DashboardServiceTest {
     void setUp() {
         alice = TestUsers.user(ALICE);
         when(userRepository.getByUsername(ALICE)).thenReturn(alice);
-        service = new DashboardService(subscriptionShares, userRepository, TestClock.CLOCK);
+        service = new DashboardService(memberShares, userRepository, TestClock.CLOCK);
     }
 
     @Test
@@ -91,11 +92,11 @@ class DashboardServiceTest {
     }
 
     private void stubActiveShares(List<MemberShare> shares) {
-        when(subscriptionShares.forUser(ALICE, SubscriptionStatus.ACTIVE)).thenReturn(shares);
+        when(memberShares.forUser(ALICE, SubscriptionStatus.ACTIVE)).thenReturn(shares);
     }
 
     private void stubCancelledShares(List<MemberShare> shares) {
-        when(subscriptionShares.forUser(ALICE, SubscriptionStatus.CANCELLED)).thenReturn(shares);
+        when(memberShares.forUser(ALICE, SubscriptionStatus.CANCELLED)).thenReturn(shares);
     }
 
     private static DashboardSummaryResponse summary(String monthly, String yearly, int count) {

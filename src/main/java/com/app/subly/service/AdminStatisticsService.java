@@ -10,7 +10,7 @@ import com.app.subly.enums.SubscriptionStatus;
 import com.app.subly.repository.SubscriptionMembershipRepository;
 import com.app.subly.repository.SubscriptionRepository;
 import com.app.subly.repository.UserRepository;
-import com.app.subly.util.MemberShare;
+import com.app.subly.service.share.MemberShare;
 import com.app.subly.util.Money;
 import java.math.BigDecimal;
 import java.math.MathContext;

@@ -1,8 +1,9 @@
-package com.app.subly.util;
+package com.app.subly.service.share;
 
 import com.app.subly.entity.subscription.Subscription;
 import com.app.subly.entity.subscription.SubscriptionMembership;
 import com.app.subly.enums.Currency;
+import com.app.subly.util.CurrencyConverter;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 

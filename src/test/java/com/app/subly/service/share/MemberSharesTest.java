@@ -1,4 +1,4 @@
-package com.app.subly.service;
+package com.app.subly.service.share;
 
 import static com.app.subly.testdata.TestSubscriptions.aSubscription;
 import static com.app.subly.testdata.TestUsers.ALICE;
@@ -15,7 +15,6 @@ import com.app.subly.entity.subscription.SubscriptionMembership;
 import com.app.subly.enums.SubscriptionStatus;
 import com.app.subly.repository.SubscriptionMembershipRepository;
 import com.app.subly.testdata.TestUsers;
-import com.app.subly.util.MemberShare;
 import java.math.BigDecimal;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -25,19 +24,19 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class SubscriptionSharesTest {
+class MemberSharesTest {
 
     @Mock
     SubscriptionMembershipRepository membershipRepository;
 
     @InjectMocks
-    SubscriptionShares subscriptionShares;
+    MemberShares memberShares;
 
     @Test
     void forUser_shouldReturnEmptyWithoutLoadingMembersWhenUserHasNoSubscriptions() {
         stubAliceMemberships(List.of());
 
-        assertThat(subscriptionShares.forUser(ALICE, SubscriptionStatus.ACTIVE)).isEmpty();
+        assertThat(memberShares.forUser(ALICE, SubscriptionStatus.ACTIVE)).isEmpty();
         verify(membershipRepository, never()).findBySubscriptionIdIn(any());
     }
 
@@ -52,7 +51,7 @@ class SubscriptionSharesTest {
         when(membershipRepository.findBySubscriptionIdIn(List.of(1L, 2L)))
                 .thenReturn(List.of(aliceInShared, bobOwnsShared, aliceOwnsSolo));
 
-        assertThat(subscriptionShares.forUser(ALICE, SubscriptionStatus.ACTIVE))
+        assertThat(memberShares.forUser(ALICE, SubscriptionStatus.ACTIVE))
                 .extracting(MemberShare::membership, MemberShare::amount)
                 .containsExactly(
                         tuple(aliceInShared, new BigDecimal("5.00")), tuple(aliceOwnsSolo, new BigDecimal("6.00")));

@@ -1,10 +1,9 @@
-package com.app.subly.service;
+package com.app.subly.service.share;
 
 import com.app.subly.entity.subscription.Subscription;
 import com.app.subly.entity.subscription.SubscriptionMembership;
 import com.app.subly.enums.SubscriptionStatus;
 import com.app.subly.repository.SubscriptionMembershipRepository;
-import com.app.subly.util.MemberShare;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -13,11 +12,11 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-final class SubscriptionShares {
+public final class MemberShares {
 
     private final SubscriptionMembershipRepository membershipRepository;
 
-    List<MemberShare> forUser(String username, SubscriptionStatus status) {
+    public List<MemberShare> forUser(String username, SubscriptionStatus status) {
         List<SubscriptionMembership> memberships = membershipRepository.findMembershipsOf(username, status);
         if (memberships.isEmpty()) {
             return List.of();
@@ -31,9 +30,9 @@ final class SubscriptionShares {
 
     private Map<Long, Long> countMembers(List<SubscriptionMembership> memberships) {
         List<Long> subscriptionIds =
-                memberships.stream().map(SubscriptionShares::subscriptionId).toList();
+                memberships.stream().map(MemberShares::subscriptionId).toList();
         return membershipRepository.findBySubscriptionIdIn(subscriptionIds).stream()
-                .collect(Collectors.groupingBy(SubscriptionShares::subscriptionId, Collectors.counting()));
+                .collect(Collectors.groupingBy(MemberShares::subscriptionId, Collectors.counting()));
     }
 
     private static MemberShare shareOf(SubscriptionMembership membership, Map<Long, Long> memberCounts) {

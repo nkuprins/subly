@@ -20,6 +20,7 @@ import com.app.subly.repository.SubscriptionProviderRepository;
 import com.app.subly.repository.SubscriptionRepository;
 import com.app.subly.repository.UserRepository;
 import com.app.subly.service.access.SubscriptionAccess;
+import com.app.subly.service.share.MemberShares;
 import com.app.subly.testdata.TestClock;
 import com.app.subly.testdata.TestProviders;
 import com.app.subly.testdata.TestUsers;
@@ -54,7 +55,7 @@ abstract class AbstractSubscriptionServiceTest {
     SubscriptionAccess subscriptionAccess;
 
     @Mock
-    SubscriptionShares subscriptionShares;
+    MemberShares memberShares;
 
     SubscriptionService service;
     final User alice = TestUsers.userWithId(ALICE, ALICE_ID);
@@ -68,7 +69,7 @@ abstract class AbstractSubscriptionServiceTest {
                 membershipRepository,
                 subscriptionProviderRepository,
                 userRepository,
-                subscriptionShares,
+                memberShares,
                 TestClock.CLOCK);
     }
 

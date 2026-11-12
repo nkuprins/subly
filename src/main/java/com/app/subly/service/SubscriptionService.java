@@ -20,6 +20,7 @@ import com.app.subly.repository.SubscriptionProviderRepository;
 import com.app.subly.repository.SubscriptionRepository;
 import com.app.subly.repository.UserRepository;
 import com.app.subly.service.access.SubscriptionAccess;
+import com.app.subly.service.share.MemberShares;
 import com.app.subly.util.Money;
 import java.math.BigDecimal;
 import java.time.Clock;
@@ -39,7 +40,7 @@ public class SubscriptionService {
     private final SubscriptionMembershipRepository membershipRepository;
     private final SubscriptionProviderRepository providerRepository;
     private final UserRepository userRepository;
-    private final SubscriptionShares subscriptionShares;
+    private final MemberShares memberShares;
     private final Clock clock;
 
     @Transactional
@@ -62,7 +63,7 @@ public class SubscriptionService {
 
     @Transactional(readOnly = true)
     public List<ActiveSubscriptionResponse> findActive(String username) {
-        return subscriptionShares.forUser(username, SubscriptionStatus.ACTIVE).stream()
+        return memberShares.forUser(username, SubscriptionStatus.ACTIVE).stream()
                 .map(share -> ActiveSubscriptionResponse.from(share.membership(), share.amount()))
                 .toList();
     }
@@ -80,7 +81,7 @@ public class SubscriptionService {
     @Transactional(readOnly = true)
     public List<CancelledSubscriptionResponse> findCancelled(String username) {
         LocalDate today = userRepository.getByUsername(username).today(clock);
-        return subscriptionShares.forUser(username, SubscriptionStatus.CANCELLED).stream()
+        return memberShares.forUser(username, SubscriptionStatus.CANCELLED).stream()
                 .map(share -> CancelledSubscriptionResponse.from(share.membership(), share.savedUntil(today)))
                 .toList();
     }

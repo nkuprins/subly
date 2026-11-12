@@ -1,13 +1,13 @@
-package com.app.subly.util;
+package com.app.subly.service.calculator;
 
+import static com.app.subly.service.calculator.DashboardCalculator.savings;
+import static com.app.subly.service.calculator.DashboardCalculator.spendingByCategory;
+import static com.app.subly.service.calculator.DashboardCalculator.summarize;
+import static com.app.subly.service.calculator.DashboardCalculator.upcomingPayments;
 import static com.app.subly.testdata.TestClock.TODAY;
 import static com.app.subly.testdata.TestMemberShares.cancelledShare;
 import static com.app.subly.testdata.TestMemberShares.share;
 import static com.app.subly.testdata.TestSubscriptions.aSubscription;
-import static com.app.subly.util.DashboardCalculator.savings;
-import static com.app.subly.util.DashboardCalculator.spendingByCategory;
-import static com.app.subly.util.DashboardCalculator.summarize;
-import static com.app.subly.util.DashboardCalculator.upcomingPayments;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.app.subly.dto.MoneyResponse;
@@ -17,6 +17,7 @@ import com.app.subly.dto.dashboard.UpcomingPaymentResponse;
 import com.app.subly.entity.category.Category;
 import com.app.subly.enums.BillingCycle;
 import com.app.subly.enums.Currency;
+import com.app.subly.service.share.MemberShare;
 import com.app.subly.testdata.TestProviders;
 import com.app.subly.testdata.TestSubscriptions;
 import java.math.BigDecimal;
