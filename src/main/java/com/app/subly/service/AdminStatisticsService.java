@@ -78,7 +78,7 @@ public class AdminStatisticsService {
 
             long memberCount = memberCounts.get(subscription.getId());
 
-            MemberShare share = new MemberShare(membership, subscription.shareFor(membership.getRole(), memberCount));
+            MemberShare share = MemberShare.of(membership, memberCount);
 
             yearlySpend = yearlySpend.add(share.yearlyIn(Currency.EUR));
         }

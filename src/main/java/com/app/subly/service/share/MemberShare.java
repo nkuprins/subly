@@ -9,6 +9,11 @@ import java.time.LocalDate;
 
 public record MemberShare(SubscriptionMembership membership, BigDecimal amount) {
 
+    public static MemberShare of(SubscriptionMembership membership, long memberCount) {
+        BigDecimal amount = membership.getSubscription().shareFor(membership.getRole(), memberCount);
+        return new MemberShare(membership, amount);
+    }
+
     public Subscription subscription() {
         return membership.getSubscription();
     }

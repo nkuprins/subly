@@ -38,7 +38,7 @@ public final class MemberShareLoader {
     private static MemberShare shareOf(SubscriptionMembership membership, Map<Long, Long> memberCounts) {
         Subscription subscription = membership.getSubscription();
         long memberCount = memberCounts.get(subscription.getId());
-        return new MemberShare(membership, subscription.shareFor(membership.getRole(), memberCount));
+        return MemberShare.of(membership, memberCount);
     }
 
     private static Long subscriptionId(SubscriptionMembership membership) {
