@@ -66,8 +66,8 @@ public class CategoryService {
 
     private void createDefaultCategories() {
         log.info("Checking default categories...");
-        String[] categories = {"Music", "Gaming", "Health", "Streaming", "Sport", "Other"};
-        for (String categoryName : categories) {
+        String[] categoryNames = {"Music", "Gaming", "Health", "Streaming", "Sport", "Other"};
+        for (String categoryName : categoryNames) {
             try {
                 create(categoryName);
                 log.info("Category {}: CREATED", categoryName);

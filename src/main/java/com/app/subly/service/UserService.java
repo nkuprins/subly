@@ -44,7 +44,7 @@ public class UserService {
         // UserIsConnectedException is raised in case some table's column refers to this user.
         // WrongPasswordException is raised if a raw password != password hash
 
-        User user = getByUsername(username);
+        User user = getUser(username);
 
         if (!encoder.matches(rawPassword, user.getPasswordHash())) {
             throw new WrongPasswordException("The passwords don't match");
@@ -61,7 +61,7 @@ public class UserService {
 
     @Transactional
     public void updatePassword(String username, String rawOldPassword, String rawNewPassword) {
-        User user = getByUsername(username);
+        User user = getUser(username);
 
         if (!encoder.matches(rawOldPassword, user.getPasswordHash())) {
             throw new WrongPasswordException("The passwords don't match");
@@ -71,27 +71,27 @@ public class UserService {
     }
 
     @Transactional
-    public void updateInformation(String oldUsername, UpdateUserInformationRequest newUserInfo) {
-        User user = getByUsername(oldUsername);
+    public void updateInformation(String oldUsername, UpdateUserInformationRequest request) {
+        User user = getUser(oldUsername);
 
         try {
-            if (newUserInfo.isEmailProvided()) {
-                updateField("email", user.getEmail(), newUserInfo.getNewEmail(), user::setEmail);
+            if (request.isEmailProvided()) {
+                updateField("email", user.getEmail(), request.getNewEmail(), user::setEmail);
             }
 
-            if (newUserInfo.isUsernameProvided()) {
-                updateField("username", user.getUsername(), newUserInfo.getNewUsername(), user::setUsername);
+            if (request.isUsernameProvided()) {
+                updateField("username", user.getUsername(), request.getNewUsername(), user::setUsername);
             }
 
-            if (newUserInfo.isNameProvided()) {
-                updateField("name", user.getName(), newUserInfo.getNewName(), user::setName);
+            if (request.isNameProvided()) {
+                updateField("name", user.getName(), request.getNewName(), user::setName);
             }
 
-            if (newUserInfo.isTimeZoneProvided()) {
-                if (newUserInfo.getNewTimeZone() == null) {
+            if (request.isTimeZoneProvided()) {
+                if (request.getNewTimeZone() == null) {
                     throw new UserInfoUpdateException("You must provide a time zone");
                 }
-                user.setTimeZone(newUserInfo.getNewTimeZone());
+                user.setTimeZone(request.getNewTimeZone());
             }
 
             userRepository.flush();
@@ -100,7 +100,7 @@ public class UserService {
         }
     }
 
-    public User getByUsername(String username) {
+    public User getUser(String username) {
         return userRepository.getUser(username);
     }
 
@@ -114,31 +114,20 @@ public class UserService {
 
     private void updateField(String label, String current, String provided, Consumer<String> setter) {
         String value = provided == null ? null : provided.strip();
-        if (isNotValidForUpdating(current, value)) {
+        if (!isValidReplacement(current, value)) {
             throw new UserInfoUpdateException(
                     "You must provide a non-empty " + label + " that differs from your current");
         }
         setter.accept(value);
     }
 
-    private boolean isNotValidForUpdating(String originalCredential, String providedCredential) {
-        // Specially designed for update operations for email, username and name ONLY
-        // 'originalCredential' - stored credential in the database
-        // 'providedCredential' - credential provided in the request to update.
-        // Checks whether 'originalCredential' can be updated by 'providedCredential'.
-        // It can not be updated if:
-        //   1) The provided credential is empty or null
-        //   2) The provided credential is the same as the user's current credential
-
-        if (providedCredential == null || providedCredential.isBlank()) {
-            return true;
-        }
-        return originalCredential.equals(providedCredential);
+    private boolean isValidReplacement(String current, String provided) {
+        return provided != null && !provided.isBlank() && !provided.equals(current);
     }
 
     private void cleanUserConnectedData(long userId, String username) {
         // deletes all data related to the user
-        invitationService.deleteInvitationFor(userId);
+        invitationService.deleteAllInvitationsFor(userId);
         subscriptionService.deleteAllSubscriptionsFor(userId);
         providerService.deleteAllProvidersCreatedBy(username);
     }

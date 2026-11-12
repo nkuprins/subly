@@ -45,11 +45,11 @@ public class SubscriptionService {
 
     @Transactional
     public void create(String username, CreateSubscriptionRequest request) {
-        User owner = userRepository.getUser(username);
-        requireNotInPast(owner, request.nextPaymentDate());
+        User user = userRepository.getUser(username);
+        requireNotInPast(user, request.nextPaymentDate());
         requireCentPerParticipant(request.price(), request.maxParticipants());
         SubscriptionProvider provider = providerRepository.getProvider(request.providerId());
-        if (!provider.isVisibleTo(owner)) {
+        if (!provider.isVisibleTo(user)) {
             throw new ProviderNotFoundException(request.providerId());
         }
         Subscription subscription = new Subscription(
@@ -58,7 +58,7 @@ public class SubscriptionService {
             subscription.makeSharable(request.maxParticipants());
         }
         subscriptionRepository.save(subscription);
-        membershipRepository.save(SubscriptionMembership.owner(owner, subscription));
+        membershipRepository.save(SubscriptionMembership.owner(user, subscription));
     }
 
     @Transactional(readOnly = true)

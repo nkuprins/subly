@@ -76,7 +76,7 @@ public class UserPageController {
 
     @GetMapping("/edit/me")
     public String returnEditPage(Principal principal, Model model) {
-        User user = userService.getByUsername(principal.getName());
+        User user = userService.getUser(principal.getName());
         model.addAttribute("user", user);
         model.addAttribute("timeZones", TimeZoneGenerator.getAllFilteredTimeZone());
         return "edit-user";

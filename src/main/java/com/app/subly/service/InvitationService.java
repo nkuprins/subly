@@ -83,7 +83,7 @@ public class InvitationService {
     }
 
     @Transactional
-    public void deleteInvitationFor(long userId) {
+    public void deleteAllInvitationsFor(long userId) {
         invitationRepository.deleteByUserId(userId);
         invitationRepository.flush();
     }
