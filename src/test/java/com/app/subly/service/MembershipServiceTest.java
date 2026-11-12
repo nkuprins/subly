@@ -37,21 +37,21 @@ class MembershipServiceTest {
     private static final long UNKNOWN_MEMBERSHIP_ID = 99L;
 
     @Mock
-    SubscriptionAccess subscriptionAccess;
+    private SubscriptionAccess subscriptionAccess;
 
     @Mock
-    SubscriptionMembershipRepository membershipRepository;
+    private SubscriptionMembershipRepository membershipRepository;
 
     @InjectMocks
-    MembershipService service;
+    private MembershipService service;
 
-    final User alice = TestUsers.user(ALICE);
-    final Subscription subscription =
+    private final User alice = TestUsers.user(ALICE);
+    private final Subscription subscription =
             aSubscription().withId(SUBSCRIPTION_ID).withPrice("10.00").build();
-    final SubscriptionMembership owner = withId(1L, SubscriptionMembership.owner(alice, subscription));
-    final SubscriptionMembership bobMember =
+    private final SubscriptionMembership owner = withId(1L, SubscriptionMembership.owner(alice, subscription));
+    private final SubscriptionMembership bobMember =
             withId(2L, SubscriptionMembership.member(TestUsers.user(BOB), subscription));
-    final SubscriptionMembership carolMember =
+    private final SubscriptionMembership carolMember =
             withId(3L, SubscriptionMembership.member(TestUsers.user(CAROL), subscription));
 
     @Test

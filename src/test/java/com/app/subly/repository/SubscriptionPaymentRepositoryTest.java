@@ -17,11 +17,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 class SubscriptionPaymentRepositoryTest extends AbstractRepositoryTest {
 
     @Autowired
-    SubscriptionPaymentRepository repository;
+    private SubscriptionPaymentRepository repository;
 
-    User alice;
-    User bob;
-    Subscription subscription;
+    private User alice;
+    private User bob;
+    private Subscription subscription;
 
     @BeforeEach
     void setUp() {

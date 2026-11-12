@@ -19,7 +19,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 class UserRepositoryTest extends AbstractRepositoryTest {
 
     @Autowired
-    UserRepository repository;
+    private UserRepository repository;
 
     @Test
     void saveAndFlush_shouldRejectDuplicateUsername() {

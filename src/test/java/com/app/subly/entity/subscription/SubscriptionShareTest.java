@@ -13,10 +13,10 @@ class SubscriptionShareTest {
 
     @ParameterizedTest(name = "{0} split {1} ways, {2} -> {3}")
     @CsvSource({
-        "10.00, 1, OWNER,  10.00", // alone: full price
-        "10.00, 2, MEMBER, 5.00", // even split
-        "10.00, 3, MEMBER, 3.33", // member: rounded down
-        "10.00, 3, OWNER,  3.34", // owner: takes the leftover cent
+        "10.00, 1, OWNER,  10.00",
+        "10.00, 2, MEMBER, 5.00",
+        "10.00, 3, MEMBER, 3.33",
+        "10.00, 3, OWNER,  3.34",
     })
     void shareFor_shouldRoundMembersDownAndGiveTheOwnerTheRest(
             String price, long memberCount, MembershipRole role, String expected) {

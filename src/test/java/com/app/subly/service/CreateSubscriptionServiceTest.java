@@ -40,10 +40,10 @@ class CreateSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
     private static final int MAX_PARTICIPANTS = 3;
 
     @Captor
-    ArgumentCaptor<Subscription> subscriptionCaptor;
+    private ArgumentCaptor<Subscription> subscriptionCaptor;
 
     @Captor
-    ArgumentCaptor<SubscriptionMembership> membershipCaptor;
+    private ArgumentCaptor<SubscriptionMembership> membershipCaptor;
 
     @BeforeEach
     void aliceExists() {
@@ -63,7 +63,7 @@ class CreateSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
         assertThat(saved.getProvider()).isSameAs(provider);
         assertThat(saved.getCurrency()).isEqualTo(Currency.USD);
         verify(subscriptionProviderRepository, never()).save(any());
-        assertPaymentDetails(saved, DEFAULT_PRICE, BillingCycle.MONTHLY, DEFAULT_NEXT_PAYMENT_DATE, true);
+        assertPaymentDetails(saved, DEFAULT_PRICE, BillingCycle.MONTHLY, DEFAULT_NEXT_PAYMENT_DATE);
 
         verify(membershipRepository).save(membershipCaptor.capture());
         SubscriptionMembership membership = membershipCaptor.getValue();

@@ -25,12 +25,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class SubscriptionAccessTest {
 
     @Mock
-    SubscriptionMembershipRepository membershipRepository;
+    private SubscriptionMembershipRepository membershipRepository;
 
     @InjectMocks
-    SubscriptionAccess access;
+    private SubscriptionAccess access;
 
-    final SubscriptionMembership owner =
+    private final SubscriptionMembership owner =
             SubscriptionMembership.owner(TestUsers.user(ALICE), aSubscription().build());
 
     @Test

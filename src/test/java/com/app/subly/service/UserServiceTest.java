@@ -43,22 +43,22 @@ class UserServiceTest {
     private static final String NEW_NAME = "Alice Smith";
 
     @Mock
-    UserRepository repository;
+    private UserRepository repository;
 
     @Mock
-    PasswordEncoder encoder;
+    private PasswordEncoder encoder;
 
     @Mock
-    InvitationService invitationService;
+    private InvitationService invitationService;
 
     @Mock
-    SubscriptionService subscriptionService;
+    private SubscriptionService subscriptionService;
 
     @Mock
-    ProviderService providerService;
+    private ProviderService providerService;
 
     @InjectMocks
-    UserService service;
+    private UserService service;
 
     @Test
     void create_shouldRejectExistingUser() {
