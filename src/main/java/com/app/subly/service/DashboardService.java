@@ -4,6 +4,8 @@ import com.app.subly.dto.dashboard.DashboardResponse;
 import com.app.subly.enums.Currency;
 import com.app.subly.enums.SubscriptionStatus;
 import com.app.subly.repository.UserRepository;
+import com.app.subly.util.DashboardCalculator;
+import com.app.subly.util.MemberShare;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
@@ -24,9 +26,9 @@ public class DashboardService {
     @Transactional(readOnly = true)
     public DashboardResponse getDashboard(String username, Currency targetCurrency) {
         LocalDate today = userRepository.getByUsername(username).today(clock);
-        List<Share> active = subscriptionShares.forUser(username, SubscriptionStatus.ACTIVE);
-        List<Share> cancelled = subscriptionShares.forUser(username, SubscriptionStatus.CANCELLED);
-        Map<Boolean, List<Share>> bySharable = active.stream()
+        List<MemberShare> active = subscriptionShares.forUser(username, SubscriptionStatus.ACTIVE);
+        List<MemberShare> cancelled = subscriptionShares.forUser(username, SubscriptionStatus.CANCELLED);
+        Map<Boolean, List<MemberShare>> bySharable = active.stream()
                 .collect(Collectors.partitioningBy(share -> share.subscription().isSharable()));
         return new DashboardResponse(
                 DashboardCalculator.summarize(active, targetCurrency),

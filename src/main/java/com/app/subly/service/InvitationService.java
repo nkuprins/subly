@@ -12,6 +12,7 @@ import com.app.subly.repository.PendingInvitationRepository;
 import com.app.subly.repository.SubscriptionMembershipRepository;
 import com.app.subly.repository.SubscriptionRepository;
 import com.app.subly.repository.UserRepository;
+import com.app.subly.service.access.SubscriptionAccess;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

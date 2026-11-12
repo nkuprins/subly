@@ -15,6 +15,7 @@ import com.app.subly.entity.subscription.SubscriptionMembership;
 import com.app.subly.enums.SubscriptionStatus;
 import com.app.subly.repository.SubscriptionMembershipRepository;
 import com.app.subly.testdata.TestUsers;
+import com.app.subly.util.MemberShare;
 import java.math.BigDecimal;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -52,7 +53,7 @@ class SubscriptionSharesTest {
                 .thenReturn(List.of(aliceInShared, bobOwnsShared, aliceOwnsSolo));
 
         assertThat(subscriptionShares.forUser(ALICE, SubscriptionStatus.ACTIVE))
-                .extracting(Share::membership, Share::amount)
+                .extracting(MemberShare::membership, MemberShare::amount)
                 .containsExactly(
                         tuple(aliceInShared, new BigDecimal("5.00")), tuple(aliceOwnsSolo, new BigDecimal("6.00")));
     }

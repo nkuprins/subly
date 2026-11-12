@@ -24,6 +24,7 @@ import com.app.subly.repository.PendingInvitationRepository;
 import com.app.subly.repository.SubscriptionMembershipRepository;
 import com.app.subly.repository.SubscriptionRepository;
 import com.app.subly.repository.UserRepository;
+import com.app.subly.service.access.SubscriptionAccess;
 import com.app.subly.testdata.TestUsers;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;

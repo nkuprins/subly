@@ -1,4 +1,4 @@
-package com.app.subly.service;
+package com.app.subly.testdata;
 
 import static com.app.subly.testdata.TestSubscriptions.aSubscription;
 import static com.app.subly.testdata.TestUsers.ALICE;
@@ -6,26 +6,25 @@ import static com.app.subly.testdata.TestUsers.ALICE;
 import com.app.subly.entity.subscription.Subscription;
 import com.app.subly.entity.subscription.SubscriptionMembership;
 import com.app.subly.enums.Currency;
-import com.app.subly.testdata.TestSubscriptions;
-import com.app.subly.testdata.TestUsers;
+import com.app.subly.util.MemberShare;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-final class TestShares {
+public final class TestMemberShares {
 
-    private TestShares() {}
+    private TestMemberShares() {}
 
-    static Share share(TestSubscriptions.Builder subscription) {
+    public static MemberShare share(TestSubscriptions.Builder subscription) {
         Subscription built = subscription.build();
-        return new Share(SubscriptionMembership.owner(TestUsers.user(ALICE), built), built.getPrice());
+        return new MemberShare(SubscriptionMembership.owner(TestUsers.user(ALICE), built), built.getPrice());
     }
 
-    static Share share(TestSubscriptions.Builder subscription, String amount) {
-        return new Share(
+    public static MemberShare share(TestSubscriptions.Builder subscription, String amount) {
+        return new MemberShare(
                 SubscriptionMembership.owner(TestUsers.user(ALICE), subscription.build()), new BigDecimal(amount));
     }
 
-    static Share cancelledShare(String amount, Currency currency, LocalDate endDate) {
+    public static MemberShare cancelledShare(String amount, Currency currency, LocalDate endDate) {
         return share(
                 aSubscription()
                         .withCurrency(currency)

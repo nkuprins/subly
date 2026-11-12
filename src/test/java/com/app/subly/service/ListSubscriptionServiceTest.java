@@ -15,6 +15,7 @@ import com.app.subly.entity.subscription.Subscription;
 import com.app.subly.entity.subscription.SubscriptionMembership;
 import com.app.subly.enums.SubscriptionStatus;
 import com.app.subly.exception.subscription.SubscriptionNotActiveException;
+import com.app.subly.util.MemberShare;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -28,8 +29,8 @@ class ListSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
         SubscriptionMembership memberMembership = SubscriptionMembership.member(alice, subscription(catalogProvider()));
         when(subscriptionShares.forUser(ALICE, SubscriptionStatus.ACTIVE))
                 .thenReturn(List.of(
-                        new Share(ownerMembership, new BigDecimal("6.00")),
-                        new Share(memberMembership, new BigDecimal("3.00"))));
+                        new MemberShare(ownerMembership, new BigDecimal("6.00")),
+                        new MemberShare(memberMembership, new BigDecimal("3.00"))));
 
         assertThat(service.findActive(ALICE))
                 .containsExactly(
@@ -60,7 +61,8 @@ class ListSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
         stubAliceExists();
         when(subscriptionShares.forUser(ALICE, SubscriptionStatus.CANCELLED))
                 .thenReturn(List.of(
-                        new Share(ended, new BigDecimal("5.00")), new Share(endsLater, new BigDecimal("5.00"))));
+                        new MemberShare(ended, new BigDecimal("5.00")),
+                        new MemberShare(endsLater, new BigDecimal("5.00"))));
 
         assertThat(service.findCancelled(ALICE))
                 .extracting(cancelled -> cancelled.subscription().id(), CancelledSubscriptionResponse::saved)

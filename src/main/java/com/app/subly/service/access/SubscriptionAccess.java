@@ -1,4 +1,4 @@
-package com.app.subly.service;
+package com.app.subly.service.access;
 
 import com.app.subly.entity.subscription.Subscription;
 import com.app.subly.entity.subscription.SubscriptionMembership;
@@ -11,24 +11,24 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-final class SubscriptionAccess {
+public final class SubscriptionAccess {
 
     private final SubscriptionMembershipRepository membershipRepository;
 
-    SubscriptionMembership getMembership(String username, long subscriptionId) {
+    public SubscriptionMembership getMembership(String username, long subscriptionId) {
         return membershipRepository
                 .findBySubscriptionIdAndUserUsername(subscriptionId, username)
                 .orElseThrow(() -> new SubscriptionNotFoundException(subscriptionId));
     }
 
-    SubscriptionMembership getOwnerMembership(String username, long subscriptionId) {
+    public SubscriptionMembership getOwnerMembership(String username, long subscriptionId) {
         SubscriptionMembership owner = membershipRepository
                 .findBySubscriptionIdAndRole(subscriptionId, MembershipRole.OWNER)
                 .orElseThrow(() -> new SubscriptionNotFoundException(subscriptionId));
         return requireOwnedBy(owner, username, subscriptionId);
     }
 
-    Subscription getOwnedSubscription(String username, long subscriptionId) {
+    public Subscription getOwnedSubscription(String username, long subscriptionId) {
         return getOwnerMembership(username, subscriptionId).getSubscription();
     }
 

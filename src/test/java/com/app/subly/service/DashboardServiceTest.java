@@ -1,10 +1,10 @@
 package com.app.subly.service;
 
-import static com.app.subly.service.TestShares.cancelledShare;
-import static com.app.subly.service.TestShares.share;
 import static com.app.subly.testdata.TestClock.TODAY;
 import static com.app.subly.testdata.TestClock.TOKYO;
 import static com.app.subly.testdata.TestClock.TOKYO_TODAY;
+import static com.app.subly.testdata.TestMemberShares.cancelledShare;
+import static com.app.subly.testdata.TestMemberShares.share;
 import static com.app.subly.testdata.TestSubscriptions.aSubscription;
 import static com.app.subly.testdata.TestUsers.ALICE;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -21,6 +21,7 @@ import com.app.subly.enums.SubscriptionStatus;
 import com.app.subly.repository.UserRepository;
 import com.app.subly.testdata.TestClock;
 import com.app.subly.testdata.TestUsers;
+import com.app.subly.util.MemberShare;
 import java.math.BigDecimal;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -89,11 +90,11 @@ class DashboardServiceTest {
         assertThat(result.savings()).isEqualTo(new MoneyResponse(new BigDecimal("5.00"), Currency.EUR));
     }
 
-    private void stubActiveShares(List<Share> shares) {
+    private void stubActiveShares(List<MemberShare> shares) {
         when(subscriptionShares.forUser(ALICE, SubscriptionStatus.ACTIVE)).thenReturn(shares);
     }
 
-    private void stubCancelledShares(List<Share> shares) {
+    private void stubCancelledShares(List<MemberShare> shares) {
         when(subscriptionShares.forUser(ALICE, SubscriptionStatus.CANCELLED)).thenReturn(shares);
     }
 

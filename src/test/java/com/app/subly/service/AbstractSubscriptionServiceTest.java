@@ -19,6 +19,7 @@ import com.app.subly.repository.SubscriptionMembershipRepository;
 import com.app.subly.repository.SubscriptionProviderRepository;
 import com.app.subly.repository.SubscriptionRepository;
 import com.app.subly.repository.UserRepository;
+import com.app.subly.service.access.SubscriptionAccess;
 import com.app.subly.testdata.TestClock;
 import com.app.subly.testdata.TestProviders;
 import com.app.subly.testdata.TestUsers;

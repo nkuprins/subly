@@ -4,6 +4,7 @@ import com.app.subly.entity.subscription.Subscription;
 import com.app.subly.entity.subscription.SubscriptionMembership;
 import com.app.subly.enums.SubscriptionStatus;
 import com.app.subly.repository.SubscriptionMembershipRepository;
+import com.app.subly.util.MemberShare;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -16,7 +17,7 @@ final class SubscriptionShares {
 
     private final SubscriptionMembershipRepository membershipRepository;
 
-    List<Share> forUser(String username, SubscriptionStatus status) {
+    List<MemberShare> forUser(String username, SubscriptionStatus status) {
         List<SubscriptionMembership> memberships = membershipRepository.findMembershipsOf(username, status);
         if (memberships.isEmpty()) {
             return List.of();
@@ -35,10 +36,10 @@ final class SubscriptionShares {
                 .collect(Collectors.groupingBy(SubscriptionShares::subscriptionId, Collectors.counting()));
     }
 
-    private static Share shareOf(SubscriptionMembership membership, Map<Long, Long> memberCounts) {
+    private static MemberShare shareOf(SubscriptionMembership membership, Map<Long, Long> memberCounts) {
         Subscription subscription = membership.getSubscription();
         long memberCount = memberCounts.get(subscription.getId());
-        return new Share(membership, subscription.shareFor(membership.getRole(), memberCount));
+        return new MemberShare(membership, subscription.shareFor(membership.getRole(), memberCount));
     }
 
     private static Long subscriptionId(SubscriptionMembership membership) {
