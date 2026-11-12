@@ -1,4 +1,4 @@
-package com.app.subly.service;
+package com.app.subly.service.access;
 
 import static com.app.subly.testdata.TestSubscriptions.aSubscription;
 import static com.app.subly.testdata.TestUsers.ALICE;

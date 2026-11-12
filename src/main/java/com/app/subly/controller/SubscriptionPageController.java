@@ -3,6 +3,7 @@ package com.app.subly.controller;
 import com.app.subly.dto.subscription.CreateSubscriptionRequest;
 import com.app.subly.dto.subscription.UpdateSubscriptionRequest;
 import com.app.subly.enums.BillingCycle;
+import com.app.subly.enums.Currency;
 import com.app.subly.service.ProviderService;
 import com.app.subly.service.SubscriptionService;
 import java.math.BigDecimal;
@@ -44,7 +45,7 @@ public class SubscriptionPageController {
 
     @GetMapping("/new")
     public String newSubscriptions(Principal principal, Model model) {
-        model.addAttribute("providers", providerService.findVisibleTo(principal.getName()));
+        model.addAttribute("providers", providerService.findVisibleProviders(principal.getName()));
         return "subscription-form";
     }
 
@@ -53,6 +54,7 @@ public class SubscriptionPageController {
             Principal principal,
             @RequestParam Long providerId,
             @RequestParam BigDecimal price,
+            @RequestParam(defaultValue = "EUR") Currency currency,
             @RequestParam BillingCycle billingCycle,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate nextPaymentDate,
             @RequestParam(defaultValue = "false") boolean freeTrial,
@@ -68,7 +70,7 @@ public class SubscriptionPageController {
         subscriptionService.create(
                 principal.getName(),
                 new CreateSubscriptionRequest(
-                        providerId, price, billingCycle, nextPaymentDate, freeTrial, maxParticipants));
+                        providerId, price, currency, billingCycle, nextPaymentDate, freeTrial, maxParticipants));
 
         log.info("The subscription has been created successfully");
         return "redirect:/subscriptions";

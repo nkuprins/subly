@@ -17,7 +17,6 @@ import com.app.subly.enums.BillingCycle;
 import com.app.subly.exception.subscription.PaymentDateInPastException;
 import com.app.subly.testdata.TestClock;
 import java.time.LocalDate;
-import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
 class PastPaymentDateServiceTest extends AbstractSubscriptionServiceTest {
@@ -38,7 +37,7 @@ class PastPaymentDateServiceTest extends AbstractSubscriptionServiceTest {
     @Test
     void create_shouldAcceptToday() {
         stubAliceExists();
-        when(subscriptionProviderRepository.findById(PROVIDER_ID)).thenReturn(Optional.of(catalogProvider()));
+        when(subscriptionProviderRepository.getProvider(PROVIDER_ID)).thenReturn(catalogProvider());
 
         service.create(ALICE, createRequest(TODAY));
 

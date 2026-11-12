@@ -4,6 +4,9 @@ import com.app.subly.dto.dashboard.DashboardResponse;
 import com.app.subly.enums.Currency;
 import com.app.subly.enums.SubscriptionStatus;
 import com.app.subly.repository.UserRepository;
+import com.app.subly.service.calculator.DashboardCalculator;
+import com.app.subly.service.share.MemberShare;
+import com.app.subly.service.share.MemberShareLoader;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
@@ -19,17 +22,17 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class DashboardService {
 
-    private final SubscriptionShares subscriptionShares;
+    private final MemberShareLoader memberShareLoader;
     private final UserRepository userRepository;
     private final Clock clock;
 
     @Transactional(readOnly = true)
     public DashboardResponse getDashboard(String username, Currency targetCurrency) {
         log.debug("Building dashboard for username={} targetCurrency={}", username, targetCurrency);
-        LocalDate today = userRepository.getByUsername(username).today(clock);
-        List<Share> active = subscriptionShares.forUser(username, SubscriptionStatus.ACTIVE);
-        List<Share> cancelled = subscriptionShares.forUser(username, SubscriptionStatus.CANCELLED);
-        Map<Boolean, List<Share>> bySharable = active.stream()
+        LocalDate today = userRepository.getUser(username).today(clock);
+        List<MemberShare> active = memberShareLoader.forUser(username, SubscriptionStatus.ACTIVE);
+        List<MemberShare> cancelled = memberShareLoader.forUser(username, SubscriptionStatus.CANCELLED);
+        Map<Boolean, List<MemberShare>> bySharable = active.stream()
                 .collect(Collectors.partitioningBy(share -> share.subscription().isSharable()));
         DashboardResponse dashboard = new DashboardResponse(
                 DashboardCalculator.summarize(active, targetCurrency),

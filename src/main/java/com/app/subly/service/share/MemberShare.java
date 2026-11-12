@@ -1,4 +1,4 @@
-package com.app.subly.service;
+package com.app.subly.service.share;
 
 import com.app.subly.entity.subscription.Subscription;
 import com.app.subly.entity.subscription.SubscriptionMembership;
@@ -7,25 +7,30 @@ import com.app.subly.util.CurrencyConverter;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-record Share(SubscriptionMembership membership, BigDecimal amount) {
+public record MemberShare(SubscriptionMembership membership, BigDecimal amount) {
 
-    Subscription subscription() {
+    public static MemberShare of(SubscriptionMembership membership, long memberCount) {
+        BigDecimal amount = membership.getSubscription().shareFor(membership.getRole(), memberCount);
+        return new MemberShare(membership, amount);
+    }
+
+    public Subscription subscription() {
         return membership.getSubscription();
     }
 
-    BigDecimal savedUntil(LocalDate today) {
+    public BigDecimal savedUntil(LocalDate today) {
         return amount.multiply(BigDecimal.valueOf(subscription().skippedPaymentsUntil(today)));
     }
 
-    BigDecimal savedUntil(LocalDate today, Currency target) {
+    public BigDecimal savedUntil(LocalDate today, Currency target) {
         return toCurrency(savedUntil(today), target);
     }
 
-    BigDecimal amountIn(Currency target) {
+    public BigDecimal amountIn(Currency target) {
         return toCurrency(amount, target);
     }
 
-    BigDecimal yearlyIn(Currency target) {
+    public BigDecimal yearlyIn(Currency target) {
         int paymentsPerYear = subscription().getBillingCycle().getPaymentsPerYear();
         return amountIn(target).multiply(BigDecimal.valueOf(paymentsPerYear));
     }

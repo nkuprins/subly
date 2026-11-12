@@ -6,18 +6,20 @@ import com.app.subly.enums.BillingCycle;
 import com.app.subly.enums.Currency;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class TestSubscriptions {
 
     public static final BigDecimal DEFAULT_PRICE = new BigDecimal("35.00");
     public static final LocalDate DEFAULT_NEXT_PAYMENT_DATE = TestClock.TODAY.plusDays(10);
 
-    private TestSubscriptions() {}
-
     public static Builder aSubscription() {
         return new Builder();
     }
 
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
     public static final class Builder {
 
         private Long id;
@@ -29,8 +31,6 @@ public final class TestSubscriptions {
         private Currency currency = Currency.EUR;
         private Integer maxParticipants;
         private boolean cancelled;
-
-        private Builder() {}
 
         public Builder withId(long id) {
             this.id = id;
@@ -78,9 +78,9 @@ public final class TestSubscriptions {
         }
 
         public Subscription build() {
-            Subscription subscription = new Subscription(provider, price, billingCycle, nextPaymentDate, freeTrial);
+            Subscription subscription =
+                    new Subscription(provider, price, currency, billingCycle, nextPaymentDate, freeTrial);
             subscription.setId(id);
-            subscription.setCurrency(currency);
             if (maxParticipants != null) {
                 subscription.makeSharable(maxParticipants);
             }

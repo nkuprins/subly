@@ -1,10 +1,10 @@
 package com.app.subly.service;
 
-import static com.app.subly.service.TestShares.cancelledShare;
-import static com.app.subly.service.TestShares.share;
 import static com.app.subly.testdata.TestClock.TODAY;
 import static com.app.subly.testdata.TestClock.TOKYO;
 import static com.app.subly.testdata.TestClock.TOKYO_TODAY;
+import static com.app.subly.testdata.TestMemberShares.cancelledShare;
+import static com.app.subly.testdata.TestMemberShares.share;
 import static com.app.subly.testdata.TestSubscriptions.aSubscription;
 import static com.app.subly.testdata.TestUsers.ALICE;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -19,6 +19,8 @@ import com.app.subly.entity.user.User;
 import com.app.subly.enums.Currency;
 import com.app.subly.enums.SubscriptionStatus;
 import com.app.subly.repository.UserRepository;
+import com.app.subly.service.share.MemberShare;
+import com.app.subly.service.share.MemberShareLoader;
 import com.app.subly.testdata.TestClock;
 import com.app.subly.testdata.TestUsers;
 import java.math.BigDecimal;
@@ -33,7 +35,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class DashboardServiceTest {
 
     @Mock
-    SubscriptionShares subscriptionShares;
+    MemberShareLoader memberShareLoader;
 
     @Mock
     UserRepository userRepository;
@@ -45,8 +47,8 @@ class DashboardServiceTest {
     @BeforeEach
     void setUp() {
         alice = TestUsers.user(ALICE);
-        when(userRepository.getByUsername(ALICE)).thenReturn(alice);
-        service = new DashboardService(subscriptionShares, userRepository, TestClock.CLOCK);
+        when(userRepository.getUser(ALICE)).thenReturn(alice);
+        service = new DashboardService(memberShareLoader, userRepository, TestClock.CLOCK);
     }
 
     @Test
@@ -89,12 +91,12 @@ class DashboardServiceTest {
         assertThat(result.savings()).isEqualTo(new MoneyResponse(new BigDecimal("5.00"), Currency.EUR));
     }
 
-    private void stubActiveShares(List<Share> shares) {
-        when(subscriptionShares.forUser(ALICE, SubscriptionStatus.ACTIVE)).thenReturn(shares);
+    private void stubActiveShares(List<MemberShare> shares) {
+        when(memberShareLoader.forUser(ALICE, SubscriptionStatus.ACTIVE)).thenReturn(shares);
     }
 
-    private void stubCancelledShares(List<Share> shares) {
-        when(subscriptionShares.forUser(ALICE, SubscriptionStatus.CANCELLED)).thenReturn(shares);
+    private void stubCancelledShares(List<MemberShare> shares) {
+        when(memberShareLoader.forUser(ALICE, SubscriptionStatus.CANCELLED)).thenReturn(shares);
     }
 
     private static DashboardSummaryResponse summary(String monthly, String yearly, int count) {

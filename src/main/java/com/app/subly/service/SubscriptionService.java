@@ -19,7 +19,9 @@ import com.app.subly.repository.SubscriptionMembershipRepository;
 import com.app.subly.repository.SubscriptionProviderRepository;
 import com.app.subly.repository.SubscriptionRepository;
 import com.app.subly.repository.UserRepository;
-import com.app.subly.util.Money;
+import com.app.subly.service.access.SubscriptionAccess;
+import com.app.subly.service.share.MemberShareLoader;
+import com.app.subly.util.MoneyMath;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
@@ -40,28 +42,36 @@ public class SubscriptionService {
     private final SubscriptionMembershipRepository membershipRepository;
     private final SubscriptionProviderRepository providerRepository;
     private final UserRepository userRepository;
-    private final SubscriptionShares subscriptionShares;
+    private final MemberShareLoader memberShareLoader;
     private final Clock clock;
 
     @Transactional
     public void create(String username, CreateSubscriptionRequest request) {
-        User owner = userRepository.getByUsername(username);
-        requireNotInPast(owner, request.nextPaymentDate());
+        User user = userRepository.getUser(username);
+        requireNotInPast(user, request.nextPaymentDate());
         requireCentPerParticipant(request.price(), request.maxParticipants());
-        SubscriptionProvider provider = findVisibleProvider(request.providerId(), owner);
+        SubscriptionProvider provider = providerRepository.getProvider(request.providerId());
+        if (!provider.isVisibleTo(user)) {
+            throw new ProviderNotFoundException(request.providerId());
+        }
         Subscription subscription = new Subscription(
-                provider, request.price(), request.billingCycle(), request.nextPaymentDate(), request.freeTrial());
+                provider,
+                request.price(),
+                request.currency(),
+                request.billingCycle(),
+                request.nextPaymentDate(),
+                request.freeTrial());
         if (request.maxParticipants() > 1) {
             subscription.makeSharable(request.maxParticipants());
         }
         subscriptionRepository.save(subscription);
-        membershipRepository.save(SubscriptionMembership.owner(owner, subscription));
+        membershipRepository.save(SubscriptionMembership.owner(user, subscription));
     }
 
     @Transactional(readOnly = true)
     public List<ActiveSubscriptionResponse> findActive(String username) {
         log.debug("Getting active subscriptions for the user '{}'", username);
-        return subscriptionShares.forUser(username, SubscriptionStatus.ACTIVE).stream()
+        return memberShareLoader.forUser(username, SubscriptionStatus.ACTIVE).stream()
                 .map(share -> ActiveSubscriptionResponse.from(share.membership(), share.amount()))
                 .toList();
     }
@@ -79,8 +89,8 @@ public class SubscriptionService {
     @Transactional(readOnly = true)
     public List<CancelledSubscriptionResponse> findCancelled(String username) {
         log.debug("Getting cancelled subscriptions for the user '{}'", username);
-        LocalDate today = userRepository.getByUsername(username).today(clock);
-        return subscriptionShares.forUser(username, SubscriptionStatus.CANCELLED).stream()
+        LocalDate today = userRepository.getUser(username).today(clock);
+        return memberShareLoader.forUser(username, SubscriptionStatus.CANCELLED).stream()
                 .map(share -> CancelledSubscriptionResponse.from(share.membership(), share.savedUntil(today)))
                 .toList();
     }
@@ -121,22 +131,15 @@ public class SubscriptionService {
     }
 
     @Transactional
-    public void deleteAllSubscriptionsFor(Long userId) {
-        List<Long> subscriptionIds = membershipRepository.findByUser_IdAndRole(userId, MembershipRole.OWNER).stream()
+    public void deleteAllSubscriptionsFor(long userId) {
+        List<Long> subscriptionIds = membershipRepository.findByUserIdAndRole(userId, MembershipRole.OWNER).stream()
                 .map(membership -> membership.getSubscription().getId())
                 .toList();
-        membershipRepository.deleteByUser_Id(userId);
+        membershipRepository.deleteByUserId(userId);
         if (subscriptionIds.isEmpty()) {
             return;
         }
         subscriptionRepository.deleteAllById(subscriptionIds);
-    }
-
-    private SubscriptionProvider findVisibleProvider(long providerId, User owner) {
-        return providerRepository
-                .findById(providerId)
-                .filter(provider -> provider.isVisibleTo(owner))
-                .orElseThrow(() -> new ProviderNotFoundException(providerId));
     }
 
     private void requireNotInPast(User user, LocalDate nextPaymentDate) {
@@ -146,7 +149,7 @@ public class SubscriptionService {
     }
 
     private static void requireCentPerParticipant(BigDecimal price, int maxParticipants) {
-        BigDecimal minimum = BigDecimal.valueOf(maxParticipants, Money.FRACTION_DIGITS);
+        BigDecimal minimum = BigDecimal.valueOf(maxParticipants, MoneyMath.FRACTION_DIGITS);
         if (price.compareTo(minimum) < 0) {
             throw new PriceTooLowException(price, maxParticipants, minimum);
         }

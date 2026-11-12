@@ -10,7 +10,8 @@ import com.app.subly.enums.SubscriptionStatus;
 import com.app.subly.repository.SubscriptionMembershipRepository;
 import com.app.subly.repository.SubscriptionRepository;
 import com.app.subly.repository.UserRepository;
-import com.app.subly.util.Money;
+import com.app.subly.service.share.MemberShare;
+import com.app.subly.util.MoneyMath;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.Comparator;
@@ -82,11 +83,11 @@ public class AdminStatisticsService {
 
             long memberCount = memberCounts.get(subscription.getId());
 
-            Share share = new Share(membership, subscription.shareFor(membership.getRole(), memberCount));
+            MemberShare share = MemberShare.of(membership, memberCount);
 
             yearlySpend = yearlySpend.add(share.yearlyIn(Currency.EUR));
         }
 
-        return Money.monthlyFromYearly(yearlySpend.divide(BigDecimal.valueOf(totalUsers), MathContext.DECIMAL128));
+        return MoneyMath.monthlyFromYearly(yearlySpend.divide(BigDecimal.valueOf(totalUsers), MathContext.DECIMAL128));
     }
 }

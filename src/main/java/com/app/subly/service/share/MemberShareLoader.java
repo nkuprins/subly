@@ -1,4 +1,4 @@
-package com.app.subly.service;
+package com.app.subly.service.share;
 
 import com.app.subly.entity.subscription.Subscription;
 import com.app.subly.entity.subscription.SubscriptionMembership;
@@ -12,11 +12,11 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-final class SubscriptionShares {
+public final class MemberShareLoader {
 
     private final SubscriptionMembershipRepository membershipRepository;
 
-    List<Share> forUser(String username, SubscriptionStatus status) {
+    public List<MemberShare> forUser(String username, SubscriptionStatus status) {
         List<SubscriptionMembership> memberships = membershipRepository.findMembershipsOf(username, status);
         if (memberships.isEmpty()) {
             return List.of();
@@ -30,15 +30,15 @@ final class SubscriptionShares {
 
     private Map<Long, Long> countMembers(List<SubscriptionMembership> memberships) {
         List<Long> subscriptionIds =
-                memberships.stream().map(SubscriptionShares::subscriptionId).toList();
+                memberships.stream().map(MemberShareLoader::subscriptionId).toList();
         return membershipRepository.findBySubscriptionIdIn(subscriptionIds).stream()
-                .collect(Collectors.groupingBy(SubscriptionShares::subscriptionId, Collectors.counting()));
+                .collect(Collectors.groupingBy(MemberShareLoader::subscriptionId, Collectors.counting()));
     }
 
-    private static Share shareOf(SubscriptionMembership membership, Map<Long, Long> memberCounts) {
+    private static MemberShare shareOf(SubscriptionMembership membership, Map<Long, Long> memberCounts) {
         Subscription subscription = membership.getSubscription();
         long memberCount = memberCounts.get(subscription.getId());
-        return new Share(membership, subscription.shareFor(membership.getRole(), memberCount));
+        return MemberShare.of(membership, memberCount);
     }
 
     private static Long subscriptionId(SubscriptionMembership membership) {

@@ -11,7 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByUsername(String username);
 
-    default User getByUsername(String username) {
+    default User getUser(String username) {
         return findByUsername(username)
                 .orElseThrow(() -> new UserDoesNotExistException("User " + username + " does not exist"));
     }

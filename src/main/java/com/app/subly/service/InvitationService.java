@@ -12,6 +12,7 @@ import com.app.subly.repository.PendingInvitationRepository;
 import com.app.subly.repository.SubscriptionMembershipRepository;
 import com.app.subly.repository.SubscriptionRepository;
 import com.app.subly.repository.UserRepository;
+import com.app.subly.service.access.SubscriptionAccess;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -53,21 +54,21 @@ public class InvitationService {
     public List<InviteResponse> findPending(String ownerUsername, long subscriptionId) {
         log.debug("Getting pending for username={} subscriptionId={}", ownerUsername, subscriptionId);
         subscriptionAccess.getOwnedSubscription(ownerUsername, subscriptionId);
-        return invitationRepository.findBySubscriptionIdOrderByInvitedAt(subscriptionId).stream()
+        return invitationRepository.findBySubscriptionIdOrderByInvitedAtAsc(subscriptionId).stream()
                 .map(InviteResponse::from)
                 .toList();
     }
 
     @Transactional(readOnly = true)
     public List<ReceivedInvitationResponse> findReceived(String username) {
-        return invitationRepository.findByUserUsernameOrderByInvitedAt(username).stream()
+        return invitationRepository.findByUserUsernameOrderByInvitedAtAsc(username).stream()
                 .map(ReceivedInvitationResponse::from)
                 .toList();
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public void accept(String username, long invitationId) {
-        PendingInvitation invitation = invitationRepository.getByIdAndUserUsername(invitationId, username);
+        PendingInvitation invitation = invitationRepository.getInvitation(invitationId, username);
         long subscriptionId = invitation.getSubscription().getId();
         Subscription subscription = subscriptionRepository
                 .findLockedById(subscriptionId)
@@ -80,13 +81,13 @@ public class InvitationService {
 
     @Transactional
     public void decline(String username, long invitationId) {
-        PendingInvitation invitation = invitationRepository.getByIdAndUserUsername(invitationId, username);
+        PendingInvitation invitation = invitationRepository.getInvitation(invitationId, username);
         invitationRepository.delete(invitation);
     }
 
     @Transactional
-    public void deleteInvitationFor(Long userId) {
-        invitationRepository.deleteByUser_Id(userId);
+    public void deleteAllInvitationsFor(long userId) {
+        invitationRepository.deleteByUserId(userId);
         invitationRepository.flush();
     }
 

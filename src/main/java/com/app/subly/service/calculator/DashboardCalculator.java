@@ -1,4 +1,4 @@
-package com.app.subly.service;
+package com.app.subly.service.calculator;
 
 import com.app.subly.dto.MoneyResponse;
 import com.app.subly.dto.dashboard.CategorySpendingResponse;
@@ -7,7 +7,8 @@ import com.app.subly.dto.dashboard.UpcomingPaymentResponse;
 import com.app.subly.entity.category.Category;
 import com.app.subly.entity.subscription.Subscription;
 import com.app.subly.enums.Currency;
-import com.app.subly.util.Money;
+import com.app.subly.service.share.MemberShare;
+import com.app.subly.util.MoneyMath;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Comparator;
@@ -18,21 +19,21 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-final class DashboardCalculator {
+public final class DashboardCalculator {
 
     private static final int UPCOMING_DAYS = 30;
     private static final Comparator<CategorySpendingResponse> BIGGEST_SPENDING_FIRST =
             Comparator.comparing(CategorySpendingResponse::yearlyTotal).reversed();
 
-    static DashboardSummaryResponse summarize(List<Share> shares, Currency targetCurrency) {
+    public static DashboardSummaryResponse summarize(List<MemberShare> shares, Currency targetCurrency) {
         BigDecimal yearlyTotal =
                 shares.stream().map(share -> share.yearlyIn(targetCurrency)).reduce(BigDecimal.ZERO, BigDecimal::add);
         return new DashboardSummaryResponse(
-                Money.monthlyFromYearly(yearlyTotal), yearlyTotal, targetCurrency, shares.size());
+                MoneyMath.monthlyFromYearly(yearlyTotal), yearlyTotal, targetCurrency, shares.size());
     }
 
-    static List<UpcomingPaymentResponse> upcomingPayments(
-            List<Share> shares, LocalDate today, Currency targetCurrency) {
+    public static List<UpcomingPaymentResponse> upcomingPayments(
+            List<MemberShare> shares, LocalDate today, Currency targetCurrency) {
         return shares.stream()
                 .map(share -> UpcomingPaymentResponse.from(
                         share.subscription(), share.amountIn(targetCurrency), targetCurrency, today))
@@ -40,7 +41,7 @@ final class DashboardCalculator {
                 .toList();
     }
 
-    static List<CategorySpendingResponse> spendingByCategory(List<Share> shares, Currency targetCurrency) {
+    public static List<CategorySpendingResponse> spendingByCategory(List<MemberShare> shares, Currency targetCurrency) {
         Map<CategoryKey, BigDecimal> yearlyByCategory = shares.stream()
                 .collect(Collectors.toMap(
                         share -> CategoryKey.of(share.subscription()),
@@ -52,7 +53,7 @@ final class DashboardCalculator {
                 .toList();
     }
 
-    static MoneyResponse savings(List<Share> shares, LocalDate today, Currency targetCurrency) {
+    public static MoneyResponse savings(List<MemberShare> shares, LocalDate today, Currency targetCurrency) {
         BigDecimal total = shares.stream()
                 .map(share -> share.savedUntil(today, targetCurrency))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -67,7 +68,7 @@ final class DashboardCalculator {
         }
 
         CategorySpendingResponse toResponse(BigDecimal yearlyTotal, Currency currency) {
-            return new CategorySpendingResponse(name, Money.monthlyFromYearly(yearlyTotal), yearlyTotal, currency);
+            return new CategorySpendingResponse(name, MoneyMath.monthlyFromYearly(yearlyTotal), yearlyTotal, currency);
         }
     }
 }

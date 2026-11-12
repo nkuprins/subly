@@ -90,7 +90,7 @@ public class UserPageController {
     @GetMapping("/edit/me")
     public String returnEditPage(Principal principal, Model model) {
         log.info("Preparing profile edit page for username={}", principal.getName());
-        User user = userService.getByUsername(principal.getName());
+        User user = userService.getUser(principal.getName());
         model.addAttribute("user", user);
         model.addAttribute("timeZones", TimeZoneGenerator.getAllFilteredTimeZone());
         log.info("Successfully prepared profile edit page for username={}", principal.getName());

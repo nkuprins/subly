@@ -9,20 +9,20 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface PendingInvitationRepository extends JpaRepository<PendingInvitation, Long> {
 
-    boolean existsBySubscriptionIdAndUserId(Long subscriptionId, Long userId);
+    boolean existsBySubscriptionIdAndUserId(long subscriptionId, long userId);
 
     @EntityGraph(attributePaths = "user")
-    List<PendingInvitation> findBySubscriptionIdOrderByInvitedAt(Long subscriptionId);
+    List<PendingInvitation> findBySubscriptionIdOrderByInvitedAtAsc(long subscriptionId);
 
     @EntityGraph(attributePaths = {"subscription.provider", "invitedBy"})
-    List<PendingInvitation> findByUserUsernameOrderByInvitedAt(String username);
+    List<PendingInvitation> findByUserUsernameOrderByInvitedAtAsc(String username);
 
     @EntityGraph(attributePaths = {"user", "subscription"})
-    Optional<PendingInvitation> findByIdAndUserUsername(Long id, String username);
+    Optional<PendingInvitation> findByIdAndUserUsername(long id, String username);
 
-    void deleteByUser_Id(Long userId);
+    void deleteByUserId(long userId);
 
-    default PendingInvitation getByIdAndUserUsername(long id, String username) {
+    default PendingInvitation getInvitation(long id, String username) {
         return findByIdAndUserUsername(id, username).orElseThrow(() -> new InvitationNotFoundException(id));
     }
 }

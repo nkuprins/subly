@@ -1,4 +1,4 @@
-package com.app.subly.service;
+package com.app.subly.service.share;
 
 import static com.app.subly.testdata.TestSubscriptions.aSubscription;
 import static com.app.subly.testdata.TestUsers.ALICE;
@@ -24,19 +24,19 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class SubscriptionSharesTest {
+class MemberShareLoaderTest {
 
     @Mock
     SubscriptionMembershipRepository membershipRepository;
 
     @InjectMocks
-    SubscriptionShares subscriptionShares;
+    MemberShareLoader memberShareLoader;
 
     @Test
     void forUser_shouldReturnEmptyWithoutLoadingMembersWhenUserHasNoSubscriptions() {
         stubAliceMemberships(List.of());
 
-        assertThat(subscriptionShares.forUser(ALICE, SubscriptionStatus.ACTIVE)).isEmpty();
+        assertThat(memberShareLoader.forUser(ALICE, SubscriptionStatus.ACTIVE)).isEmpty();
         verify(membershipRepository, never()).findBySubscriptionIdIn(any());
     }
 
@@ -51,8 +51,8 @@ class SubscriptionSharesTest {
         when(membershipRepository.findBySubscriptionIdIn(List.of(1L, 2L)))
                 .thenReturn(List.of(aliceInShared, bobOwnsShared, aliceOwnsSolo));
 
-        assertThat(subscriptionShares.forUser(ALICE, SubscriptionStatus.ACTIVE))
-                .extracting(Share::membership, Share::amount)
+        assertThat(memberShareLoader.forUser(ALICE, SubscriptionStatus.ACTIVE))
+                .extracting(MemberShare::membership, MemberShare::amount)
                 .containsExactly(
                         tuple(aliceInShared, new BigDecimal("5.00")), tuple(aliceOwnsSolo, new BigDecimal("6.00")));
     }

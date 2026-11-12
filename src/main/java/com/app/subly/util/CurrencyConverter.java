@@ -3,14 +3,15 @@ package com.app.subly.util;
 import com.app.subly.enums.Currency;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class CurrencyConverter {
 
     private static final BigDecimal USD_TO_EUR = new BigDecimal("0.89");
 
     private static final BigDecimal GBP_TO_EUR = new BigDecimal("1.20");
-
-    private CurrencyConverter() {}
 
     public static BigDecimal toEur(BigDecimal amount, Currency currency) {
         return switch (currency) {

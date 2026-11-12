@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface CategoryRepository extends JpaRepository<Category, Long> {
     List<Category> findAllByOrderByNameAsc();
 
-    default Category getCategory(Long id) {
+    default Category getCategory(long id) {
         return findById(id).orElseThrow(() -> new CategoryNotFoundException(id));
     }
 }

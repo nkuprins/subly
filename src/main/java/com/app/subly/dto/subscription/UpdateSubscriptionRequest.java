@@ -1,7 +1,7 @@
 package com.app.subly.dto.subscription;
 
 import com.app.subly.enums.BillingCycle;
-import com.app.subly.util.Money;
+import com.app.subly.util.MoneyMath;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -16,7 +16,7 @@ public class UpdateSubscriptionRequest {
 
     @NotNull
     @Positive
-    @Digits(integer = Money.INTEGER_DIGITS, fraction = Money.FRACTION_DIGITS)
+    @Digits(integer = MoneyMath.INTEGER_DIGITS, fraction = MoneyMath.FRACTION_DIGITS)
     private BigDecimal price;
 
     @NotNull

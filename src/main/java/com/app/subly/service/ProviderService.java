@@ -30,16 +30,16 @@ public class ProviderService {
     public List<SubscriptionProvider> findCatalogProviders() {
         logger.debug("Finding catalogue providers");
         List<SubscriptionProvider> providers =
-                providerRepository.findAllByProviderTypeOrderByNameAsc(ProviderType.CATALOG);
+                providerRepository.findByProviderTypeOrderByNameAsc(ProviderType.CATALOG);
         logger.debug("Found {} catalogue providers", providers.size());
         return providers;
     }
 
     @Transactional(readOnly = true)
-    public List<ProviderResponse> findVisibleTo(String username) {
+    public List<ProviderResponse> findVisibleProviders(String username) {
         logger.debug("Getting visible providers for '{}'", username);
         return providerRepository
-                .findAllByProviderTypeOrCreatedByUsernameOrderByNameAsc(ProviderType.CATALOG, username)
+                .findByProviderTypeOrCreatedByUsernameOrderByNameAsc(ProviderType.CATALOG, username)
                 .stream()
                 .map(ProviderResponse::from)
                 .toList();
@@ -52,7 +52,7 @@ public class ProviderService {
         String name = form.getName().strip();
         SubscriptionProvider provider = (type == ProviderType.CATALOG)
                 ? SubscriptionProvider.catalog(name, category)
-                : SubscriptionProvider.custom(name, category, userRepository.getByUsername(username));
+                : SubscriptionProvider.custom(name, category, userRepository.getUser(username));
         provider.setLogoPath(normalizeLogoPath(form.getLogoPath()));
         providerRepository.save(provider);
         logger.debug("Created provider for username={} type={}", username, type);
@@ -60,19 +60,12 @@ public class ProviderService {
 
     @Transactional
     public void deleteAllProvidersCreatedBy(String username) {
-        List<ProviderResponse> result = findVisibleTo(username);
-        if (result.isEmpty()) {
-            return;
-        }
-
-        for (ProviderResponse response : result) {
-            if (response.providerType().equals(ProviderType.CUSTOM)) providerRepository.deleteById(response.id());
-        }
+        providerRepository.deleteByCreatedByUsername(username);
     }
 
     public List<ProviderCategoryResponse> findProviderCountsByCategory() {
         logger.debug("Finding provider counts by category");
-        return providerRepository.getAllProvidersCountGroupedByCategory();
+        return providerRepository.findProviderCountsByCategory();
     }
 
     private static String normalizeLogoPath(String logoPath) {

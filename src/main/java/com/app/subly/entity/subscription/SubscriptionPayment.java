@@ -1,7 +1,7 @@
 package com.app.subly.entity.subscription;
 
 import com.app.subly.entity.user.User;
-import com.app.subly.util.Money;
+import com.app.subly.util.MoneyMath;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -34,7 +34,10 @@ public class SubscriptionPayment {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(nullable = false, precision = Money.INTEGER_DIGITS + Money.FRACTION_DIGITS, scale = Money.FRACTION_DIGITS)
+    @Column(
+            nullable = false,
+            precision = MoneyMath.INTEGER_DIGITS + MoneyMath.FRACTION_DIGITS,
+            scale = MoneyMath.FRACTION_DIGITS)
     private BigDecimal amount;
 
     @Column(nullable = false)

@@ -14,11 +14,14 @@ import com.app.subly.entity.subscription.Subscription;
 import com.app.subly.entity.subscription.SubscriptionMembership;
 import com.app.subly.entity.user.User;
 import com.app.subly.enums.BillingCycle;
+import com.app.subly.enums.Currency;
 import com.app.subly.enums.ProviderType;
 import com.app.subly.repository.SubscriptionMembershipRepository;
 import com.app.subly.repository.SubscriptionProviderRepository;
 import com.app.subly.repository.SubscriptionRepository;
 import com.app.subly.repository.UserRepository;
+import com.app.subly.service.access.SubscriptionAccess;
+import com.app.subly.service.share.MemberShareLoader;
 import com.app.subly.testdata.TestClock;
 import com.app.subly.testdata.TestProviders;
 import com.app.subly.testdata.TestUsers;
@@ -53,7 +56,7 @@ abstract class AbstractSubscriptionServiceTest {
     SubscriptionAccess subscriptionAccess;
 
     @Mock
-    SubscriptionShares subscriptionShares;
+    MemberShareLoader memberShareLoader;
 
     SubscriptionService service;
     final User alice = TestUsers.userWithId(ALICE, ALICE_ID);
@@ -67,12 +70,12 @@ abstract class AbstractSubscriptionServiceTest {
                 membershipRepository,
                 subscriptionProviderRepository,
                 userRepository,
-                subscriptionShares,
+                memberShareLoader,
                 TestClock.CLOCK);
     }
 
     void stubAliceExists() {
-        when(userRepository.getByUsername(ALICE)).thenReturn(alice);
+        when(userRepository.getUser(ALICE)).thenReturn(alice);
     }
 
     void stubOwnedSubscription(Subscription subscription) {
@@ -119,6 +122,6 @@ abstract class AbstractSubscriptionServiceTest {
 
     static CreateSubscriptionRequest createRequest(LocalDate nextPaymentDate) {
         return new CreateSubscriptionRequest(
-                PROVIDER_ID, DEFAULT_PRICE, BillingCycle.MONTHLY, nextPaymentDate, false, 1);
+                PROVIDER_ID, DEFAULT_PRICE, Currency.USD, BillingCycle.MONTHLY, nextPaymentDate, false, 1);
     }
 }

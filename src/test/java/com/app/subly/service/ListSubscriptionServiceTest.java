@@ -15,6 +15,7 @@ import com.app.subly.entity.subscription.Subscription;
 import com.app.subly.entity.subscription.SubscriptionMembership;
 import com.app.subly.enums.SubscriptionStatus;
 import com.app.subly.exception.subscription.SubscriptionNotActiveException;
+import com.app.subly.service.share.MemberShare;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -26,10 +27,10 @@ class ListSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
     void findActive_shouldReturnSubscriptionsWithMembershipRolesAndUsersShare() {
         SubscriptionMembership ownerMembership = SubscriptionMembership.owner(alice, subscription(customProvider()));
         SubscriptionMembership memberMembership = SubscriptionMembership.member(alice, subscription(catalogProvider()));
-        when(subscriptionShares.forUser(ALICE, SubscriptionStatus.ACTIVE))
+        when(memberShareLoader.forUser(ALICE, SubscriptionStatus.ACTIVE))
                 .thenReturn(List.of(
-                        new Share(ownerMembership, new BigDecimal("6.00")),
-                        new Share(memberMembership, new BigDecimal("3.00"))));
+                        new MemberShare(ownerMembership, new BigDecimal("6.00")),
+                        new MemberShare(memberMembership, new BigDecimal("3.00"))));
 
         assertThat(service.findActive(ALICE))
                 .containsExactly(
@@ -58,9 +59,10 @@ class ListSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
         SubscriptionMembership ended = SubscriptionMembership.owner(alice, cancelled(1L, TODAY.minusMonths(1)));
         SubscriptionMembership endsLater = SubscriptionMembership.owner(alice, cancelled(2L, TODAY.plusDays(3)));
         stubAliceExists();
-        when(subscriptionShares.forUser(ALICE, SubscriptionStatus.CANCELLED))
+        when(memberShareLoader.forUser(ALICE, SubscriptionStatus.CANCELLED))
                 .thenReturn(List.of(
-                        new Share(ended, new BigDecimal("5.00")), new Share(endsLater, new BigDecimal("5.00"))));
+                        new MemberShare(ended, new BigDecimal("5.00")),
+                        new MemberShare(endsLater, new BigDecimal("5.00"))));
 
         assertThat(service.findCancelled(ALICE))
                 .extracting(cancelled -> cancelled.subscription().id(), CancelledSubscriptionResponse::saved)
