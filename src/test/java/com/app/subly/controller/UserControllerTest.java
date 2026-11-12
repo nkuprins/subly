@@ -3,6 +3,7 @@ package com.app.subly.controller;
 import static com.app.subly.testdata.TestUsers.ALICE;
 import static com.app.subly.testdata.TestUsers.BOB;
 import static com.app.subly.testdata.TestUsers.email;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -25,6 +26,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -44,10 +46,12 @@ class UserControllerTest extends AbstractWebMvcTest {
 
     @Test
     void deleteUser_shouldReturn200WhenUserIsDeleted() throws Exception {
-        sendJson(delete(DELETE_URL), passwordBody())
+        MockHttpSession session = new MockHttpSession();
+        sendJson(delete(DELETE_URL).session(session), passwordBody())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("The user account has been deleted"))
-                .andExpect(jsonPath("$.error").doesNotExist());
+                .andExpect(jsonPath("$.error").doesNotExist())
+                .andDo(result -> assertTrue(session.isInvalid()));
 
         verify(service).delete(ALICE, PASSWORD);
     }
@@ -73,10 +77,12 @@ class UserControllerTest extends AbstractWebMvcTest {
 
     @Test
     void updateCurrentUserPassword_shouldReturn200WhenPasswordIsChanged() throws Exception {
-        sendJson(put(PASSWORD_URL).with(csrf()), passwordChange(NEW_PASSWORD))
+        MockHttpSession session = new MockHttpSession();
+        sendJson(put(PASSWORD_URL).with(csrf()).session(session), passwordChange(NEW_PASSWORD))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message")
-                        .value("The password has been changed successfully. Please log in again."));
+                .andExpect(
+                        jsonPath("$.message").value("The password has been changed successfully. Please log in again."))
+                .andDo(result -> assertTrue(session.isInvalid()));
 
         verify(service).updatePassword(ALICE, PASSWORD, NEW_PASSWORD);
     }
@@ -101,18 +107,22 @@ class UserControllerTest extends AbstractWebMvcTest {
 
     @Test
     void updateUserInformation_shouldAcceptUsernameOfMaxLength() throws Exception {
-        sendJson(patch(INFO_URL).with(csrf()), usernameChange("a".repeat(User.USERNAME_MAX_LENGTH)))
-                .andExpect(status().isOk());
+        MockHttpSession session = new MockHttpSession();
+        sendJson(patch(INFO_URL).with(csrf()).session(session), usernameChange("a".repeat(User.USERNAME_MAX_LENGTH)))
+                .andExpect(status().isOk())
+                .andDo(result -> assertTrue(session.isInvalid()));
 
         verify(service).updateInformation(eq(ALICE), any(UpdateUserInformationRequest.class));
     }
 
     @Test
     void updateUserInformation_shouldReturn200WhenInformationIsUpdated() throws Exception {
-        sendJson(patch(INFO_URL).with(csrf()), emailChange("alice.new@example.com"))
+        MockHttpSession session = new MockHttpSession();
+        sendJson(patch(INFO_URL).with(csrf()).session(session), emailChange("alice.new@example.com"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message")
-                        .value("The information has been saved. Please log in again to apply changes."));
+                        .value("The information has been saved. Please log in again to apply changes."))
+                .andDo(result -> assertTrue(session.isInvalid()));
 
         verify(service).updateInformation(eq(ALICE), any(UpdateUserInformationRequest.class));
     }
