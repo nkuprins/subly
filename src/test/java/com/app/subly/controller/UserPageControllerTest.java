@@ -44,9 +44,7 @@ class UserPageControllerTest extends AbstractWebMvcTest {
     @Test
     @WithAnonymousUser
     void login_shouldRenderLoginPage() throws Exception {
-        mockMvc.perform(get("/login"))
-                .andExpect(status().isOk())
-                .andExpect(view().name("login"));
+        mockMvc.perform(get("/login")).andExpect(status().isOk()).andExpect(view().name("login"));
 
         verifyNoInteractions(userService);
     }
@@ -54,9 +52,7 @@ class UserPageControllerTest extends AbstractWebMvcTest {
     @Test
     @WithAnonymousUser
     void accessDenied_shouldRenderAccessDeniedPage() throws Exception {
-        mockMvc.perform(get("/access-denied"))
-                .andExpect(status().isOk())
-                .andExpect(view().name("access-denied"));
+        mockMvc.perform(get("/access-denied")).andExpect(status().isOk()).andExpect(view().name("access-denied"));
 
         verifyNoInteractions(userService);
     }
@@ -64,9 +60,7 @@ class UserPageControllerTest extends AbstractWebMvcTest {
     @Test
     @WithAnonymousUser
     void register_shouldRenderRegistrationPage() throws Exception {
-        mockMvc.perform(get(REGISTER_URL))
-                .andExpect(status().isOk())
-                .andExpect(view().name("register"));
+        mockMvc.perform(get(REGISTER_URL)).andExpect(status().isOk()).andExpect(view().name("register"));
 
         verifyNoInteractions(userService);
     }
@@ -91,8 +85,8 @@ class UserPageControllerTest extends AbstractWebMvcTest {
     @WithAnonymousUser
     void returnEditPage_shouldRejectAnonymousUser() throws Exception {
         mockMvc.perform(get("/edit/me"))
-                .andExpect(result -> assertTrue(
-                        result.getResponse().getStatus() == 302 || result.getResponse().getStatus() == 401));
+                .andExpect(result -> assertTrue(result.getResponse().getStatus() == 302
+                        || result.getResponse().getStatus() == 401));
 
         verifyNoInteractions(userService);
     }
@@ -123,7 +117,8 @@ class UserPageControllerTest extends AbstractWebMvcTest {
 
     @Test
     void createAccount_shouldReturn400WhenRequiredParameterIsMissing() throws Exception {
-        mockMvc.perform(post(REGISTER_URL).with(csrf())
+        mockMvc.perform(post(REGISTER_URL)
+                        .with(csrf())
                         .param("username", USERNAME)
                         .param("name", NAME)
                         .param("email", EMAIL)
@@ -175,7 +170,8 @@ class UserPageControllerTest extends AbstractWebMvcTest {
         register("a".repeat(User.USERNAME_MAX_LENGTH + 1), NAME, EMAIL, PASSWORD, PASSWORD)
                 .andExpect(status().isOk())
                 .andExpect(model().attribute(
-                        "registrationError", "Username must be " + User.USERNAME_MAX_LENGTH + " characters or fewer"));
+                                "registrationError",
+                                "Username must be " + User.USERNAME_MAX_LENGTH + " characters or fewer"));
 
         verifyNoInteractions(userService);
     }
@@ -185,7 +181,7 @@ class UserPageControllerTest extends AbstractWebMvcTest {
         register(USERNAME, "a".repeat(User.NAME_MAX_LENGTH + 1), EMAIL, PASSWORD, PASSWORD)
                 .andExpect(status().isOk())
                 .andExpect(model().attribute(
-                        "registrationError", "Name must be " + User.NAME_MAX_LENGTH + " characters or fewer"));
+                                "registrationError", "Name must be " + User.NAME_MAX_LENGTH + " characters or fewer"));
 
         verifyNoInteractions(userService);
     }
@@ -249,8 +245,7 @@ class UserPageControllerTest extends AbstractWebMvcTest {
     void createAccount_shouldAcceptNameAtMaximumLength() throws Exception {
         String name = "a".repeat(User.NAME_MAX_LENGTH);
 
-        register(USERNAME, name, EMAIL, PASSWORD, PASSWORD)
-                .andExpect(status().is3xxRedirection());
+        register(USERNAME, name, EMAIL, PASSWORD, PASSWORD).andExpect(status().is3xxRedirection());
 
         verify(userService).create(USERNAME, name, PASSWORD, EMAIL, null);
     }
@@ -259,8 +254,7 @@ class UserPageControllerTest extends AbstractWebMvcTest {
     void createAccount_shouldAcceptPasswordAtMinimumLength() throws Exception {
         String password = "a".repeat(PasswordRules.MIN_LENGTH);
 
-        register(USERNAME, NAME, EMAIL, password, password)
-                .andExpect(status().is3xxRedirection());
+        register(USERNAME, NAME, EMAIL, password, password).andExpect(status().is3xxRedirection());
 
         verify(userService).create(USERNAME, NAME, password, EMAIL, null);
     }
@@ -269,14 +263,13 @@ class UserPageControllerTest extends AbstractWebMvcTest {
     void createAccount_shouldAcceptPasswordAtMaximumLength() throws Exception {
         String password = "a".repeat(PasswordRules.MAX_LENGTH);
 
-        register(USERNAME, NAME, EMAIL, password, password)
-                .andExpect(status().is3xxRedirection());
+        register(USERNAME, NAME, EMAIL, password, password).andExpect(status().is3xxRedirection());
 
         verify(userService).create(USERNAME, NAME, password, EMAIL, null);
     }
 
-    private ResultActions register(
-            String username, String name, String email, String password, String confirmPassword) throws Exception {
+    private ResultActions register(String username, String name, String email, String password, String confirmPassword)
+            throws Exception {
         return mockMvc.perform(post(REGISTER_URL)
                 .with(csrf())
                 .param("username", username)
