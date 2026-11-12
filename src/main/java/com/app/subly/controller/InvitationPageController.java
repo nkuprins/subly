@@ -9,6 +9,7 @@ import com.app.subly.service.InvitationService;
 import com.app.subly.service.MembershipService;
 import com.app.subly.service.SubscriptionService;
 import java.security.Principal;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -22,19 +23,11 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @Slf4j
+@RequiredArgsConstructor
 public class InvitationPageController {
     private final InvitationService invitationService;
     private final SubscriptionService subscriptionService;
     private final MembershipService membershipService;
-
-    public InvitationPageController(
-            InvitationService invitationService,
-            SubscriptionService subscriptionService,
-            MembershipService membershipService) {
-        this.invitationService = invitationService;
-        this.subscriptionService = subscriptionService;
-        this.membershipService = membershipService;
-    }
 
     @GetMapping("/subscriptions/{id}/invite")
     public String invitePage(@PathVariable long id, Principal principal, Model model) {
