@@ -56,36 +56,36 @@ class InvitationServiceTest {
     private static final String UNKNOWN_USER = "nobody";
 
     @Mock
-    SubscriptionMembershipRepository membershipRepository;
+    private SubscriptionMembershipRepository membershipRepository;
 
     @Mock
-    SubscriptionRepository subscriptionRepository;
+    private SubscriptionRepository subscriptionRepository;
 
     @Mock
-    PendingInvitationRepository invitationRepository;
+    private PendingInvitationRepository invitationRepository;
 
     @Mock
-    SubscriptionAccess subscriptionAccess;
+    private SubscriptionAccess subscriptionAccess;
 
     @Mock
-    UserRepository userRepository;
+    private UserRepository userRepository;
 
     @InjectMocks
-    InvitationService service;
+    private InvitationService service;
 
     @Captor
-    ArgumentCaptor<SubscriptionMembership> membershipCaptor;
+    private ArgumentCaptor<SubscriptionMembership> membershipCaptor;
 
     @Captor
-    ArgumentCaptor<PendingInvitation> invitationCaptor;
+    private ArgumentCaptor<PendingInvitation> invitationCaptor;
 
-    final User alice = TestUsers.userWithId(ALICE, ALICE_ID);
-    final User bob = TestUsers.userWithId(BOB, BOB_ID);
-    final Subscription subscription = aSubscription()
+    private final User alice = TestUsers.userWithId(ALICE, ALICE_ID);
+    private final User bob = TestUsers.userWithId(BOB, BOB_ID);
+    private final Subscription subscription = aSubscription()
             .withId(SUBSCRIPTION_ID)
             .withMaxParticipants(MAX_PARTICIPANTS)
             .build();
-    final PendingInvitation invitation = new PendingInvitation(bob, subscription, alice);
+    private final PendingInvitation invitation = new PendingInvitation(bob, subscription, alice);
 
     @Test
     void invite_shouldSaveInvitationWhileASeatIsFree() {

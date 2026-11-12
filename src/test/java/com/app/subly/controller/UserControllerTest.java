@@ -42,7 +42,7 @@ class UserControllerTest extends AbstractWebMvcTest {
     private static final String NEW_PASSWORD = "superlargepassword123456";
 
     @MockitoBean
-    UserService service;
+    private UserService service;
 
     @Test
     void deleteUser_shouldReturn200WhenUserIsDeleted() throws Exception {

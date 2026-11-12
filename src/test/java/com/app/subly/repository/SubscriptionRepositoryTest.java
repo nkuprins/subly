@@ -17,7 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 class SubscriptionRepositoryTest extends AbstractRepositoryTest {
 
     @Autowired
-    SubscriptionRepository repository;
+    private SubscriptionRepository repository;
 
     @Test
     void delete_shouldDeleteMembershipsInvitationsAndPayments() {

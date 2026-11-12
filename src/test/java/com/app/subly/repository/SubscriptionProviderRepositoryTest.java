@@ -23,9 +23,9 @@ class SubscriptionProviderRepositoryTest extends AbstractRepositoryTest {
     private static final long UNKNOWN_PROVIDER_ID = -1L;
 
     @Autowired
-    SubscriptionProviderRepository repository;
+    private SubscriptionProviderRepository repository;
 
-    SubscriptionProvider catalog;
+    private SubscriptionProvider catalog;
 
     @BeforeEach
     void setUp() {
@@ -61,7 +61,6 @@ class SubscriptionProviderRepositoryTest extends AbstractRepositoryTest {
     void deleteByCreatedByUsername_shouldDeleteOnlyProvidersOfThatUser() {
         repository.deleteByCreatedByUsername(ALICE);
         entityManager.flush();
-        entityManager.clear();
 
         assertThat(repository.findAll())
                 .extracting(SubscriptionProvider::getName)

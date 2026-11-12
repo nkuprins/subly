@@ -35,14 +35,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class DashboardServiceTest {
 
     @Mock
-    MemberShareLoader memberShareLoader;
+    private MemberShareLoader memberShareLoader;
 
     @Mock
-    UserRepository userRepository;
+    private UserRepository userRepository;
 
-    DashboardService service;
+    private DashboardService service;
 
-    final User alice = TestUsers.user(ALICE);
+    private final User alice = TestUsers.user(ALICE);
 
     @BeforeEach
     void setUp() {

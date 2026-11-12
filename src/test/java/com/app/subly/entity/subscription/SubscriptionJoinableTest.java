@@ -19,16 +19,16 @@ class SubscriptionJoinableTest {
     @ParameterizedTest(name = "{0} -> closed: {3}")
     @MethodSource("subscriptions")
     void isClosedToNewMembers_shouldCloseFullCancelledOrNotSharableSubscriptions(
-            String label, TestSubscriptions.Builder subscription, long memberCount, boolean closed) {
-        assertThat(subscription.build().isClosedToNewMembers(memberCount)).isEqualTo(closed);
+            String label, Subscription subscription, long memberCount, boolean closed) {
+        assertThat(subscription.isClosedToNewMembers(memberCount)).isEqualTo(closed);
     }
 
     static Stream<Arguments> subscriptions() {
         return Stream.of(
-                arguments("free seat", sharable(), MAX_PARTICIPANTS - 1, false),
-                arguments("every seat taken", sharable(), MAX_PARTICIPANTS, true),
-                arguments("cancelled", sharable().cancelled(), MAX_PARTICIPANTS - 1, true),
-                arguments("not sharable", aSubscription(), 0, true));
+                arguments("free seat", sharable().build(), MAX_PARTICIPANTS - 1, false),
+                arguments("every seat taken", sharable().build(), MAX_PARTICIPANTS, true),
+                arguments("cancelled", sharable().cancelled().build(), MAX_PARTICIPANTS - 1, true),
+                arguments("not sharable", aSubscription().build(), 0, true));
     }
 
     @Test

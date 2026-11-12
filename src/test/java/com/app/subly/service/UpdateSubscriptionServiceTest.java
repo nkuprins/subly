@@ -32,7 +32,7 @@ class UpdateSubscriptionServiceTest extends AbstractSubscriptionServiceTest {
 
         service.update(ALICE, SUBSCRIPTION_ID, updateRequest(NEW_PAYMENT_DATE));
 
-        assertPaymentDetails(subscription, NEW_PRICE, BillingCycle.YEARLY, NEW_PAYMENT_DATE, true);
+        assertPaymentDetails(subscription, NEW_PRICE, BillingCycle.YEARLY, NEW_PAYMENT_DATE);
         assertThat(subscription.getProvider()).isSameAs(provider);
     }
 

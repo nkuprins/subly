@@ -37,24 +37,24 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class PaymentServiceTest {
 
     @Mock
-    SubscriptionPaymentRepository paymentRepository;
+    private SubscriptionPaymentRepository paymentRepository;
 
     @Mock
-    SubscriptionMembershipRepository membershipRepository;
+    private SubscriptionMembershipRepository membershipRepository;
 
     @InjectMocks
-    PaymentService service;
+    private PaymentService service;
 
     @Captor
     ArgumentCaptor<List<SubscriptionPayment>> payments;
 
-    final User alice = TestUsers.user(ALICE);
-    final Subscription subscriptionInDollars =
+    private final User alice = TestUsers.user(ALICE);
+    private final Subscription subscriptionInDollars =
             aSubscription().withCurrency(Currency.USD).build();
 
     @Test
     void findHistory_shouldReturnPaymentsWithServiceAndCurrency() {
-        SubscriptionPayment payment = payment(subscriptionInDollars, "4.50", TODAY.minusDays(3));
+        SubscriptionPayment payment = payment(subscriptionInDollars, TODAY.minusDays(3));
         when(paymentRepository.findHistoryOf(ALICE)).thenReturn(List.of(payment));
 
         assertThat(service.findHistory(ALICE))
@@ -85,8 +85,8 @@ class PaymentServiceTest {
         assertThat(subscription.getNextPaymentDate()).isEqualTo(TODAY.minusMonths(1));
     }
 
-    private SubscriptionPayment payment(Subscription subscription, String amount, LocalDate paidOn) {
-        return new SubscriptionPayment(subscription, alice, new BigDecimal(amount), paidOn);
+    private SubscriptionPayment payment(Subscription subscription, LocalDate paidOn) {
+        return new SubscriptionPayment(subscription, alice, new BigDecimal("4.50"), paidOn);
     }
 
     private void stubDue(SubscriptionMembership owner, List<SubscriptionMembership> members) {

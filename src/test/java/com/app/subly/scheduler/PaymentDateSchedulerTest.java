@@ -32,18 +32,18 @@ class PaymentDateSchedulerTest {
             TODAY.plusDays(1).atStartOfDay(DEFAULT_ZONE).toInstant();
 
     @Mock
-    UserRepository userRepository;
+    private UserRepository userRepository;
 
     @Mock
-    PaymentService paymentService;
+    private PaymentService paymentService;
 
     @Mock
-    Clock clock;
+    private Clock clock;
 
     @InjectMocks
-    PaymentDateScheduler scheduler;
+    private PaymentDateScheduler scheduler;
 
-    Instant now = TestClock.NOW;
+    private Instant now = TestClock.NOW;
 
     @BeforeEach
     void setUp() {
@@ -53,10 +53,13 @@ class PaymentDateSchedulerTest {
 
     @Test
     void advancePastPaymentDates_shouldSkipZoneUntilItsDateChanges() {
+        // 16:00 UTC: 4 Nov in Riga and 5 Nov in Tokyo, both zones run
         scheduler.advancePastPaymentDates();
         now = FIFTEEN_MINUTES_LATER;
+        // 16:15 UTC: no date changed, nothing runs
         scheduler.advancePastPaymentDates();
         now = MIDNIGHT_IN_DEFAULT_ZONE;
+        // 22:00 UTC: Riga moves to 5 Nov and runs, Tokyo is still on 5 Nov
         scheduler.advancePastPaymentDates();
 
         verify(paymentService).advancePaymentDates(DEFAULT_ZONE, TODAY);

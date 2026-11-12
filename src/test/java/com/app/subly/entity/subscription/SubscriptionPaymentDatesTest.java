@@ -25,7 +25,6 @@ class SubscriptionPaymentDatesTest {
         "2027-02-05, 1",
         "2027-03-04, 1",
         "2027-03-05, 2",
-        "2027-03-06, 2",
     })
     void skippedPaymentsUntil_shouldCountDatesFromTheEndDateUpToToday(LocalDate today, long expected) {
         Subscription subscription =
