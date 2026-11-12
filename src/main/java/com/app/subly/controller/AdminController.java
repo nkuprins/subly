@@ -27,13 +27,14 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 @RequiredArgsConstructor
 @Slf4j
+@RequestMapping("/admin")
 public class AdminController {
 
     private final ProviderService providerService;
     private final CategoryService categoryService;
     private final AdminStatisticsService adminStatisticsService;
 
-    @GetMapping("/admin")
+    @GetMapping()
     public String catalogue(Model model, @RequestParam(defaultValue = "false") boolean providerCreated) {
         log.info("Preparing admin catalogue page, providerCreated={}", providerCreated);
         this.fillAdminPageByContent(model, providerCreated);
@@ -41,7 +42,7 @@ public class AdminController {
         return "admin";
     }
 
-    @PostMapping("/admin/category/create")
+    @PostMapping("/category/create")
     public String addCategory(
             @Valid @ModelAttribute("categoryCreationForm") CreateCategoryForm categoryForm,
             BindingResult bindingResult,
@@ -69,7 +70,7 @@ public class AdminController {
         return "redirect:/admin";
     }
 
-    @GetMapping("/admin/providers/new")
+    @GetMapping("/providers/new")
     public String newProvider(Model model) {
         log.info("Preparing admin provider creation page");
         model.addAttribute("providerForm", new CreateProviderForm());
@@ -77,7 +78,7 @@ public class AdminController {
         return "admin-provider-form";
     }
 
-    @PostMapping("/admin/providers")
+    @PostMapping("/providers")
     public String addNewProvider(
             @Valid @ModelAttribute("providerForm") CreateProviderForm form,
             BindingResult bindingResult,
@@ -98,7 +99,7 @@ public class AdminController {
         return "redirect:/admin";
     }
 
-    @GetMapping("/admin/statistics")
+    @GetMapping("/statistics")
     @ResponseBody
     public AdminStatisticsResponse getStatistics() {
         log.info("Retrieving admin statistics");
