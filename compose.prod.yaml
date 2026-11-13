@@ -1,0 +1,34 @@
+services:
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: subly
+      MYSQL_USER: subly
+      MYSQL_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is not set}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?DB_ROOT_PASSWORD is not set}
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/subly
+      DB_USERNAME: subly
+      DB_PASSWORD: ${DB_PASSWORD}
+      APP_ADMINSETTINGS_ADMINPASSWORD: ${ADMIN_PASSWORD:?ADMIN_PASSWORD is not set}
+    ports:
+      - "3400:8080"
+
+volumes:
+  mysql-data:

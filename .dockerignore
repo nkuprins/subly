@@ -7,3 +7,4 @@ docker
 *.iml
 README.md
 compose.yaml
+compose.prod.yaml
