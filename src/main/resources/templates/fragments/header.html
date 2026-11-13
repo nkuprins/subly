@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+<header th:fragment="header" class="site-header">
+    <div class="container header-inner">
+        <a class="brand" th:href="@{/dashboard}"> Subly</a>
+        <nav class="nav">
+            <a th:href="@{/dashboard}">Dashboard</a>
+            <a th:href="@{/subscriptions}">Subscriptions</a>
+            <a th:href="@{/payments}">Payments</a>
+            <a th:href="@{/admin}" sec:authorize="hasRole('ADMIN')">Admin</a>
+        </nav>
+        <div class="user-box">
+<a class="user-name" th:href="@{/edit/me}" sec:authorize="isAuthenticated()"
+   sec:authentication="name">user</a>
+            <form th:action="@{/logout}" method="post" sec:authorize="isAuthenticated()">
+                <button type="submit"  class="btn btn-logout">Logout</button>
+            </form>
+        </div>
+    </div>
+</header>
+</body>
+</html>

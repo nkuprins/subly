@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Subly - Dashboard</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+<main class="container page">
+    <p class="notice" th:if="${notice}" th:text="${notice}" role="status"></p>
+    <div class="dashboard-heading">
+        <div>
+            <h1>Dashboard</h1>
+            <p class="muted">Your subscriptions at a glance</p>
+        </div>
+
+        <form class="currency-form"
+              th:action="@{/dashboard}"
+              method="get">
+
+            <label for="currency">Currency</label>
+
+            <select id="currency" name="currency">
+                <option th:each="currency : ${currencies}"
+                        th:value="${currency.name()}"
+                        th:text="|${currency.name()} (${currency.symbol})|"
+                        th:selected="${currency == selectedCurrency}"></option>
+            </select>
+
+            <button type="submit" class="btn btn-primary">
+                Apply
+            </button>
+        </form>
+    </div>
+
+    <section class="cards">
+        <div class="card">
+            <span class="card-label">Monthly</span>
+            <span class="card-value" th:text="|${summary.monthlyTotal} ${summary.currency}|"></span>
+        </div>
+        <div class="card">
+            <span class="card-label">Yearly</span>
+            <span class="card-value" th:text="|${summary.yearlyTotal} ${summary.currency}|"></span>
+        </div>
+        <div class="card">
+            <span class="card-label">Active subscription</span>
+            <span class="card-value" th:text="${summary.activeCount}">0</span>
+        </div>
+        <div class="card">
+            <span class="card-label">Saved</span>
+            <span class="card-value" th:text="|${savings.amount} ${savings.currency}|"></span>
+        </div>
+    </section>
+    <section class="cards">
+        <div class="card">
+            <span class="card-label">Individual (monthly)</span>
+            <span class="card-value"
+                  th:text="|${individualSummary.monthlyTotal} ${individualSummary.currency}|"></span>
+        </div>
+        <div class="card">
+            <span class="card-label">Shared (monthly)</span>
+            <span class="card-value"
+                  th:text="|${sharedSummary.monthlyTotal} ${sharedSummary.currency}|"></span>
+        </div>
+    </section>
+    <section class="panel" th:if="${not #lists.isEmpty(receivedInvitations)}">
+        <h2>Invitations for you</h2>
+        <div th:each="inv : ${receivedInvitations}" class="invite-row">
+            <span class="invite-service" th:text="${inv.providerName}"></span>
+            <span class="invite-owner" th:text="|from ${inv.ownerUsername}|"></span>
+            <span class="invite-price" th:text="|${inv.price} ${inv.currency} / ${inv.billingCycle}|"></span>
+            <span class="invite-actions">
+                <form th:action="@{/invitations/{id}/accept(id=${inv.id})}" method="post" class="inline-form">
+                    <button type="submit" class="link btn-link">Accept</button>
+                </form>
+                <form th:action="@{/invitations/{id}/decline(id=${inv.id})}" method="post"
+                      onsubmit="return confirm('Decline this invitation?');" class="inline-form">
+                    <button type="submit" class="link link-danger btn-link">Decline</button>
+                </form>
+            </span>
+        </div>
+    </section>
+    <section class="panel">
+        <h2>Upcoming payments</h2>
+        <div th:each="p : ${upcoming}" class="upcoming-row"
+             th:classappend="${p.daysLeft <= 7} ? ' upcoming-soon'">
+            <span class="upcoming-name" th:text="${p.providerName()}"></span>
+            <span class="upcoming-date" th:text="|${p.nextPaymentDate} · in ${p.daysLeft} days|"></span>
+            <span class="upcoming-amount" th:text="|${p.amount} ${p.currency}|"></span>
+        </div>
+        <p class="muted" th:if="${#lists.isEmpty(upcoming)}">No payments in the next 30 days</p>
+    </section>
+<!--    <section class="panel">-->
+<!--        <h2>Spending by category</h2>-->
+<!--        <div th:each="c : ${categories}" class="category-row">-->
+<!--            <span class="category-name" th:text="${c.categoryName()}"></span>-->
+<!--            <span class="category-amount" th:text="|${c.monthlyTotal} ${c.currency}/month|"></span>-->
+<!--        </div>-->
+<!--        <p class="muted" th:if="${#lists.isEmpty(categories)}">No spending yet</p>-->
+<!--    </section>-->
+    <section class="panel" th:if="${not #lists.isEmpty(categories)}"
+             th:with="maxCat=${categories[0].monthlyTotal}">
+        <h2>By category</h2>
+        <div th:each="c : ${categories}" class="cat-bar-row">
+            <span class="cat-bar-name" th:text="${c.categoryName()}"></span>
+            <span class="cat-bar-track">
+        <span class="cat-bar-fill"
+              th:style="|width: ${maxCat.signum() > 0 ? c.monthlyTotal.doubleValue() * 100.0 / maxCat.doubleValue() : 0}%|"></span>
+        </span>
+            <span class="cat-bar-amount" th:text="|${c.monthlyTotal} ${c.currency}|">
+        </span>
+        </div>
+    </section>
+</main>
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

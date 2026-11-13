@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, dev]
   pull_request:
 
 jobs:
@@ -13,12 +13,12 @@ jobs:
       mysql:
         image: mysql:8.4
         env:
-          MYSQL_DATABASE: subly
+          MYSQL_DATABASE: subly_test
           MYSQL_USER: subly
           MYSQL_PASSWORD: subly
           MYSQL_ROOT_PASSWORD: root
         ports:
-          - 3306:3306
+          - 3307:3306
         # Wait until MySQL accepts connections before the tests start
         options: >-
           --health-cmd="mysqladmin ping -usubly -psubly"
@@ -34,6 +34,9 @@ jobs:
           distribution: temurin
           java-version: 21
           cache: maven
+
+      - name: Check code format
+        run: ./mvnw -B spotless:check
 
       - name: Run tests
         run: ./mvnw -B test

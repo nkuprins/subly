@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="|${status != null ? status : 500} ${error != null ? error : 'Something went wrong'}|">Error</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+
+<main class="container page">
+    <section class="form-card" role="alert" aria-labelledby="error-title">
+        <p class="muted-inline">An error occurred</p>
+        <h1 id="error-title">
+            <span th:text="${status != null ? status : '500 Something went wrong'}">500</span>
+        </h1>
+        <p class="muted" th:text="${message != null ? message : 'We could not complete your request. Please try again.'}">
+            We could not complete your request. Please try again.
+        </p>
+        <a th:href="@{/dashboard}" class="btn btn-primary">Go to main page</a>
+    </section>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

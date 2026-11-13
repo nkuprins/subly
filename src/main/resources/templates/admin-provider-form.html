@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Add a provider · Subly</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+</head>
+<body class="admin-body">
+<div th:replace="~{fragments/header :: header}"></div>
+<main class="container page admin-page">
+    <a class="back-link" th:href="@{/admin}"><span aria-hidden="true">←</span> Back to catalogue</a>
+    <div class="form-page-heading">
+        <p class="eyebrow">Provider catalogue</p>
+        <h1>Add a provider</h1>
+        <p class="admin-intro">Create a catalogue entry members can select for their subscriptions.</p>
+    </div>
+    <section class="provider-form-card">
+        <form th:action="@{/admin/providers}" th:object="${providerForm}" method="post" novalidate>
+            <div class="form-section-label">Provider details</div>
+            <div class="form-field">
+                <label for="provider-name">Provider name <span aria-hidden="true">*</span></label>
+                <input id="provider-name" type="text" th:field="*{name}" maxlength="200" autocomplete="off" required aria-describedby="name-error" th:classappend="${#fields.hasErrors('name')} ? 'field-invalid'"/>
+                <p id="name-error" class="field-error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">Enter a provider name.</p>
+            </div>
+            <div class="form-field">
+                <label for="category">Category <span aria-hidden="true">*</span></label>
+                <select id="category" th:field="*{categoryId}" required aria-describedby="category-error" th:classappend="${#fields.hasErrors('categoryId')} ? 'field-invalid'">
+                    <option value="">Choose a category</option>
+                    <option th:each="category : ${categories}" th:value="${category.id}" th:text="${category.name}">Category</option>
+                </select>
+                <p id="category-error" class="field-error" th:if="${#fields.hasErrors('categoryId')}" th:errors="*{categoryId}">Choose a category.</p>
+            </div>
+            <div class="form-field">
+                <label for="logo-path">Logo URL or app path <span class="optional-label">Optional</span></label>
+                <input id="logo-path" type="text" th:field="*{logoPath}" maxlength="500" placeholder="https://… or /images/provider.svg" aria-describedby="logo-help logo-error" th:classappend="${#fields.hasErrors('logoPath')} ? 'field-invalid'"/>
+                <p id="logo-help" class="field-help">Use a publicly accessible image URL or an image stored in the app.</p>
+                <p id="logo-error" class="field-error" th:if="${#fields.hasErrors('logoPath')}" th:errors="*{logoPath}">Logo path is too long.</p>
+            </div>
+            <div class="form-actions">
+                <a th:href="@{/admin}" class="btn btn-quiet">Cancel</a>
+                <button type="submit" class="btn btn-primary" th:disabled="${#lists.isEmpty(categories)}">Add to catalogue <span aria-hidden="true">→</span></button>
+            </div>
+        </form>
+    </section>
+</main>
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

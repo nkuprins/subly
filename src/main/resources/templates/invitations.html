@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Invite people</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+
+<main class="container page">
+    <div class="page-head">
+        <p class="notice" th:if="${notice}" th:text="${notice}" role="status"></p>
+        <h1>Invite people</h1>
+    </div>
+
+    <div class="form-card" th:unless="${full}">
+        <form th:action="@{/subscriptions/{id}/invite(id=${subscriptionId})}" method="post" class="form">
+            <div class="field">
+                <label for="usernameOrEmail">Username or email</label>
+                <input type="text" id="usernameOrEmail" name="usernameOrEmail" required/>
+            </div>
+            <p class="field-error" th:if="${error}" th:text="${error}"></p>
+            <div class="form-actions">
+                <a th:href="@{/subscriptions}" class="link">Back</a>
+                <button type="submit" class="btn btn-primary">Send invite</button>
+            </div>
+        </form>
+    </div>
+    <p class="notice" th:if="${full}" role="status">This subscription is full — all seats are taken.</p>
+    <h2>Current members</h2>
+    <div class="table-wrap">
+        <table>
+            <thead>
+            <tr>
+                <th>User</th>
+                <th>Role</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="member : ${members}">
+                <td th:text="${member.username}"></td>
+                <td th:text="${member.role}"></td>
+                <td>
+                    <form th:if="${member.role.name() == 'MEMBER'}"
+                          th:action="@{/subscriptions/{id}/members/{membershipId}/kick(id=${subscriptionId},membershipId=${member.membershipId})}"
+                          method="post"
+                          onsubmit="return confirm('Remove this member from the subscription?');"
+                          class="inline-form">
+                        <button type="submit" class="link link-danger btn-link">Kick</button>
+                    </form>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(members)}">
+                <td colspan="3" class="empty-row">No members yet.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <h2>Pending invitations</h2>
+    <div class="table-wrap">
+        <table>
+            <thead>
+            <tr>
+                <th>User</th>
+                <th>Invited at</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="inv : ${pending}">
+                <td th:text="${inv.username}"></td>
+                <td th:text="${inv.invitedAt}"></td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(pending)}">
+                <td colspan="2" class="empty-row">No pending invitations.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

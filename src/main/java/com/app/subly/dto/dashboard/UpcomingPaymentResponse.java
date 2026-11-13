@@ -1,0 +1,26 @@
+package com.app.subly.dto.dashboard;
+
+import com.app.subly.entity.subscription.Subscription;
+import com.app.subly.enums.Currency;
+import com.app.subly.util.MoneyMath;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+
+public record UpcomingPaymentResponse(
+        String providerName, BigDecimal amount, Currency currency, LocalDate nextPaymentDate, long daysLeft) {
+
+    public UpcomingPaymentResponse {
+        amount = MoneyMath.round(amount);
+    }
+
+    public static UpcomingPaymentResponse from(
+            Subscription subscription, BigDecimal amount, Currency currency, LocalDate today) {
+        return new UpcomingPaymentResponse(
+                subscription.getProvider().getName(),
+                amount,
+                currency,
+                subscription.getNextPaymentDate(),
+                ChronoUnit.DAYS.between(today, subscription.getNextPaymentDate()));
+    }
+}

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Admin · Subly</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+</head>
+<body class="admin-body">
+<div th:replace="~{fragments/header :: header}"></div>
+<main class="container page admin-page">
+    <div class="admin-heading">
+        <div>
+            <p class="eyebrow">Subly administration</p>
+            <h1>Admin panel</h1>
+            <p class="admin-intro">Manage the shared providers members can add to their subscriptions.</p>
+        </div>
+    </div>
+
+    <div class="notice notice-success" role="status" th:if="${providerCreated}">Provider added to the catalogue.</div>
+
+    <section class="admin-metrics" aria-label="Catalogue summary">
+            <div class="admin-metric">
+                <span class="admin-metric-label">Providers in catalogue</span>
+                <strong class="admin-metric-value" th:text="${providerCount}"></strong>
+            </div>
+        <div class="admin-metric">
+            <span class="admin-metric-label">Total users</span>
+            <strong class="admin-metric-value" th:text="${statistics.totalUsers}"></strong>
+        </div>
+        <div class="admin-metric">
+            <span class="admin-metric-label">Active subscriptions</span>
+            <strong class="admin-metric-value" th:text="${statistics.activeSubscriptions}"></strong>
+        </div>
+        <div class="admin-metric">
+            <span class="admin-metric-label">Avg. monthly spend / user</span>
+            <strong class="admin-metric-value"
+                    th:text="|${statistics.averageMonthlySpendPerUser} ${statistics.currency}|"></strong>
+        </div>
+    </section>
+    <section class="catalogue-panel" th:if="${not #lists.isEmpty(statistics.popularServices)}">
+        <div class="catalogue-toolbar">
+            <div>
+                <h2>Popular services</h2>
+                <p>Most subscribed providers</p>
+            </div>
+        </div>
+        <div class="table-scroll">
+            <table class="catalogue-table">
+                <thead>
+                <tr><th scope="col">Service</th><th scope="col">Active subscriptions</th></tr>
+                </thead>
+                <tbody>
+                <tr th:each="svc : ${statistics.popularServices}">
+                    <td class="provider-name" th:text="${svc.providerName}"></td>
+                    <td th:text="${svc.activeSubscriptionCount}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+    <section class="catalogue-panel" aria-labelledby="catalogue-title">
+        <div class="catalogue-toolbar">
+            <div>
+                <h2 id="catalogue-title">Provider catalogue</h2>
+                <p>Shared providers available to members</p>
+            </div>
+            <a th:href="@{/admin/providers/new}" class="btn btn-primary">Add provider <span aria-hidden="true">＋</span></a>
+        </div>
+        <div class="table-scroll" th:if="${!#lists.isEmpty(providers)}">
+            <table class="catalogue-table">
+                <thead>
+                <tr><th scope="col">Logo</th><th scope="col">Name</th><th scope="col">Category</th></tr>
+                </thead>
+                <tbody>
+                <tr th:each="provider : ${providers}">
+                    <td>
+                        <img class="provider-logo" th:if="${provider.logoPath != null and !#strings.isEmpty(provider.logoPath)}" th:src="${provider.logoPath}" th:alt="|${provider.name} logo|"/>
+                        <span class="provider-logo provider-monogram" th:unless="${provider.logoPath != null and !#strings.isEmpty(provider.logoPath)}" th:text="${#strings.substring(provider.name, 0, 1).toUpperCase()}"></span>
+                    </td>
+                    <td class="provider-name" th:text="${provider.name}"></td>
+                    <td><span class="category-chip" th:text="${provider.category.name}"></span></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="catalogue-empty" th:if="${#lists.isEmpty(providers)}">
+            <span class="empty-icon" aria-hidden="true">▤</span>
+            <h3>No catalogue providers yet</h3>
+            <p>Add a provider to make it available to members.</p>
+            <a th:href="@{/admin/providers/new}" class="btn btn-primary">Add first provider</a>
+        </div>
+    </section>
+
+    <section class="catalogue-panel admin-categories-panel" aria-labelledby="categories-title">
+        <div class="catalogue-toolbar">
+            <div>
+                <h2 id="categories-title">Categories</h2>
+                <p>Categories used by catalogue providers</p>
+            </div>
+            <button class="btn btn-primary" id="add-category-button" type="button">Add category <span aria-hidden="true">＋</span></button>
+        </div>
+        <div class="table-scroll" th:if="${!#lists.isEmpty(categories)}">
+            <table class="catalogue-table category-table">
+                <thead>
+                <tr><th scope="col">Category</th><th scope="col">References</th><th scope="col">Actions</th></tr>
+                </thead>
+                <tbody>
+                <tr th:each="category : ${categories}" th:attr="data-category-id=${category.id}">
+                    <td class="provider-name" th:text="${category.name}">Category</td>
+                    <td th:text="${categoryReferences.get(category.id)}">0</td>
+                    <td class="category-actions">
+                        <button class="category-action-button" type="button" data-action="edit"
+                                th:attr="data-category-id=${category.id}">Edit</button>
+                        <span aria-hidden="true">|</span>
+                        <button class="category-action-button category-action-delete" type="button" data-action="delete"
+                                th:attr="data-category-id=${category.id}" th:disabled="${categoryReferences.get(category.id) > 0}">Delete</button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="catalogue-empty" th:if="${#lists.isEmpty(categories)}">
+            <span class="empty-icon" aria-hidden="true">◇</span>
+            <h3>No categories yet</h3>
+            <p>Add a category to organize catalogue providers.</p>
+        </div>
+    </section>
+</main>
+<dialog class="provider-dialog" id="category-dialog" aria-labelledby="category-dialog-title"
+        th:attr="data-open=${!#strings.isEmpty(categoryCreationError)}">
+    <div class="provider-dialog-card">
+        <button class="provider-dialog-close" id="category-dialog-close" type="button" aria-label="Close">&times;</button>
+        <h2 id="category-dialog-title">Add a category</h2>
+        <p>Enter a name for the new category.</p>
+        <form th:action="@{/admin/category/create}" th:object="${categoryCreationForm}" method="post">
+            <div class="form-field">
+                <label for="category-title">Category name <span aria-hidden="true">*</span></label>
+                <input id="category-title" type="text" th:field="*{title}" maxlength="100" autocomplete="off" required
+                       aria-describedby="category-title-error"
+                       th:classappend="${!#strings.isEmpty(categoryCreationError)} ? 'field-invalid'"/>
+                <p id="category-title-error" class="field-error" th:if="${!#strings.isEmpty(categoryCreationError)}" th:text="${categoryCreationError}">Category already exists.</p>
+            </div>
+            <div class="form-actions">
+                <button class="btn btn-quiet" id="category-dialog-cancel" type="button">Cancel</button>
+                <button class="btn btn-primary" type="submit">Create category</button>
+            </div>
+        </form>
+    </div>
+</dialog>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/categories-admin.js}" defer></script>
+</body>
+</html>
