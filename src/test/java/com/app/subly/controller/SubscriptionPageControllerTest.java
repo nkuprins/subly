@@ -21,6 +21,7 @@ import com.app.subly.enums.Currency;
 import com.app.subly.enums.MembershipRole;
 import com.app.subly.enums.ProviderType;
 import com.app.subly.service.ProviderService;
+import com.app.subly.service.SubscriptionReminderService;
 import com.app.subly.service.SubscriptionService;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -65,6 +66,9 @@ class SubscriptionPageControllerTest extends AbstractWebMvcTest {
 
     @MockitoBean
     ProviderService providerService;
+
+    @MockitoBean
+    SubscriptionReminderService reminderService;
 
     @Test
     void subscriptions_shouldReturnActiveTabByDefault() throws Exception {
