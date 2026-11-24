@@ -1,6 +1,5 @@
 package com.app.subly.enums;
 
-
 // Defines the priority of putting subscriptions in the email body
 // Free trial priorities distinguish subscriptions ending tomorrow from those ending in three days.
 // ONE_DAY - 24 hours left till subscription ends

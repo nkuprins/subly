@@ -3,14 +3,13 @@ package com.app.subly.service;
 import com.app.subly.dto.reminder.ReminderDTO;
 import com.app.subly.enums.BillingCycle;
 import com.app.subly.enums.EmailSendingPriority;
-import org.springframework.stereotype.Component;
-import org.thymeleaf.context.Context;
-import org.thymeleaf.spring6.SpringTemplateEngine;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import org.springframework.stereotype.Component;
+import org.thymeleaf.context.Context;
+import org.thymeleaf.spring6.SpringTemplateEngine;
 
 @Component
 public class EmailTemplateManager {
@@ -24,10 +23,9 @@ public class EmailTemplateManager {
         List<EmailSection> sections = remindersByPriority.entrySet().stream()
                 .filter(entry -> entry.getKey() != EmailSendingPriority.NONE)
                 .filter(entry -> entry.getValue() != null && !entry.getValue().isEmpty())
-                .map(entry -> new EmailSection(priorityTitle(entry.getKey()),
-                        entry.getValue().stream()
-                        .map(this::toEmailSubscription)
-                        .toList()))
+                .map(entry -> new EmailSection(
+                        priorityTitle(entry.getKey()),
+                        entry.getValue().stream().map(this::toEmailSubscription).toList()))
                 .toList();
 
         Context context = new Context();

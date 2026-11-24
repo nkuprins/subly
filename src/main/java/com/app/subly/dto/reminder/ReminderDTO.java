@@ -1,13 +1,12 @@
 package com.app.subly.dto.reminder;
 
-import com.app.subly.enums.Currency;
 import com.app.subly.enums.BillingCycle;
+import com.app.subly.enums.Currency;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
 
 @AllArgsConstructor
 @Getter

@@ -4,8 +4,8 @@ import com.app.subly.dto.*;
 import com.app.subly.dto.user.ChangePasswordRequest;
 import com.app.subly.dto.user.DeleteCurrentUserRequest;
 import com.app.subly.dto.user.UpdateUserInformationRequest;
-import com.app.subly.service.UserService;
 import com.app.subly.service.SubscriptionReminderService;
+import com.app.subly.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -30,8 +30,7 @@ public class UserController {
 
     @PostMapping("/reminders/me")
     public OperationResponse updateReminderPreference(
-            @AuthenticationPrincipal UserDetails details,
-            @RequestParam boolean enabled) {
+            @AuthenticationPrincipal UserDetails details, @RequestParam boolean enabled) {
         var user = service.getUser(details.getUsername());
         reminderService.changeRemindersStatusForUser(user.getId(), enabled);
         return new OperationResponse(enabled ? "Email reminders enabled" : "Email reminders disabled");

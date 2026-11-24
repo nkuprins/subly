@@ -4,7 +4,7 @@ package com.app.subly.exception.client;
 // default provided exceptions.
 // Use it only if no one provided exception in this package fits your error.
 public class EmailClientException extends RuntimeException {
-    public EmailClientException(String message, Throwable throwable){
+    public EmailClientException(String message, Throwable throwable) {
         super(message, throwable);
     }
 }

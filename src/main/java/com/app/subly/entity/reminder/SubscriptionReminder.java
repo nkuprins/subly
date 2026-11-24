@@ -2,13 +2,12 @@ package com.app.subly.entity.reminder;
 
 import com.app.subly.entity.subscription.SubscriptionMembership;
 import jakarta.persistence.*;
+import java.time.LocalDate;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
-
-import java.time.LocalDate;
 
 @Entity
 @Getter
@@ -29,7 +28,7 @@ public class SubscriptionReminder {
     @Column(nullable = false)
     private boolean isActive;
 
-    public SubscriptionReminder(SubscriptionMembership membership, boolean isActive){
+    public SubscriptionReminder(SubscriptionMembership membership, boolean isActive) {
         this.membership = membership;
         this.isActive = isActive;
     }

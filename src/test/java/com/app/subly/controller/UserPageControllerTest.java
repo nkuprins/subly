@@ -19,8 +19,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.app.subly.dto.user.PasswordRules;
 import com.app.subly.entity.user.User;
 import com.app.subly.exception.user.UserAlreadyExistsException;
-import com.app.subly.service.UserService;
 import com.app.subly.service.SubscriptionReminderService;
+import com.app.subly.service.UserService;
 import java.time.ZoneId;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;

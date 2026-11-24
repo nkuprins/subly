@@ -51,7 +51,7 @@ public class MembershipService {
     }
 
     @Transactional
-    public SubscriptionMembership getMembershipForSubscription(Long subscriptionId, String username){
+    public SubscriptionMembership getMembershipForSubscription(Long subscriptionId, String username) {
         return this.subscriptionAccess.getMembership(username, subscriptionId);
     }
 

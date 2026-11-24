@@ -2,14 +2,13 @@ package com.app.subly.repository;
 
 import com.app.subly.dto.reminder.ReminderDTO;
 import com.app.subly.entity.reminder.SubscriptionReminder;
+import java.time.LocalDate;
+import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDate;
-import java.util.List;
 
 public interface SubscriptionReminderRepository extends JpaRepository<SubscriptionReminder, Long> {
 
@@ -35,7 +34,7 @@ public interface SubscriptionReminderRepository extends JpaRepository<Subscripti
                     JOIN sm.subscription s
                     JOIN s.provider sp
                 WHERE sr.isActive
-            
+
             """)
     List<ReminderDTO> getAllActiveReminders();
 
@@ -61,8 +60,8 @@ public interface SubscriptionReminderRepository extends JpaRepository<Subscripti
                SET sr.isActive = :isActive
                WHERE sr.membership.id = :membershipId
             """)
-    int changeReminderStatusByMembershipId(@Param("membershipId") Long membershipId,
-                                            @Param("isActive") boolean isActive);
+    int changeReminderStatusByMembershipId(
+            @Param("membershipId") Long membershipId, @Param("isActive") boolean isActive);
 
     @Transactional
     @Modifying
@@ -79,8 +78,6 @@ public interface SubscriptionReminderRepository extends JpaRepository<Subscripti
          WHERE sr.id = :reminderId
            AND :stage IN (1, 2)
         """)
-    int updateSentAt(@Param("sentAt") LocalDate sentAt,
-                     @Param("reminderId") Long reminderId,
-                     @Param("stage") int stage);
-
+    int updateSentAt(
+            @Param("sentAt") LocalDate sentAt, @Param("reminderId") Long reminderId, @Param("stage") int stage);
 }

@@ -77,8 +77,7 @@ public class SubscriptionPageController {
                 new CreateSubscriptionRequest(
                         providerId, price, currency, billingCycle, nextPaymentDate, freeTrial, maxParticipants));
 
-        reminderService.addReminder(membership,
-                reminderService.isEnabledRemindersFor(principal.getName()));
+        reminderService.addReminder(membership, reminderService.isEnabledRemindersFor(principal.getName()));
         log.info("The subscription has been created successfully");
         return "redirect:/subscriptions";
     }
@@ -138,7 +137,7 @@ public class SubscriptionPageController {
         return CANCELLED_TAB.equals(tab) ? "redirect:/subscriptions?tab=" + CANCELLED_TAB : "redirect:/subscriptions";
     }
 
-    private void setReminderStatusForCurrentSubscription(Long subscriptionId, String username, boolean status){
+    private void setReminderStatusForCurrentSubscription(Long subscriptionId, String username, boolean status) {
         SubscriptionMembership membership =
                 this.membershipService.getMembershipForSubscription(subscriptionId, username);
         reminderService.changeReminderStatusForMembership(membership.getId(), status);
