@@ -5,6 +5,7 @@ import com.app.subly.dto.user.ChangePasswordRequest;
 import com.app.subly.dto.user.DeleteCurrentUserRequest;
 import com.app.subly.dto.user.UpdateUserInformationRequest;
 import com.app.subly.service.UserService;
+import com.app.subly.service.SubscriptionReminderService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -24,7 +25,17 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService service;
+    private final SubscriptionReminderService reminderService;
     private final SecurityContextLogoutHandler logoutHandler = new SecurityContextLogoutHandler();
+
+    @PostMapping("/reminders/me")
+    public OperationResponse updateReminderPreference(
+            @AuthenticationPrincipal UserDetails details,
+            @RequestParam boolean enabled) {
+        var user = service.getUser(details.getUsername());
+        reminderService.changeRemindersStatusForUser(user.getId(), enabled);
+        return new OperationResponse(enabled ? "Email reminders enabled" : "Email reminders disabled");
+    }
 
     @DeleteMapping("/delete/me")
     public OperationResponse deleteUser(

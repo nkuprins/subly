@@ -20,6 +20,7 @@ import com.app.subly.dto.user.PasswordRules;
 import com.app.subly.entity.user.User;
 import com.app.subly.exception.user.UserAlreadyExistsException;
 import com.app.subly.service.UserService;
+import com.app.subly.service.SubscriptionReminderService;
 import java.time.ZoneId;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -40,6 +41,9 @@ class UserPageControllerTest extends AbstractWebMvcTest {
 
     @MockitoBean
     private UserService userService;
+
+    @MockitoBean
+    private SubscriptionReminderService reminderService;
 
     @Test
     @WithAnonymousUser
