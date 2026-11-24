@@ -1,8 +1,8 @@
 package com.app.subly.controller;
 
 import static com.app.subly.testdata.TestUsers.ALICE;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -22,8 +22,8 @@ import com.app.subly.enums.BillingCycle;
 import com.app.subly.enums.Currency;
 import com.app.subly.enums.MembershipRole;
 import com.app.subly.enums.ProviderType;
-import com.app.subly.service.ProviderService;
 import com.app.subly.service.MembershipService;
+import com.app.subly.service.ProviderService;
 import com.app.subly.service.SubscriptionReminderService;
 import com.app.subly.service.SubscriptionService;
 import java.math.BigDecimal;
@@ -220,6 +220,7 @@ class SubscriptionPageControllerTest extends AbstractWebMvcTest {
     private void mockMembershipLookup() {
         SubscriptionMembership membership = mock(SubscriptionMembership.class);
         when(membership.getId()).thenReturn(MEMBERSHIP_ID);
-        when(membershipService.getMembershipForSubscription(SUBSCRIPTION_ID, ALICE)).thenReturn(membership);
+        when(membershipService.getMembershipForSubscription(SUBSCRIPTION_ID, ALICE))
+                .thenReturn(membership);
     }
 }
