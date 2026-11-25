@@ -50,6 +50,11 @@ public class MembershipService {
         membershipRepository.delete(target);
     }
 
+    @Transactional
+    public SubscriptionMembership getMembershipForSubscription(Long subscriptionId, String username) {
+        return this.subscriptionAccess.getMembership(username, subscriptionId);
+    }
+
     private static void requireMemberRole(SubscriptionMembership membership, String message) {
         if (membership.getRole() != MembershipRole.MEMBER) {
             throw new MembershipActionForbiddenException(message);
