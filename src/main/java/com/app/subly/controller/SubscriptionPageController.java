@@ -2,9 +2,12 @@ package com.app.subly.controller;
 
 import com.app.subly.dto.subscription.CreateSubscriptionRequest;
 import com.app.subly.dto.subscription.UpdateSubscriptionRequest;
+import com.app.subly.entity.subscription.SubscriptionMembership;
 import com.app.subly.enums.BillingCycle;
 import com.app.subly.enums.Currency;
+import com.app.subly.service.MembershipService;
 import com.app.subly.service.ProviderService;
+import com.app.subly.service.SubscriptionReminderService;
 import com.app.subly.service.SubscriptionService;
 import java.math.BigDecimal;
 import java.security.Principal;
@@ -24,6 +27,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class SubscriptionPageController {
     private final SubscriptionService subscriptionService;
     private final ProviderService providerService;
+    private final SubscriptionReminderService reminderService;
+    private final MembershipService membershipService;
 
     private static final String CANCELLED_TAB = "cancelled";
 
@@ -67,11 +72,12 @@ public class SubscriptionPageController {
                 freeTrial,
                 maxParticipants);
 
-        subscriptionService.create(
+        SubscriptionMembership membership = subscriptionService.create(
                 principal.getName(),
                 new CreateSubscriptionRequest(
                         providerId, price, currency, billingCycle, nextPaymentDate, freeTrial, maxParticipants));
 
+        reminderService.addReminder(membership, reminderService.isEnabledRemindersFor(principal.getName()));
         log.info("The subscription has been created successfully");
         return "redirect:/subscriptions";
     }
@@ -79,6 +85,7 @@ public class SubscriptionPageController {
     @PostMapping("/{id}/cancel")
     public String cancelSubscription(@PathVariable Long id, Principal principal, RedirectAttributes redirect) {
         log.info("Canceling the subscription with id={}", id);
+        setReminderStatusForCurrentSubscription(id, principal.getName(), false);
         subscriptionService.cancel(principal.getName(), id);
         redirect.addFlashAttribute("notice", "Subscription cancelled. You can find it under the Cancelled tab.");
         log.info("Successfully canceled the subscription");
@@ -88,6 +95,7 @@ public class SubscriptionPageController {
     @PostMapping("/{id}/reactivate")
     public String reactivateSubscription(@PathVariable Long id, Principal principal, RedirectAttributes redirect) {
         log.info("Reactivating the subscription with id={}", id);
+        setReminderStatusForCurrentSubscription(id, principal.getName(), true);
         subscriptionService.reactivate(principal.getName(), id);
         redirect.addFlashAttribute("notice", "Subscription reactivated. It's back in your active list.");
         log.info("Successfully reactivated the subscription");
@@ -127,5 +135,11 @@ public class SubscriptionPageController {
         subscriptionService.delete(principal.getName(), id);
         log.info("Successfully deleted the subscription id={}", id);
         return CANCELLED_TAB.equals(tab) ? "redirect:/subscriptions?tab=" + CANCELLED_TAB : "redirect:/subscriptions";
+    }
+
+    private void setReminderStatusForCurrentSubscription(Long subscriptionId, String username, boolean status) {
+        SubscriptionMembership membership =
+                this.membershipService.getMembershipForSubscription(subscriptionId, username);
+        reminderService.changeReminderStatusForMembership(membership.getId(), status);
     }
 }

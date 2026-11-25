@@ -33,3 +33,13 @@ server:
   servlet:
     session:
       timeout: 30m
+
+emails:
+  reminder-service:
+    default_email: onboarding@resend.dev # default email emails will be sent from
+    post-delay-ms: 2000 # delay after each email sending
+    retry-delay-ms: 5000 # delay to resend email if 429 occurred
+    retry-attempts: 3 # how many times to retry? Better not to change it.
+  resend-api:
+    api-key: ${RESEND_API_KEY:}
+    email-url: https://api.resend.com/emails

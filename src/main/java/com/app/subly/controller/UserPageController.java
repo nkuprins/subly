@@ -3,6 +3,7 @@ package com.app.subly.controller;
 import com.app.subly.dto.user.PasswordRules;
 import com.app.subly.entity.user.User;
 import com.app.subly.exception.user.UserAlreadyExistsException;
+import com.app.subly.service.SubscriptionReminderService;
 import com.app.subly.service.UserService;
 import com.app.subly.util.TimeZoneGenerator;
 import java.security.Principal;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequiredArgsConstructor
 public class UserPageController {
     private final UserService userService;
+    private final SubscriptionReminderService reminderService;
 
     @GetMapping("/login")
     public String login() {
@@ -92,6 +94,7 @@ public class UserPageController {
         log.info("Preparing profile edit page for username={}", principal.getName());
         User user = userService.getUser(principal.getName());
         model.addAttribute("user", user);
+        model.addAttribute("remindersEnabled", reminderService.isEnabledRemindersFor(user.getId()));
         model.addAttribute("timeZones", TimeZoneGenerator.getAllFilteredTimeZone());
         log.info("Successfully prepared profile edit page for username={}", principal.getName());
         return "edit-user";

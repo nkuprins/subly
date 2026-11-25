@@ -1,4 +1,30 @@
 
+// Email reminder preference
+const reminderCheckbox = document.getElementById('reminders-enabled');
+const reminderMessage = document.getElementById('reminder-message');
+if (reminderCheckbox) {
+    let savedReminderValue = reminderCheckbox.checked;
+    reminderCheckbox.addEventListener('change', async () => {
+        reminderCheckbox.disabled = true;
+        reminderMessage.textContent = '';
+        try {
+            const response = await fetch('/users/reminders/me', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded', [csrfHeader]: csrfToken},
+                body: new URLSearchParams({enabled: String(reminderCheckbox.checked)})
+            });
+            if (!response.ok) throw new Error('Could not update email reminders');
+            savedReminderValue = reminderCheckbox.checked;
+            reminderMessage.textContent = 'Email reminder preference saved';
+        } catch (error) {
+            reminderCheckbox.checked = savedReminderValue;
+            reminderMessage.textContent = error.message;
+        } finally {
+            reminderCheckbox.disabled = false;
+        }
+    });
+}
+
 // password form
 const passwordForm = document.getElementById('password-form');
 const passwordSubmit = document.getElementById('password-submit');

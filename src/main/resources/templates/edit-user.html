@@ -61,6 +61,20 @@
         </form>
     </section>
 
+    <section class="panel edit-user-section">
+        <h2>Email notifications</h2>
+        <form id="reminder-preference-form" class="form">
+            <div class="field">
+                <label class="checkbox-label" for="reminders-enabled">
+                    <input id="reminders-enabled" name="enabled" type="checkbox" value="true"
+                           th:checked="${remindersEnabled}"/>
+                    <span>Send subscription reminders to my email</span>
+                </label>
+            </div>
+            <p class="edit-user-message" id="reminder-message" role="status" aria-live="polite"></p>
+        </form>
+    </section>
+
     <section class="panel edit-user-section delete-account-section">
         <h2>Delete account</h2>
         <form id="delete-account-form" class="form" novalidate>
