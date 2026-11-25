@@ -1,6 +1,7 @@
 package com.app.subly.controller;
 
 import static com.app.subly.testdata.TestUsers.ALICE;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -16,11 +17,14 @@ import com.app.subly.dto.subscription.ActiveSubscriptionResponse;
 import com.app.subly.dto.subscription.CancelledSubscriptionResponse;
 import com.app.subly.dto.subscription.CreateSubscriptionRequest;
 import com.app.subly.dto.subscription.SubscriptionResponse;
+import com.app.subly.entity.subscription.SubscriptionMembership;
 import com.app.subly.enums.BillingCycle;
 import com.app.subly.enums.Currency;
 import com.app.subly.enums.MembershipRole;
 import com.app.subly.enums.ProviderType;
+import com.app.subly.service.MembershipService;
 import com.app.subly.service.ProviderService;
+import com.app.subly.service.SubscriptionReminderService;
 import com.app.subly.service.SubscriptionService;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -36,6 +40,7 @@ class SubscriptionPageControllerTest extends AbstractWebMvcTest {
 
     private static final long SUBSCRIPTION_ID = 7L;
     private static final long PROVIDER_ID = 3L;
+    private static final long MEMBERSHIP_ID = 13L;
     private static final String SUBSCRIPTIONS_URL = "/subscriptions";
     private static final String NEXT_PAYMENT_DATE = "2026-12-01";
     private static final LocalDate NEXT_PAYMENT = LocalDate.parse(NEXT_PAYMENT_DATE);
@@ -65,6 +70,12 @@ class SubscriptionPageControllerTest extends AbstractWebMvcTest {
 
     @MockitoBean
     ProviderService providerService;
+
+    @MockitoBean
+    SubscriptionReminderService reminderService;
+
+    @MockitoBean
+    MembershipService membershipService;
 
     @Test
     void subscriptions_shouldReturnActiveTabByDefault() throws Exception {
@@ -160,6 +171,8 @@ class SubscriptionPageControllerTest extends AbstractWebMvcTest {
 
     @Test
     void cancelSubscription_shouldRedirectWithNoticeWhenCancelled() throws Exception {
+        mockMembershipLookup();
+
         mockMvc.perform(post(SUBSCRIPTIONS_URL + "/{id}/cancel", SUBSCRIPTION_ID)
                         .with(csrf()))
                 .andExpect(status().is3xxRedirection())
@@ -172,6 +185,8 @@ class SubscriptionPageControllerTest extends AbstractWebMvcTest {
 
     @Test
     void reactivateSubscription_shouldRedirectWithNoticeWhenReactivated() throws Exception {
+        mockMembershipLookup();
+
         mockMvc.perform(post(SUBSCRIPTIONS_URL + "/{id}/reactivate", SUBSCRIPTION_ID)
                         .with(csrf()))
                 .andExpect(status().is3xxRedirection())
@@ -200,5 +215,12 @@ class SubscriptionPageControllerTest extends AbstractWebMvcTest {
                 .andExpect(view().name("redirect:/subscriptions?tab=cancelled"));
 
         verify(subscriptionService).delete(ALICE, SUBSCRIPTION_ID);
+    }
+
+    private void mockMembershipLookup() {
+        SubscriptionMembership membership = mock(SubscriptionMembership.class);
+        when(membership.getId()).thenReturn(MEMBERSHIP_ID);
+        when(membershipService.getMembershipForSubscription(SUBSCRIPTION_ID, ALICE))
+                .thenReturn(membership);
     }
 }

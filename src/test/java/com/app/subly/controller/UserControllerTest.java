@@ -21,6 +21,7 @@ import com.app.subly.dto.user.UpdateUserInformationRequest;
 import com.app.subly.entity.user.User;
 import com.app.subly.exception.user.UserAlreadyExistsException;
 import com.app.subly.exception.user.WrongPasswordException;
+import com.app.subly.service.SubscriptionReminderService;
 import com.app.subly.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -43,6 +44,9 @@ class UserControllerTest extends AbstractWebMvcTest {
 
     @MockitoBean
     private UserService service;
+
+    @MockitoBean
+    private SubscriptionReminderService reminderService;
 
     @Test
     void deleteUser_shouldReturn200WhenUserIsDeleted() throws Exception {

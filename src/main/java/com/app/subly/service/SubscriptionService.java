@@ -46,7 +46,7 @@ public class SubscriptionService {
     private final Clock clock;
 
     @Transactional
-    public void create(String username, CreateSubscriptionRequest request) {
+    public SubscriptionMembership create(String username, CreateSubscriptionRequest request) {
         User user = userRepository.getUser(username);
         requireNotInPast(user, request.nextPaymentDate());
         requireCentPerParticipant(request.price(), request.maxParticipants());
@@ -65,7 +65,7 @@ public class SubscriptionService {
             subscription.makeSharable(request.maxParticipants());
         }
         subscriptionRepository.save(subscription);
-        membershipRepository.save(SubscriptionMembership.owner(user, subscription));
+        return membershipRepository.save(SubscriptionMembership.owner(user, subscription));
     }
 
     @Transactional(readOnly = true)

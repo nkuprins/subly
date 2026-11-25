@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<section th:each="section : ${sections}">
+    <h2 th:text="${section.title}">Reminder priority</h2>
+    <ul>
+        <li th:each="subscription : ${section.subscriptions}">
+            <strong th:text="${subscription.providerName}">Provider</strong>
+            — <span th:text="${subscription.price}">0.00</span>
+            <span th:text="${subscription.currencySymbol}">€</span>
+            <span th:if="${subscription.freeTrial}">
+                (next <span th:text="${subscription.price}">0.00</span>
+                <span th:text="${subscription.currencySymbol}">€</span>
+                <span th:text="${subscription.billingPeriod}">monthly</span>)
+            </span>
+            — ends <span th:text="${subscription.endDate}">date</span>
+        </li>
+    </ul>
+</section>
+</body>
+</html>
